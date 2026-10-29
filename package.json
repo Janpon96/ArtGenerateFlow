@@ -1,0 +1,36 @@
+{
+  "name": "flow-reference-studio",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "packageManager": "pnpm@12.11.2",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test:unit": "vitest run --project unit",
+    "test:integration": "vitest run --project integration",
+    "test:e2e:mock": "vitest run --project e2e-mock",
+    "test": "vitest run",
+    "test:reference": "node --test Flow_Reference_Studio_Kit/reference/mask_core.test.mjs",
+    "build:extension": "pnpm --filter @frs/extension build",
+    "package:extension": "node scripts/package-extension.mjs",
+    "dev": "pnpm --filter @frs/extension dev"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/chrome": "^0.3.7",
+    "@types/node": "^26.6.5",
+    "@types/pngjs": "^6.0.5",
+    "esbuild": "^0.28.2",
+    "eslint": "^10.13.0",
+    "fake-indexeddb": "^6.2.6",
+    "pngjs": "^7.0.0",
+    "@typescript/native": "npm:typescript@^7.0.2",
+    "typescript": "npm:@typescript/typescript6@^6.0.2",
+    "typescript-eslint": "^8.72.1",
+    "vitest": "^5.0.5"
+  }
+}

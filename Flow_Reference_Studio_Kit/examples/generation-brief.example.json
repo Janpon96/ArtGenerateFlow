@@ -1,0 +1,108 @@
+{
+  "illustrative": true,
+  "notRunnable": true,
+  "note": "Template draft. Asset IDs are placeholders; import real files, resolve hashes and capability before creating GenerationIntent.",
+  "name": "Anime room illustration",
+  "provider": "flow-web",
+  "executionMode": "assisted",
+  "modelSelection": {
+    "mode": "standard_image",
+    "label": null,
+    "source": "not_yet_selected"
+  },
+  "rawBrief": "Cô gái tưới chậu cây cạnh cửa sổ trong phòng trọ nhỏ, góc nhìn isometric, ánh sáng sáng sớm.",
+  "artStyle": "Anime 2D, nét sạch mảnh, cel shading mềm, palette kem và xanh sage.",
+  "references": [
+    {
+      "id": "ref_identity",
+      "assetId": "IMPORT_CHARACTER_FILE",
+      "alias": "Girl A",
+      "roles": [
+        "identity"
+      ],
+      "subjectKey": "girl_a",
+      "priority": "primary",
+      "includeTraits": [
+        "face shape",
+        "short dark hair",
+        "eye color"
+      ],
+      "excludeTraits": [
+        "outfit",
+        "background"
+      ],
+      "active": true
+    },
+    {
+      "id": "ref_outfit",
+      "assetId": "IMPORT_OUTFIT_FILE",
+      "alias": "Outfit",
+      "roles": [
+        "outfit"
+      ],
+      "subjectKey": "girl_a",
+      "priority": "secondary",
+      "includeTraits": [
+        "cream cardigan",
+        "sage skirt"
+      ],
+      "excludeTraits": [
+        "model face",
+        "hairstyle"
+      ],
+      "active": true
+    },
+    {
+      "id": "ref_room",
+      "assetId": "IMPORT_ROOM_FILE",
+      "alias": "Room",
+      "roles": [
+        "environment",
+        "composition"
+      ],
+      "subjectKey": null,
+      "priority": "secondary",
+      "includeTraits": [
+        "window-bed-desk arrangement"
+      ],
+      "excludeTraits": [
+        "people"
+      ],
+      "active": true
+    },
+    {
+      "id": "ref_style",
+      "assetId": "IMPORT_STYLE_FILE",
+      "alias": "Art style",
+      "roles": [
+        "style"
+      ],
+      "subjectKey": null,
+      "priority": "supporting",
+      "includeTraits": [
+        "linework",
+        "cel shading"
+      ],
+      "excludeTraits": [
+        "characters",
+        "props"
+      ],
+      "active": true
+    }
+  ],
+  "requestedAspectRatio": "16:9",
+  "aspectRatioVerified": false,
+  "providerResolutionLabel": null,
+  "outputCount": 1,
+  "export": {
+    "format": "png",
+    "dimensions": "native_result"
+  },
+  "reviewChecklist": [
+    "identity",
+    "one character",
+    "watering action",
+    "room layout",
+    "style consistency"
+  ]
+}

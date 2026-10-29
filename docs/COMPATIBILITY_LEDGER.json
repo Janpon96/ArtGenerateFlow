@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "status": "BLOCKED",
+  "g0Live": {
+    "status": "blocked",
+    "reason": "No live access to Google Flow in the implementation environment. No selector, endpoint, model list or capability has been observed, so none is claimed."
+  },
+  "checkedAt": null,
+  "browserVersion": null,
+  "locale": null,
+  "origin": null,
+  "routePattern": null,
+  "adapterVersion": "flow-web-assisted/0.1.0",
+  "models": [],
+  "capabilities": {
+    "readImageModelOptions": { "support": "unknown", "evidence": null, "manualFallback": "User selects and confirms in Flow" },
+    "readAspectRatioOptions": { "support": "unknown", "evidence": null, "manualFallback": "User selects and confirms in Flow" },
+    "readResolutionOptions": { "support": "unknown", "evidence": null, "manualFallback": "Provider decides; inspect actual output dimensions" },
+    "uploadMultipleImages": { "support": "unknown", "evidence": null, "manualFallback": "User uploads selected files" },
+    "verifyImageOrder": { "support": "unknown", "evidence": null, "manualFallback": "User compares numbered input preview with Flow thumbnails" },
+    "setPrompt": { "support": "unknown", "evidence": null, "manualFallback": "User copies prompt" },
+    "nativeLassoVisible": { "support": "unknown", "evidence": null, "manualFallback": "Use context crop or full-frame candidate" },
+    "programmaticMaskImport": { "support": "unknown", "evidence": null, "manualFallback": "User draws Flow selection; local mask still controls final composite" },
+    "submitImageJob": { "support": "unknown", "evidence": null, "manualFallback": "User clicks Generate once" },
+    "observeCorrelatedOutput": { "support": "unknown", "evidence": null, "manualFallback": "User selects output explicitly" },
+    "collectFullResolutionOutput": { "support": "unknown", "evidence": null, "manualFallback": "User downloads and imports file" },
+    "readImageCost": { "support": "unknown", "evidence": null, "manualFallback": "Show unknown; inspect Flow UI" }
+  },
+  "knownLimitations": [
+    "Assisted mode only: the extension never clicks Generate and never reads Flow DOM.",
+    "Every capability stays 'unknown' until a G0 live check records evidence."
+  ],
+  "evidenceFiles": []
+}

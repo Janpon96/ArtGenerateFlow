@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022", "DOM", "DOM.Iterable", "WebWorker"],
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "exactOptionalPropertyTypes": false,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "types": ["chrome", "node"],
+    "paths": {
+      "@frs/domain": ["./packages/domain/src/index.ts"],
+      "@frs/prompt-core": ["./packages/prompt-core/src/index.ts"],
+      "@frs/image-core": ["./packages/image-core/src/index.ts"],
+      "@frs/storage": ["./packages/storage/src/index.ts"],
+      "@frs/job-orchestrator": ["./packages/job-orchestrator/src/index.ts"],
+      "@frs/review-export": ["./packages/review-export/src/index.ts"],
+      "@frs/provider-mock": ["./packages/providers/mock/src/index.ts"],
+      "@frs/provider-flow-web": ["./packages/providers/flow-web/src/index.ts"]
+    }
+  },
+  "include": ["apps/**/*.ts", "apps/**/*.tsx", "packages/**/*.ts", "tests/**/*.ts", "vitest.config.ts"],
+  "exclude": ["node_modules", "dist"]
+}

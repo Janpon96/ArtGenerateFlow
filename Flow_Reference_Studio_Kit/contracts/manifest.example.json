@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "Flow Reference Studio",
+  "version": "0.1.0",
+  "description": "Prepare references and prompts, coordinate Flow, and verify local region edits.",
+  "permissions": ["storage", "sidePanel", "scripting", "activeTab"],
+  "optional_permissions": ["downloads"],
+  "optional_host_permissions": ["https://labs.google/*", "https://flow.google/*"],
+  "background": {"service_worker": "background.js", "type": "module"},
+  "side_panel": {"default_path": "sidepanel.html"},
+  "action": {"default_title": "Open Flow Reference Studio"},
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'none'; base-uri 'none'"
+  }
+}

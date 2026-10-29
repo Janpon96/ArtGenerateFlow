@@ -1,0 +1,968 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Flow Reference Studio — Workbench</title>
+  <style>
+    :root {
+      --bg: #0b0f17;
+      --bg-elev: #111827;
+      --bg-card: #161f30;
+      --bg-input: #0d1320;
+      --border: #263248;
+      --border-focus: #6366f1;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent: #6366f1;
+      --accent-hover: #4f46e5;
+      --accent-soft: rgba(99, 102, 241, 0.14);
+      --ok: #10b981;
+      --ok-soft: rgba(16, 185, 129, 0.14);
+      --warn: #f59e0b;
+      --warn-soft: rgba(245, 158, 11, 0.14);
+      --danger: #ef4444;
+      --danger-soft: rgba(239, 68, 68, 0.14);
+      --radius: 10px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font: 14px/1.5 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    header.topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 24px;
+      background: rgba(17, 24, 39, 0.88);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-logo {
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      background: linear-gradient(135deg, #6366f1, #ec4899);
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.5px;
+    }
+    .brand h1 {
+      font-size: 16px;
+      margin: 0;
+      font-weight: 650;
+    }
+    .brand p {
+      margin: 0;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .mode-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: var(--warn-soft);
+      color: #fcd34d;
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      font-weight: 500;
+    }
+    .nav-tabs {
+      display: flex;
+      gap: 6px;
+    }
+    .tab-btn {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid transparent;
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 550;
+      font-size: 13px;
+      transition: all 0.15s;
+    }
+    .tab-btn:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.04);
+    }
+    .tab-btn.active {
+      color: #fff;
+      background: var(--accent-soft);
+      border-color: rgba(99, 102, 241, 0.45);
+    }
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    main.container {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 20px 24px 300px;
+    }
+    #console-dock {
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+      background: #0f1420; color: #d6deeb; border-top: 2px solid var(--border);
+      display: flex; flex-direction: column; height: 260px; min-height: 34px;
+      font: 12px/1.45 ui-monospace, Consolas, monospace;
+    }
+    #console-dock.collapsed { height: 34px !important; }
+    #console-dock.collapsed #console-body { display: none; }
+    #console-bar {
+      display: flex; align-items: center; gap: 8px; padding: 4px 10px;
+      background: #171e2e; flex-wrap: wrap; min-height: 34px;
+    }
+    #console-bar button, #console-bar select {
+      font-size: 11px; padding: 2px 8px; border-radius: 4px; width: auto;
+      background: #232c42; color: #d6deeb; border: 1px solid #34405e; cursor: pointer;
+    }
+    #console-resize { height: 5px; cursor: ns-resize; background: #34405e; }
+    #console-body { flex: 1; overflow-y: auto; padding: 6px 10px; min-height: 0; }
+    .log-line { white-space: pre-wrap; word-break: break-word; padding: 1px 0; }
+    .log-line .t { color: #7f8aa8; }
+    .log-line .j { color: #82aaff; }
+    .log-line.info .l { color: #82aaff; }
+    .log-line.success .l { color: #7fdc8a; }
+    .log-line.warn .l { color: #ffcb6b; }
+    .log-line.error { color: #ff8a8a; }
+    .log-line.error .l { color: #ff5370; font-weight: 700; }
+    .progress { height: 6px; background: #e3e8f2; border-radius: 3px; overflow: hidden; margin: 6px 0; }
+    .progress > i { display: block; height: 100%; background: var(--primary, #4f7cff); transition: width .3s; }
+    .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-top: 8px; }
+    .gallery figure { margin: 0; border: 1px solid var(--border); border-radius: 8px; padding: 6px; background: var(--bg-card); min-width: 0; }
+    .gallery img { width: 100%; height: 130px; object-fit: contain; background: #f2f4f9; border-radius: 4px; cursor: zoom-in; }
+    .gallery figcaption { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
+    .timeline { font-size: 12px; margin: 6px 0; padding-left: 16px; color: #555; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    .studio-grid {
+      display: grid;
+      grid-template-columns: 1.25fr 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+    @media (max-width: 1080px) {
+      .studio-grid { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .card-title {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 650;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-sub {
+      margin: 2px 0 0;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: #a5b4fc;
+      border: 1px solid rgba(99, 102, 241, 0.35);
+      font-weight: 600;
+    }
+    .badge.ok {
+      background: var(--ok-soft);
+      color: #6ee7b7;
+      border-color: rgba(16, 185, 129, 0.35);
+    }
+    .badge.danger {
+      background: var(--danger-soft);
+      color: #fca5a5;
+      border-color: rgba(239, 68, 68, 0.35);
+    }
+    button, .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 550;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.15s;
+    }
+    button:hover, .btn:hover {
+      border-color: #3b4c6b;
+      background: #1e293b;
+    }
+    button.primary, .btn.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    button.primary:hover, .btn.primary:hover {
+      background: var(--accent-hover);
+    }
+    button.sm, .btn.sm {
+      padding: 5px 9px;
+      font-size: 12px;
+      border-radius: 6px;
+    }
+    button.danger {
+      color: #fca5a5;
+      border-color: rgba(239, 68, 68, 0.35);
+    }
+    button.danger:hover {
+      background: var(--danger-soft);
+    }
+    input[type="text"], input[type="number"], select, textarea {
+      width: 100%;
+      min-width: 0;
+      padding: 9px 11px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg-input);
+      color: var(--text);
+      font: inherit;
+      font-size: 13px;
+    }
+    input[type="file"] {
+      width: 100%;
+      font-size: 12.5px;
+      color: var(--text-muted);
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 8px;
+    }
+    input[type="file"]::file-selector-button {
+      background: var(--bg-card);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 5px 10px;
+      margin-right: 10px;
+      font-size: 12px;
+      font-weight: 550;
+      cursor: pointer;
+    }
+    input[type="file"]::file-selector-button:hover {
+      background: #1e293b;
+      border-color: #3b4c6b;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+    }
+    label.field-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 5px;
+    }
+    .field-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .field-row-3 {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    @media (max-width: 680px) {
+      .field-row, .field-row-3 { grid-template-columns: 1fr; }
+    }
+    /* Dropzone */
+    .dropzone {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      width: 100%;
+      border: 1.5px dashed #3b4c6b;
+      border-radius: var(--radius);
+      padding: 24px 18px;
+      text-align: center;
+      background: rgba(13, 19, 32, 0.65);
+      cursor: pointer;
+      transition: all 0.15s;
+      margin: 4px 0 16px;
+      position: relative;
+      overflow: hidden;
+    }
+    .dropzone:hover, .dropzone.dragover {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+    .dropzone-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.35);
+      color: #a5b4fc;
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+    .dropzone strong {
+      display: block;
+      font-size: 14px;
+      color: var(--text);
+    }
+    .dropzone span {
+      display: block;
+      font-size: 12px;
+      color: var(--text-muted);
+      max-width: 520px;
+    }
+    /* Reference cards */
+    .ref-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 6px;
+    }
+    .ref-card {
+      display: grid;
+      grid-template-columns: 112px minmax(0, 1fr);
+      gap: 14px;
+      padding: 14px;
+      border-radius: 10px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      align-items: start;
+    }
+    .ref-card.inactive {
+      opacity: 0.55;
+    }
+    .ref-card.is-base {
+      border-color: #10b981;
+      box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.35);
+    }
+    .ref-thumb-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .ref-thumb {
+      width: 112px;
+      height: 112px;
+      object-fit: cover;
+      border-radius: 7px;
+      background: #090d14;
+      border: 1px solid var(--border);
+    }
+    .ref-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: center;
+    }
+    .ref-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+    .mention-chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 6px; }
+    .mention-chips[hidden] { display: none; }
+    .role-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin: 8px 0;
+    }
+    .role-chip {
+      font-size: 11px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--bg-input);
+      color: var(--text-muted);
+      cursor: pointer;
+      user-select: none;
+    }
+    .role-chip.selected {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      font-weight: 600;
+    }
+    /* Constraints list */
+    .constraint-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 7px 10px;
+      border-radius: 7px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      font-size: 12px;
+      margin-top: 6px;
+    }
+    /* Output / prompt box */
+    pre.codebox {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 12.5px;
+      max-height: 360px;
+      overflow: auto;
+      margin: 10px 0;
+    }
+    .alert {
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 12.5px;
+      margin-bottom: 10px;
+      border: 1px solid var(--border);
+    }
+    .alert.ok {
+      background: var(--ok-soft);
+      border-color: rgba(16, 185, 129, 0.4);
+      color: #a7f3d0;
+    }
+    .alert.warn {
+      background: var(--warn-soft);
+      border-color: rgba(245, 158, 11, 0.4);
+      color: #fde68a;
+    }
+    .alert.bad {
+      background: var(--danger-soft);
+      border-color: rgba(239, 68, 68, 0.45);
+      color: #fecaca;
+    }
+    /* Strict canvas area */
+    .canvas-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      padding: 10px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+    .canvas-stage {
+      background: repeating-conic-gradient(#111827 0% 25%, #0d1320 0% 50%) 50% / 20px 20px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px;
+      display: grid;
+      place-items: center;
+      min-height: 320px;
+      overflow: auto;
+    }
+    canvas#view, canvas#resultPreview {
+      max-width: 100%;
+      max-height: 540px;
+      border: 1px solid #475569;
+      cursor: crosshair;
+      display: block;
+    }
+    .job-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+    .job-card ol {
+      margin: 8px 0 12px 18px;
+      padding: 0;
+      font-size: 13px;
+    }
+    .job-card li { margin-bottom: 4px; }
+    .source-map-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin: 10px 0;
+    }
+    .source-map-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 10px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      font-size: 12.5px;
+    }
+    .source-map-item img {
+      width: 36px;
+      height: 36px;
+      object-fit: cover;
+      border-radius: 5px;
+    }
+  .guide-steps { counter-reset: step; list-style: none; padding: 0; margin: 0; }
+.guide-steps > li { counter-increment: step; position: relative; padding: 4px 0 14px 44px; }
+.guide-steps > li::before {
+  content: counter(step); position: absolute; left: 0; top: 2px; width: 30px; height: 30px;
+  border-radius: 50%; background: #3b82f6; color: #fff; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.guide-steps b { display: block; margin-bottom: 2px; }
+.guide-steps p, .guide-steps ul { margin: 2px 0; font-size: 13px; opacity: .9; }
+.guide-steps ul { padding-left: 18px; }
+.guide-steps code { background: rgba(127,127,127,.2); padding: 1px 5px; border-radius: 4px; }
+</style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-logo">FRS</div>
+      <div>
+        <h1>Flow Reference Studio</h1>
+        <p>Multi-Reference Prompt Compiler &amp; Strict Pixel-Verified Editor</p>
+      </div>
+    </div>
+
+    <nav class="nav-tabs" role="tablist">
+      <button class="tab-btn active" data-tab="tab-studio">1. Tạo &amp; Phối ảnh (Multi-Ref)</button>
+      <button class="tab-btn" data-tab="tab-strict">2. Sửa vùng Strict (PNG)</button>
+      <button class="tab-btn" data-tab="tab-jobs">3. Hàng đợi Job &amp; Lịch sử (<span id="job-count">0</span>)</button>
+      <button class="tab-btn" data-tab="tab-guide">4. Hướng dẫn sử dụng</button>
+    </nav>
+
+    <div class="top-actions">
+      <span class="mode-pill">Chế độ Assisted • Local-First</span>
+      <button id="backup" class="sm">Xuất Backup JSON</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- TAB 1: MULTI-REFERENCE + PROMPT COMPILER + GENERATE -->
+    <section id="tab-studio" class="tab-panel active">
+      <div class="studio-grid">
+        <!-- Cột trái: Thư viện Reference -->
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">Bộ ảnh Tham chiếu &amp; Ảnh gốc <span id="ref-count-badge" class="badge">0 / 24</span></h2>
+                <p class="card-sub">Tải lên nhiều ảnh để lấy khuôn mặt, trang phục, dáng đứng, bố cục, màu sắc hoặc đặt làm ảnh gốc cần chỉnh sửa.</p>
+              </div>
+              <button id="clear-refs" class="sm danger">Xóa tất cả</button>
+            </div>
+
+            <label class="dropzone" id="ref-dropzone">
+              <input id="ref-input" type="file" accept="image/png,image/jpeg,image/webp" multiple hidden />
+              <div class="dropzone-icon">+</div>
+              <strong>Bấm chọn hoặc kéo thả nhiều ảnh vào đây</strong>
+              <span>Hỗ trợ PNG, JPEG, WebP • Tối đa 24 ảnh, 20 MiB/ảnh, 24 MP • Tự động kiểm tra byte &amp; chống trùng lặp</span>
+            </label>
+
+            <div id="ref-status"></div>
+            <div id="ref-list" class="ref-list"></div>
+          </div>
+
+          <!-- Ràng buộc thuộc tính chi tiết -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">Ràng buộc Thuộc tính (Keep / Change / Avoid)</h2>
+                <p class="card-sub">Khóa chặt các chi tiết cần giữ nguyên hoặc cần thay đổi trên từng nhân vật/chủ thể.</p>
+              </div>
+            </div>
+            <div class="field-row-3">
+              <div>
+                <label class="field-label">Chủ thể (Subject)</label>
+                <input id="c-subject" type="text" placeholder="VD: main_hero" />
+              </div>
+              <div>
+                <label class="field-label">Thuộc tính (Attribute)</label>
+                <input id="c-attr" type="text" placeholder="VD: mắt, áo khoác, tóc" />
+              </div>
+              <div>
+                <label class="field-label">Thao tác</label>
+                <select id="c-op">
+                  <option value="preserve">Giữ nguyên (Preserve)</option>
+                  <option value="change_to">Đổi thành (Change to)</option>
+                  <option value="avoid">Tránh (Avoid)</option>
+                </select>
+              </div>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <input id="c-val" type="text" placeholder="Giá trị chi tiết (VD: áo giáp bạc có vết xước, không đội mũ)" />
+              <button id="add-constraint">+ Thêm</button>
+            </div>
+            <div id="constraint-list"></div>
+          </div>
+        </div>
+
+        <!-- Cột phải: Brief, Prompt Compiler & Tạo Job -->
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">Kịch bản &amp; Biên dịch Prompt</h2>
+                <p class="card-sub">Tự động ánh xạ thứ tự ảnh tham chiếu (Image 1, Image 2...) sang câu lệnh chuẩn xác.</p>
+              </div>
+              <button id="load-sample" class="sm">Nạp mẫu thử</button>
+            </div>
+
+            <div style="margin-bottom:12px;">
+              <label class="field-label" for="brief">Mô tả cảnh &amp; nội dung cần tạo / chỉnh sửa *</label>
+              <div id="mention-chips" class="mention-chips" hidden></div>
+              <textarea id="brief" rows="4" placeholder="VD: vẽ lại @hinh1 dựa vào nhân vật @hinh2, bám sát pose của @hinh3"></textarea>
+              <p class="card-sub" style="margin-top:4px;">Dùng <b>@định_danh</b> để chỉ đúng ảnh (định danh sửa được trên từng thẻ ảnh). Prompt xuất ra sẽ đổi thành "Image N".</p>
+            </div>
+
+            <div class="field-row">
+              <div>
+                <label class="field-label" for="style">Phong cách nghệ thuật (Art Direction)</label>
+                <input id="style" type="text" placeholder="VD: cinematic keyframe, cel-shaded anime..." />
+              </div>
+              <div>
+                <label class="field-label" for="exact-text">Chữ cần in chính xác (cách nhau dấu |)</label>
+                <input id="exact-text" type="text" placeholder="VD: CAFE SAIGON | OPEN 24H" />
+              </div>
+            </div>
+
+            <div class="field-row-3">
+              <div>
+                <label class="field-label" for="model">Model mục tiêu trong Flow</label>
+                <select id="model">
+                  <option value="Nano Banana 2.1">Nano Banana 2.1</option>
+                  <option value="Nano Banana Pro">Nano Banana Pro</option>
+                  <option value="">Agent Auto (để Flow tự chọn)</option>
+                  <option value="__custom__">Khác (nhập tên model)...</option>
+                </select>
+                <input id="model-custom" type="text" placeholder="Tên model đúng như hiển thị trong Flow" hidden style="margin-top:6px;" />
+              </div>
+              <div>
+                <label class="field-label" for="ratio">Tỉ lệ khung hình</label>
+                <select id="ratio">
+                  <option value="16:9">16:9 (Ngang)</option>
+                  <option value="9:16">9:16 (Dọc)</option>
+                  <option value="1:1">1:1 (Vuông)</option>
+                  <option value="4:3">4:3</option>
+                  <option value="3:4">3:4</option>
+                </select>
+              </div>
+              <div>
+                <label class="field-label" for="out-count">Số lượng ảnh</label>
+                <select id="out-count">
+                  <option value="1">1 ảnh</option>
+                  <option value="2">2 ảnh</option>
+                  <option value="3">3 ảnh</option>
+                  <option value="4">4 ảnh</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field-row-3">
+              <div>
+                <label class="field-label" for="size">Kích thước ảnh xuất</label>
+                <select id="size">
+                  <option value="0x0">Giữ nguyên theo Flow</option>
+                  <option value="1920x1080" selected>1920 x 1080 (Full HD ngang)</option>
+                  <option value="1080x1920">1080 x 1920 (Full HD dọc)</option>
+                  <option value="1080x1080">1080 x 1080 (Vuông)</option>
+                  <option value="3840x2160">3840 x 2160 (4K ngang)</option>
+                  <option value="__custom__">Tùy chỉnh (nhập số)...</option>
+                </select>
+              </div>
+              <div id="size-custom" hidden>
+                <label class="field-label" for="size-w">Rộng x Cao (px)</label>
+                <div style="display:flex; gap:6px; align-items:center;">
+                  <input id="size-w" type="number" min="64" max="8192" value="1920" style="width:90px;" />
+                  <span>x</span>
+                  <input id="size-h" type="number" min="64" max="8192" value="1080" style="width:90px;" />
+                </div>
+              </div>
+            </div>
+            <p class="card-sub">Flow chỉ tạo 3 tỉ lệ (ngang, dọc, vuông). Bridge chọn tỉ lệ gần nhất, tạo ảnh rồi cắt giữa và resize về đúng kích thước này.</p>
+
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:6px;">
+              <button id="compile" class="primary">Biên dịch Prompt</button>
+              <button id="copy-prompt">Sao chép Prompt</button>
+              <button id="newjob" class="primary">Tạo Job Generate / Edit</button>
+            </div>
+
+            <div id="compile-warnings" style="margin-top:12px;"></div>
+
+            <div id="source-map-box" hidden>
+              <label class="field-label" style="margin-top:12px;">Thứ tự tải ảnh lên Flow (Source Map):</label>
+              <div id="source-map-list" class="source-map-list"></div>
+            </div>
+
+            <label class="field-label" style="margin-top:12px;">Prompt đã biên dịch:</label>
+            <pre id="compiled" class="codebox">Bấm "Biên dịch Prompt" sau khi thêm ảnh tham chiếu và nhập mô tả...</pre>
+            <p id="jobmsg" class="card-sub"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: STRICT REGION EDIT -->
+    <section id="tab-strict" class="tab-panel">
+      <div class="studio-grid">
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">Vẽ Mask &amp; Khoanh vùng Chỉnh sửa</h2>
+                <p class="card-sub">Mọi pixel nằm ngoài vùng cho phép sửa (hoặc nằm trong vùng Bảo vệ) được giữ nguyên tuyệt đối từng byte RGBA.</p>
+              </div>
+            </div>
+
+            <div class="field-row">
+              <div>
+                <label class="field-label">1. Ảnh gốc (PNG, JPG, WebP)</label>
+                <input id="base" type="file" accept="image/png,image/jpeg,image/webp" />
+              </div>
+              <div>
+                <label class="field-label">2. Ảnh ứng viên đã sửa (cùng cỡ)</label>
+                <input id="cand" type="file" accept="image/png,image/jpeg,image/webp" />
+              </div>
+            </div>
+
+            <div style="display:flex; gap:8px; align-items:center; margin-bottom:12px; flex-wrap:wrap;">
+              <select id="pick-ref-as-base" style="max-width:280px;">
+                <option value="">-- Hoặc lấy từ ảnh trong Reference --</option>
+              </select>
+              <button id="use-ref-base" class="sm">Dùng làm Ảnh gốc</button>
+              <button id="make-demo-cand" class="sm">Tạo ảnh ứng viên thử nghiệm (Demo)</button>
+            </div>
+
+            <div class="canvas-toolbar">
+              <label style="font-size:12px; display:flex; align-items:center; gap:5px;">
+                Công cụ:
+                <select id="mask-shape" style="width:auto; padding:5px 8px;">
+                  <option value="brush">Cọ tô (Brush)</option>
+                  <option value="rect">Hình chữ nhật (Rect)</option>
+                  <option value="lasso">Khoanh tự do (Lasso)</option>
+                </select>
+              </label>
+              <label style="font-size:12px; display:flex; align-items:center; gap:5px;">
+                Lớp vẽ:
+                <select id="mask-target" style="width:auto; padding:5px 8px;">
+                  <option value="allow">Vùng cho phép sửa (Đỏ)</option>
+                  <option value="protect">Vùng bảo vệ tuyệt đối (Xanh lá)</option>
+                </select>
+              </label>
+              <label style="font-size:12px; display:flex; align-items:center; gap:5px;">
+                Chế độ:
+                <select id="mask-mode" style="width:auto; padding:5px 8px;">
+                  <option value="add">Cộng thêm (+)</option>
+                  <option value="subtract">Trừ bớt (-)</option>
+                </select>
+              </label>
+              <button id="mask-undo" class="sm">Hoàn tác</button>
+              <button id="mask-redo" class="sm">Làm lại</button>
+              <button id="mask-clear" class="sm danger">Xóa Mask</button>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+              <label class="field-label" style="margin:0;">Cỡ cọ: <strong id="brush-val">30</strong> px</label>
+              <input id="brush-size" type="range" min="2" max="300" value="30" style="max-width:220px;" />
+            </div>
+
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+              <label class="field-label" style="margin:0;">Feather làm mềm biên (chỉ hướng vào trong): <strong id="feather-val">2</strong> px</label>
+              <input id="feather" type="range" min="0" max="24" value="2" style="max-width:220px;" />
+            </div>
+
+            <div class="canvas-stage">
+              <canvas id="view" width="640" height="400"></canvas>
+            </div>
+
+            <div style="margin-top:14px; border-top:1px solid var(--border, #444); padding-top:12px;">
+              <label class="field-label">3. Sửa / Xóa vùng đã tô bằng Flow</label>
+              <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
+                <select id="edit-mode" style="width:auto;">
+                  <option value="edit">Sửa vùng theo prompt</option>
+                  <option value="remove">Xóa vùng (tự lấp nền)</option>
+                </select>
+                <select id="edit-model" style="width:auto;"></select>
+                <select id="edit-count" style="width:auto;">
+                  <option value="1">1 ảnh</option>
+                  <option value="2">2 ảnh</option>
+                  <option value="3">3 ảnh</option>
+                  <option value="4">4 ảnh</option>
+                </select>
+              </div>
+              <textarea id="edit-prompt" rows="3" placeholder="Mô tả cần sửa vùng đã tô (vd: đổi thành chiếc mũ đỏ). Với chế độ Xóa có thể để trống."></textarea>
+              <div style="display:flex; gap:10px; align-items:center; margin-top:8px;">
+                <button id="edit-generate" class="primary">Generate (sửa/xóa vùng đã tô)</button>
+                <span id="edit-status" class="card-sub"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">Kết quả Ghép &amp; Kiểm định Strict</h2>
+                <p class="card-sub">Giải mã lại từ đúng byte PNG xuất ra để đối chiếu 100% pixel ngoài vùng chọn.</p>
+              </div>
+              <button id="run" class="primary">Chạy Ghép &amp; Kiểm định Strict</button>
+            </div>
+
+            <div id="report"></div>
+
+            <div class="canvas-stage" style="min-height:260px; margin:12px 0;">
+              <canvas id="resultPreview" width="640" height="400"></canvas>
+            </div>
+
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              <a id="download" class="btn primary" hidden download="strict-result.png">Tải PNG Kết quả</a>
+              <button id="use-result-as-base" class="primary" hidden>Dùng kết quả này làm Ảnh gốc để sửa tiếp</button>
+              <button id="send-result-to-ref" hidden>Đưa kết quả vào danh sách Reference</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: JOBS & HISTORY -->
+    <section id="tab-jobs" class="tab-panel">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Hàng đợi Job Assisted &amp; Lịch sử thực thi</h2>
+            <p class="card-sub">Mỗi job lưu lại bản chụp Prompt, danh sách ảnh tham chiếu theo đúng thứ tự và trạng thái xác nhận.</p>
+          </div>
+        </div>
+        <div id="jobs"></div>
+      </div>
+    </section>
+
+    <!-- TAB 4: HƯỚNG DẪN -->
+    <section id="tab-guide" class="tab-panel">
+      <div class="card">
+        <div class="card-header"><div>
+          <h2 class="card-title">Phần A. Cài đặt (làm một lần)</h2>
+          <p class="card-sub">Cần để tiện ích điều khiển được Google Flow. Nếu chỉ mở bằng <code>run.bat</code>, bạn xem trước giao diện được nhưng không gửi được sang Flow.</p>
+        </div></div>
+        <ol class="guide-steps">
+          <li><b>Build tiện ích</b><p>Mở terminal trong thư mục dự án, chạy <code>pnpm build:extension</code>. Thư mục kết quả: <code>apps/extension/dist</code>.</p></li>
+          <li><b>Nạp vào Chrome</b><ul>
+            <li>Vào <code>chrome://extensions</code>, bật <b>Developer mode</b> (góc phải trên).</li>
+            <li>Bấm <b>Load unpacked</b>, chọn thư mục <code>apps/extension/dist</code>.</li>
+            <li>Sau mỗi lần build lại, bấm nút tải lại (⟳) trên thẻ tiện ích.</li></ul></li>
+          <li><b>Nạp extension FlowKit và mở Google Flow</b><p>Nạp extension trong <code>FlowAutoTool\upstream-flowkit\extension</code> vào Chrome (Load unpacked), mở <code>https://flow.google.com</code> và đăng nhập. Giữ tab này mở trong lúc tạo ảnh.</p></li>
+          <li><b>Chạy bridge và Workbench</b><p>Chạy <code>run.bat</code>. File này mở bridge server (cổng 8200) và Workbench tại <code>http://127.0.0.1:5173/workbench.html</code>. Nếu Console báo "Không kết nối được bridge server" thì cửa sổ bridge chưa chạy hoặc đã tắt.</p></li>
+        </ol>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div>
+          <h2 class="card-title">Phần B. Tạo ảnh từ nhiều ảnh tham chiếu</h2>
+        </div></div>
+        <ol class="guide-steps">
+          <li><b>Tải ảnh tham chiếu (Tab 1)</b><p>Kéo thả hoặc bấm vào khung "Bộ ảnh Tham chiếu". Hỗ trợ PNG, JPEG, WebP, tối đa 24 ảnh. Ảnh trùng byte sẽ bị bỏ qua.</p></li>
+          <li><b>Đặt định danh cho từng ảnh</b><p>Mỗi thẻ ảnh có một định danh dạng <code>@hinh1</code>, <code>@hinh2</code>... Bạn có thể đổi tên (ví dụ <code>@nhanvat</code>, <code>@pose</code>). Bấm vào chip <code>@...</code> phía trên ô mô tả để chèn nhanh.</p></li>
+          <li><b>Chọn vai trò ảnh</b><p>Đặt vai trò cho mỗi ảnh (khuôn mặt, trang phục, tư thế, bối cảnh, phong cách...) để prompt mô tả đúng cách dùng ảnh đó. Tắt ảnh nào chưa muốn dùng bằng công tắc trên thẻ.</p></li>
+          <li><b>Viết mô tả bằng @</b><p>Ví dụ: <code>vẽ lại @hinh1 dựa vào nhân vật @hinh2, bám sát pose của @hinh3</code>. Khi biên dịch, mỗi <code>@</code> được đổi thành "Image N" theo đúng thứ tự tải lên Flow.</p></li>
+          <li><b>Thêm ràng buộc (tùy chọn)</b><p>Trong "Ràng buộc Thuộc tính" chọn Giữ nguyên, Đổi thành hoặc Tránh cho từng chi tiết, rồi bấm <b>+ Thêm</b>.</p></li>
+          <li><b>Chọn model, kích thước, số ảnh</b><p>Model lấy từ bridge. Kích thước chọn 1920×1080 hoặc nhập tay rộng × cao; bridge chọn tỉ lệ Flow gần nhất (ngang, dọc hoặc vuông) rồi đổi ảnh về đúng kích thước đã chọn. Số ảnh được xếp hàng và chạy song song có giới hạn, không cần chờ ảnh trước xong.</p></li>
+          <li><b>Biên dịch và kiểm tra</b><p>Bấm <b>Biên dịch Prompt</b>. Đọc các cảnh báo: màu đỏ là lỗi chặn, phải sửa mới tạo được job. Kiểm tra "Thứ tự tải ảnh lên Flow".</p></li>
+          <li><b>Tạo Job</b><p>Bấm <b>Tạo Job Generate / Edit</b>. Workbench gửi job tới bridge, bridge tải ảnh tham chiếu lên Flow và tạo ảnh. Có thể bấm tạo nhiều job liên tiếp. Ảnh xong sẽ hiện ở thư viện Tab 3 để xem, tải về hoặc dùng làm tham chiếu.</p></li>
+          <li><b>Theo dõi tiến trình</b><p>Xem Console ở đáy trang. Lọc theo job hoặc mức lỗi. Bấm <b>Copy</b> để sao chép toàn bộ log khi cần báo lỗi. Trạng thái job nằm ở Tab 3.</p></li>
+        </ol>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div>
+          <h2 class="card-title">Phần C. Sửa vùng ảnh nghiêm ngặt (Tab 2)</h2>
+        </div></div>
+        <ol class="guide-steps">
+          <li><b>Chọn ảnh gốc PNG</b><p>Tải file hoặc chọn từ danh sách Reference, rồi bấm "Dùng làm Ảnh gốc". Ảnh mới nạp có sẵn một vùng chữ nhật ở giữa, hãy bấm "Xóa Mask" nếu không cần.</p></li>
+          <li><b>Bôi vùng cần sửa</b><p>Chọn công cụ <b>Cọ</b> (chỉnh cỡ cọ bằng thanh trượt), hoặc chữ nhật / khoanh tự do. Lớp "vùng cho phép sửa" là vùng sẽ gửi đi. Chế độ "Trừ bớt" để xóa nét bôi thừa.</p></li>
+          <li><b>Nhập prompt và bấm Generate</b><p>Chọn "Sửa vùng" (cần prompt) hoặc "Xóa vùng" (prompt không bắt buộc), chọn model và số ảnh. Bridge gửi ảnh gốc cùng ảnh đánh dấu vùng tô tím cho Flow. Tiến độ hiện ngay dưới nút và ở Tab 3.</p></li>
+          <li><b>Xem và tải kết quả</b><p>Kết quả được ghép tự động: chỉ pixel trong vùng tô lấy từ ảnh Flow, pixel ngoài vùng giữ nguyên từng byte. Nếu có nhiều ảnh, bấm "Ảnh N" để ghép ảnh khác. Tải PNG kết quả hoặc đưa vào Reference để sửa tiếp.</p></li>
+          <li><b>Lưu ý</b><p>Flow sửa theo prompt trên toàn ảnh, không có mask thật, nên chất lượng phụ thuộc cách Flow hiểu vùng đánh dấu. Mỗi lần Generate gửi một yêu cầu tới Google; nếu gặp "unusual activity" hãy nghỉ vài phút và giảm số ảnh.</p></li>
+        </ol>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div>
+          <h2 class="card-title">Phần D. Xử lý sự cố</h2>
+        </div></div>
+        <ul class="guide-steps" style="counter-reset:none;">
+          <li style="padding-left:0;"><b>"Không kết nối được bridge server (127.0.0.1:8200)"</b><p>Bridge chưa chạy. Chạy <code>run.bat</code> hoặc <code>python bridge_server.py</code> trong thư mục FlowAutoTool, giữ cửa sổ đó mở.</p></li>
+          <li style="padding-left:0;"><b>"FlowKit extension chưa kết nối"</b><p>Nạp extension FlowKit vào Chrome và mở tab <code>https://flow.google.com</code> đã đăng nhập, rồi thử lại.</p></li>
+          <li style="padding-left:0;"><b>"Unusual activity" từ Google</b><p>Bridge tự dừng và chờ khoảng 300 giây trước khi gửi tiếp. Hãy giảm số ảnh mỗi lần và không chạy nhiều job cùng lúc. Bridge chỉ giảm tốc độ, không né kiểm tra của Google.</p></li>
+          <li style="padding-left:0;"><b>Cổng 8100, 8200 hoặc 9222 đang bận</b><p>Có bridge cũ còn chạy. Đóng cửa sổ bridge cũ rồi chạy lại <code>run.bat</code>.</p></li>
+          <li style="padding-left:0;"><b>Sửa vùng không đúng ý</b><p>Flow không có mask thật nên chỉ làm theo prompt. Tô vùng nhỏ và sát đối tượng, viết prompt cụ thể, thử lại với số ảnh 2–4. Pixel ngoài vùng tô luôn giữ nguyên nhờ bước ghép.</p></li>
+          <li style="padding-left:0;"><b>Lưu ý</b><p>Tự động hóa Flow chưa được thử trên Flow thật và có thể vi phạm điều khoản của Flow. Dùng có cân nhắc.</p></li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <section id="console-dock" aria-label="Console theo dõi tiến trình">
+    <div id="console-resize" title="Kéo để đổi chiều cao"></div>
+    <div id="console-bar">
+      <strong>Console</strong>
+      <span id="console-count">0</span>
+      <select id="log-level" title="Lọc mức log">
+        <option value="all">Tất cả</option>
+        <option value="warn">Cảnh báo + Lỗi</option>
+        <option value="error">Chỉ lỗi</option>
+      </select>
+      <select id="log-job" title="Lọc theo job"><option value="">Mọi job</option></select>
+      <button id="log-clear" type="button">Xóa</button>
+      <button id="log-copy" type="button">Sao chép</button>
+      <button id="log-toggle" type="button">Thu gọn</button>
+    </div>
+    <div id="console-body"></div>
+  </section>
+
+  <script type="module" src="workbench.js"></script>
+</body>
+</html>

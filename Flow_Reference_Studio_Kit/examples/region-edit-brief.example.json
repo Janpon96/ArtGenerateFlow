@@ -1,0 +1,42 @@
+{
+  "illustrative": true,
+  "notRunnable": true,
+  "note": "All asset and mask IDs must be resolved from real imports. Geometry below is an example, not an observation from Flow.",
+  "operation": "region_edit",
+  "provider": "flow-web",
+  "executionMode": "assisted",
+  "baseAssetId": "IMPORT_BASE_FILE",
+  "basePixelHash": null,
+  "exampleBaseline": {
+    "width": 1536,
+    "height": 1024,
+    "colorSpace": "srgb",
+    "pixelFormat": "rgba8-straight"
+  },
+  "mask": {
+    "allowedMaskId": "DRAW_SOFA_REGION",
+    "protectedMaskId": "PROTECT_WOOD_TRIM",
+    "featherRadiusPx": 4,
+    "featherMode": "inward_only"
+  },
+  "editStrategy": "context_crop",
+  "rawBrief": "Đổi vải sofa xanh thành vải terracotta, giữ silhouette, đường may, số đệm và vị trí.",
+  "artStyle": "Giữ nét vẽ và ánh sáng của ảnh gốc; chỉ lấy màu/chất vải từ reference.",
+  "referenceAssetIds": [
+    "IMPORT_FABRIC_FILE"
+  ],
+  "cropMapping": null,
+  "candidateAlignment": "requires_review",
+  "strictExport": {
+    "format": "png",
+    "keepBaselineGeometry": true,
+    "verifyAfterEncodeDecode": true,
+    "outsideChangedPixelsRequired": 0
+  },
+  "completionRequires": [
+    "candidate alignment approved",
+    "local compositing completed",
+    "PNG round-trip verified",
+    "semantic review approved"
+  ]
+}
