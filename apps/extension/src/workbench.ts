@@ -1,3 +1,6 @@
+import { initAssetTab } from './asset-tab';
+import { initAnimTab } from './anim-tab';
+import { initVideoTab } from './video-tab';
 import type {
   Asset, PromptDocument, ReferenceBinding, ReferenceRole, TraitConstraint,
 } from '@frs/domain';
@@ -112,17 +115,49 @@ const constraints: TraitConstraint[] = [];
 let lastDoc: PromptDocument | null = null;
 
 // ---- Điều hướng Tab ----
+const IMAGE_TABS = ['tab-studio', 'tab-strict', 'tab-asset'];
+const IMAGE_SUB_KEY = 'frs.imageSub';
+
+function activateTab(target: string): void {
+  const isImage = IMAGE_TABS.includes(target);
+  document.querySelectorAll<HTMLButtonElement>('.tab-btn').forEach((b) => {
+    const on = b.dataset.group === 'image' ? isImage : b.dataset.tab === target;
+    b.classList.toggle('active', on);
+  });
+  document.querySelectorAll('.tab-panel').forEach((p) => p.classList.toggle('active', p.id === target));
+  $('image-subnav').classList.toggle('show', isImage);
+  document.querySelectorAll<HTMLButtonElement>('.sub-btn').forEach((b) => b.classList.toggle('active', b.dataset.tab === target));
+  if (isImage) {
+    try {
+      localStorage.setItem(IMAGE_SUB_KEY, target);
+    } catch {
+      /* localStorage không khả dụng: bỏ qua */
+    }
+  }
+}
+
 document.querySelectorAll<HTMLButtonElement>('.tab-btn').forEach((btn) => {
   btn.addEventListener('click', () => {
-    const target = btn.dataset.tab!;
-    document.querySelectorAll('.tab-btn').forEach((b) => b.classList.toggle('active', b === btn));
-    document.querySelectorAll('.tab-panel').forEach((p) => p.classList.toggle('active', p.id === target));
+    let target = btn.dataset.tab!;
+    if (btn.dataset.group === 'image') {
+      let saved: string | null;
+      try {
+        saved = localStorage.getItem(IMAGE_SUB_KEY);
+      } catch {
+        saved = null;
+      }
+      if (saved && IMAGE_TABS.includes(saved)) target = saved;
+    }
+    activateTab(target);
   });
 });
 
+document.querySelectorAll<HTMLButtonElement>('.sub-btn').forEach((btn) => {
+  btn.addEventListener('click', () => activateTab(btn.dataset.tab!));
+});
+
 function switchTab(tabId: string): void {
-  const btn = document.querySelector<HTMLButtonElement>(`.tab-btn[data-tab="${tabId}"]`);
-  btn?.click();
+  activateTab(tabId);
 }
 
 function showRefStatus(msg: string, kind: 'ok' | 'warn' | 'bad' = 'ok'): void {
@@ -1298,8 +1333,18 @@ function syncEditModels(): void {
   const src = $<HTMLSelectElement>('model');
   const dst = $<HTMLSelectElement>('edit-model');
   const prev = dst.value;
-  dst.replaceChildren(...[...src.options].filter((o) => o.value && o.value !== '__custom__').map((o) => new Option(o.text, o.value)));
+  const validOpts = [...src.options].filter((o) => o.value && o.value !== '__custom__');
+  dst.replaceChildren(...validOpts.map((o) => new Option(o.text, o.value)));
   if ([...dst.options].some((o) => o.value === prev)) dst.value = prev;
+  // Flow từ chối sửa ảnh (BASE_IMAGE) với NARWHAL (nano-banana-2.1); lần đầu mặc định dùng nano-banana-pro.
+  else if ([...dst.options].some((o) => o.value === 'nano-banana-pro')) dst.value = 'nano-banana-pro';
+
+  const assetModel = document.getElementById('asset-model') as HTMLSelectElement | null;
+  if (assetModel) {
+    const prevA = assetModel.value;
+    assetModel.replaceChildren(...validOpts.map((o) => new Option(o.text, o.value)));
+    if ([...assetModel.options].some((o) => o.value === prevA)) assetModel.value = prevA;
+  }
 }
 
 function canvasToPngBlob(c: HTMLCanvasElement): Promise<Blob> {
@@ -1334,6 +1379,51 @@ async function waitJob(id: string): Promise<BridgeJob> {
   }
 }
 
+// ---- Ảnh tham chiếu cho vùng tô ----
+const MAX_EDIT_REFS = 4;
+let editRefs: { name: string; mime: string; base64: string; url: string }[] = [];
+
+function renderEditRefs(): void {
+  const box = $('strict-ref-list');
+  box.replaceChildren();
+  editRefs.forEach((r, i) => {
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'position:relative; width:72px; text-align:center; font-size:11px;';
+    const img = document.createElement('img');
+    img.src = r.url;
+    img.alt = r.name;
+    img.style.cssText = 'width:72px; height:72px; object-fit:cover; border-radius:6px; display:block;';
+    const label = document.createElement('div');
+    label.textContent = `Ảnh ${i + 2}`;
+    const del = document.createElement('button');
+    del.className = 'sm danger';
+    del.textContent = 'Xóa';
+    del.addEventListener('click', () => {
+      URL.revokeObjectURL(r.url);
+      editRefs = editRefs.filter((x) => x !== r);
+      renderEditRefs();
+    });
+    wrap.append(img, label, del);
+    box.append(wrap);
+  });
+}
+
+$<HTMLInputElement>('strict-ref-input').addEventListener('change', async (ev) => {
+  const input = ev.target as HTMLInputElement;
+  const files = Array.from(input.files ?? []);
+  input.value = '';
+  for (const f of files) {
+    if (editRefs.length >= MAX_EDIT_REFS) { setEditStatus(`Tối đa ${MAX_EDIT_REFS} ảnh tham chiếu.`); break; }
+    if (f.size > 8 * 1024 * 1024) { setEditStatus(`${f.name} lớn hơn 8 MB, bỏ qua.`); continue; }
+    editRefs.push({ name: f.name, mime: f.type || 'image/png', base64: await blobToBase64(f), url: URL.createObjectURL(f) });
+  }
+  renderEditRefs();
+});
+
+$<HTMLInputElement>('strict-feather').addEventListener('input', () => {
+  $('strict-feather-val').textContent = $<HTMLInputElement>('strict-feather').value;
+});
+
 $('edit-generate').addEventListener('click', async () => {
   const btn = $<HTMLButtonElement>('edit-generate');
   try {
@@ -1367,6 +1457,10 @@ $('edit-generate').addEventListener('click', async () => {
       count: Number($<HTMLSelectElement>('edit-count').value) || 1,
       base: { name: 'base.png', mime: 'image/png', base64: await blobToBase64(await canvasToPngBlob(baseC)) },
       mask: { name: 'mask.png', mime: 'image/png', base64: await blobToBase64(await canvasToPngBlob(maskC)) },
+      references: editRefs.map((r) => ({ name: r.name, mime: r.mime, base64: r.base64 })),
+      marker_color: $<HTMLSelectElement>('strict-marker-color').value,
+      composite_back: $<HTMLInputElement>('strict-composite').checked,
+      feather_px: Number($<HTMLInputElement>('strict-feather').value) || 0,
     };
     setEditStatus('Đang gửi tới bridge server...');
     const res = await bridgeFetch('/edits', {
@@ -1407,6 +1501,42 @@ async function initBridge(): Promise<void> {
   await restoreRefsFromDb();
   await fetchModels();
   syncEditModels();
+
+  const animController = initAnimTab({
+    bridgeFetch,
+    waitJob,
+    log,
+    getBridgeUrl: () => API_URL,
+    getStrictLastResultBytes: () => lastResultBytes,
+  });
+
+  initVideoTab({
+    bridgeFetch,
+    log,
+    getBridgeUrl: () => API_URL,
+    getImageResultBytes: () => lastResultBytes,
+  });
+
+  initAssetTab({
+    bridgeFetch,
+    waitJob,
+    log,
+    switchTab,
+    getBridgeUrl: () => API_URL,
+    getTab1Refs: () => refs.map((r) => ({
+      name: r.binding.handle || r.binding.alias,
+      mime: r.asset.mimeType,
+      base64: base64FromBytes(r.bytes),
+      dataUrl: r.objectUrl,
+    })),
+    sendToStrictTab: async (bytes, label) => {
+      await loadBytesIntoStrictBase(bytes, label);
+    },
+    sendToAnimTab: async (file) => {
+      await animController.setCharacterFile(file);
+    },
+  });
+
   for (const j of bridgeJobs) if (!FINAL_STATES.has(j.state)) startPolling(j.id);
 }
 void initBridge();

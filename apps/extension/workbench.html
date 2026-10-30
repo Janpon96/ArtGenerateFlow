@@ -6,45 +6,65 @@
   <title>Flow Reference Studio — Workbench</title>
   <style>
     :root {
-      --bg: #0b0f17;
-      --bg-elev: #111827;
-      --bg-card: #161f30;
-      --bg-input: #0d1320;
-      --border: #263248;
+      --bg: #070a10;
+      --bg-elev: #0f1522;
+      --bg-card: #151d2e;
+      --bg-card-hover: #1b253b;
+      --bg-input: #0a0e17;
+      --border: #1f2b42;
+      --border-subtle: rgba(255, 255, 255, 0.06);
       --border-focus: #6366f1;
       --text: #f1f5f9;
-      --text-muted: #94a3b8;
+      --text-secondary: #cbd5e1;
+      --text-muted: #8b9bb4;
       --accent: #6366f1;
       --accent-hover: #4f46e5;
-      --accent-soft: rgba(99, 102, 241, 0.14);
+      --accent-soft: rgba(99, 102, 241, 0.15);
+      --accent-glow: rgba(99, 102, 241, 0.28);
       --ok: #10b981;
       --ok-soft: rgba(16, 185, 129, 0.14);
       --warn: #f59e0b;
       --warn-soft: rgba(245, 158, 11, 0.14);
       --danger: #ef4444;
       --danger-soft: rgba(239, 68, 68, 0.14);
-      --radius: 10px;
+      --radius: 12px;
+      --radius-sm: 8px;
+      --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.25);
+      --shadow-card: 0 8px 24px -4px rgba(0, 0, 0, 0.4), inset 0 1px 0 0 rgba(255, 255, 255, 0.04);
     }
     * { box-sizing: border-box; }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: #26334d; border-radius: 999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #364769; }
+
     body {
       margin: 0;
-      font: 14px/1.5 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: var(--bg);
+      font: 13.5px/1.55 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background:
+        radial-gradient(1100px 420px at 15% -10%, rgba(99, 102, 241, 0.11), transparent 70%),
+        radial-gradient(900px 380px at 85% -15%, rgba(236, 72, 153, 0.07), transparent 70%),
+        var(--bg);
       color: var(--text);
       min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
     }
+
+    /* Topbar */
     header.topbar {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 16px;
-      padding: 14px 24px;
-      background: rgba(17, 24, 39, 0.88);
-      backdrop-filter: blur(10px);
+      padding: 10px 24px;
+      background: rgba(11, 16, 27, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--border);
       position: sticky;
       top: 0;
-      z-index: 20;
+      z-index: 30;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
     }
     .brand {
       display: flex;
@@ -52,52 +72,69 @@
       gap: 12px;
     }
     .brand-logo {
-      width: 34px;
-      height: 34px;
-      border-radius: 9px;
-      background: linear-gradient(135deg, #6366f1, #ec4899);
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
       display: grid;
       place-items: center;
-      font-weight: 700;
+      font-weight: 800;
+      font-size: 13px;
       color: #fff;
       letter-spacing: -0.5px;
+      box-shadow: 0 2px 10px rgba(99, 102, 241, 0.4);
     }
     .brand h1 {
-      font-size: 16px;
+      font-size: 15px;
       margin: 0;
-      font-weight: 650;
+      font-weight: 700;
+      letter-spacing: -0.2px;
     }
     .brand p {
-      margin: 0;
-      font-size: 12px;
+      margin: 1px 0 0;
+      font-size: 11.5px;
       color: var(--text-muted);
     }
     .mode-pill {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      font-size: 12px;
-      padding: 5px 10px;
+      font-size: 11.5px;
+      padding: 4px 10px;
       border-radius: 999px;
-      background: var(--warn-soft);
-      color: #fcd34d;
-      border: 1px solid rgba(245, 158, 11, 0.35);
-      font-weight: 500;
+      background: rgba(16, 185, 129, 0.12);
+      color: #6ee7b7;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      font-weight: 600;
     }
+    .mode-pill::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 6px #10b981;
+    }
+
+    /* Segmented Main Nav */
     .nav-tabs {
       display: flex;
-      gap: 6px;
+      gap: 4px;
+      background: var(--bg-input);
+      padding: 4px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
     }
     .tab-btn {
       background: transparent;
       color: var(--text-muted);
       border: 1px solid transparent;
-      padding: 8px 14px;
-      border-radius: 8px;
+      padding: 6px 14px;
+      border-radius: 7px;
       cursor: pointer;
-      font-weight: 550;
-      font-size: 13px;
-      transition: all 0.15s;
+      font-weight: 600;
+      font-size: 12.5px;
+      transition: all 0.15s ease;
     }
     .tab-btn:hover {
       color: var(--text);
@@ -105,90 +142,113 @@
     }
     .tab-btn.active {
       color: #fff;
-      background: var(--accent-soft);
-      border-color: rgba(99, 102, 241, 0.45);
+      background: linear-gradient(180deg, #6366f1, #4f46e5);
+      border-color: rgba(255, 255, 255, 0.15);
+      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35);
     }
     .top-actions {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
     }
+
+    /* Layout Container */
     main.container {
-      max-width: 1440px;
+      max-width: 1480px;
       margin: 0 auto;
-      padding: 20px 24px 300px;
+      padding: 18px 24px 210px;
     }
-    #console-dock {
-      position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
-      background: #0f1420; color: #d6deeb; border-top: 2px solid var(--border);
-      display: flex; flex-direction: column; height: 260px; min-height: 34px;
-      font: 12px/1.45 ui-monospace, Consolas, monospace;
+
+    /* Sub-navigation Pill Bar */
+    .sub-nav {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      margin: 0 0 16px;
+      padding: 5px;
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      width: fit-content;
+      box-shadow: var(--shadow-sm);
     }
-    #console-dock.collapsed { height: 34px !important; }
-    #console-dock.collapsed #console-body { display: none; }
-    #console-bar {
-      display: flex; align-items: center; gap: 8px; padding: 4px 10px;
-      background: #171e2e; flex-wrap: wrap; min-height: 34px;
+    .sub-nav.show { display: inline-flex; }
+    .sub-btn {
+      padding: 6px 15px;
+      border-radius: 7px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
     }
-    #console-bar button, #console-bar select {
-      font-size: 11px; padding: 2px 8px; border-radius: 4px; width: auto;
-      background: #232c42; color: #d6deeb; border: 1px solid #34405e; cursor: pointer;
+    .sub-btn:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.04);
     }
-    #console-resize { height: 5px; cursor: ns-resize; background: #34405e; }
-    #console-body { flex: 1; overflow-y: auto; padding: 6px 10px; min-height: 0; }
-    .log-line { white-space: pre-wrap; word-break: break-word; padding: 1px 0; }
-    .log-line .t { color: #7f8aa8; }
-    .log-line .j { color: #82aaff; }
-    .log-line.info .l { color: #82aaff; }
-    .log-line.success .l { color: #7fdc8a; }
-    .log-line.warn .l { color: #ffcb6b; }
-    .log-line.error { color: #ff8a8a; }
-    .log-line.error .l { color: #ff5370; font-weight: 700; }
-    .progress { height: 6px; background: #e3e8f2; border-radius: 3px; overflow: hidden; margin: 6px 0; }
-    .progress > i { display: block; height: 100%; background: var(--primary, #4f7cff); transition: width .3s; }
-    .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-top: 8px; }
-    .gallery figure { margin: 0; border: 1px solid var(--border); border-radius: 8px; padding: 6px; background: var(--bg-card); min-width: 0; }
-    .gallery img { width: 100%; height: 130px; object-fit: contain; background: #f2f4f9; border-radius: 4px; cursor: zoom-in; }
-    .gallery figcaption { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
-    .timeline { font-size: 12px; margin: 6px 0; padding-left: 16px; color: #555; }
-    .tab-panel { display: none; }
+    .sub-btn.active {
+      background: var(--accent-soft);
+      color: #a5b4fc;
+      border-color: rgba(99, 102, 241, 0.45);
+      box-shadow: none;
+    }
+
+    .tab-panel { display: none; animation: fadeIn 0.16s ease-out; }
     .tab-panel.active { display: block; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(3px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
     .studio-grid {
       display: grid;
-      grid-template-columns: 1.25fr 1fr;
+      grid-template-columns: 1.15fr 1fr;
       gap: 20px;
       align-items: start;
     }
-    @media (max-width: 1080px) {
+    @media (max-width: 1100px) {
       .studio-grid { grid-template-columns: 1fr; }
+      header.topbar { flex-wrap: wrap; }
     }
+
+    /* Cards */
     .card {
       background: var(--bg-elev);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 18px;
+      padding: 18px 20px;
       margin-bottom: 18px;
+      box-shadow: var(--shadow-card);
     }
     .card-header {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: space-between;
       gap: 12px;
       margin-bottom: 14px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-subtle);
     }
     .card-title {
       margin: 0;
-      font-size: 15px;
-      font-weight: 650;
+      font-size: 14.5px;
+      font-weight: 700;
+      letter-spacing: -0.15px;
       display: flex;
       align-items: center;
       gap: 8px;
+      color: #f8fafc;
     }
     .card-sub {
-      margin: 2px 0 0;
+      margin: 3px 0 0;
       font-size: 12px;
       color: var(--text-muted);
+      line-height: 1.45;
     }
+
+    /* Badges */
     .badge {
       font-size: 11px;
       padding: 2px 8px;
@@ -208,91 +268,148 @@
       color: #fca5a5;
       border-color: rgba(239, 68, 68, 0.35);
     }
+
+    /* Buttons */
     button, .btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
       padding: 8px 14px;
-      border-radius: 8px;
+      border-radius: var(--radius-sm);
       border: 1px solid var(--border);
       background: var(--bg-card);
       color: var(--text);
-      font-size: 13px;
-      font-weight: 550;
+      font-size: 12.5px;
+      font-weight: 600;
       cursor: pointer;
       text-decoration: none;
-      transition: all 0.15s;
+      transition: all 0.15s ease;
+      white-space: nowrap;
     }
-    button:hover, .btn:hover {
-      border-color: #3b4c6b;
-      background: #1e293b;
+    button:hover:not(:disabled), .btn:hover:not(:disabled) {
+      border-color: #36496e;
+      background: var(--bg-card-hover);
+      transform: translateY(-0.5px);
+    }
+    button:active:not(:disabled), .btn:active:not(:disabled) {
+      transform: translateY(0);
+    }
+    button:disabled, .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
     }
     button.primary, .btn.primary {
-      background: var(--accent);
-      border-color: var(--accent);
+      background: linear-gradient(180deg, #6366f1 0%, #4f46e5 100%);
+      border-color: rgba(255, 255, 255, 0.14);
       color: #fff;
+      box-shadow: 0 2px 10px rgba(99, 102, 241, 0.3);
     }
-    button.primary:hover, .btn.primary:hover {
-      background: var(--accent-hover);
+    button.primary:hover:not(:disabled), .btn.primary:hover:not(:disabled) {
+      background: linear-gradient(180deg, #7174f7 0%, #4338ca 100%);
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.45);
     }
     button.sm, .btn.sm {
-      padding: 5px 9px;
-      font-size: 12px;
+      padding: 5px 10px;
+      font-size: 11.5px;
       border-radius: 6px;
     }
     button.danger {
       color: #fca5a5;
-      border-color: rgba(239, 68, 68, 0.35);
+      border-color: rgba(239, 68, 68, 0.3);
+      background: rgba(239, 68, 68, 0.06);
     }
-    button.danger:hover {
+    button.danger:hover:not(:disabled) {
       background: var(--danger-soft);
+      border-color: rgba(239, 68, 68, 0.5);
     }
+
+    /* Form Controls */
     input[type="text"], input[type="number"], select, textarea {
       width: 100%;
       min-width: 0;
-      padding: 9px 11px;
-      border-radius: 8px;
+      padding: 8px 11px;
+      border-radius: var(--radius-sm);
       border: 1px solid var(--border);
       background: var(--bg-input);
       color: var(--text);
       font: inherit;
       font-size: 13px;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    textarea {
+      resize: vertical;
+      line-height: 1.5;
     }
     input[type="file"] {
       width: 100%;
-      font-size: 12.5px;
+      font-size: 12px;
       color: var(--text-muted);
       background: var(--bg-input);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 6px 8px;
+      border: 1px dashed #2e3e5c;
+      border-radius: var(--radius-sm);
+      padding: 5px 8px;
+      transition: border-color 0.15s;
+    }
+    input[type="file"]:hover {
+      border-color: #475f8c;
     }
     input[type="file"]::file-selector-button {
       background: var(--bg-card);
       color: var(--text);
       border: 1px solid var(--border);
       border-radius: 6px;
-      padding: 5px 10px;
+      padding: 4px 10px;
       margin-right: 10px;
-      font-size: 12px;
-      font-weight: 550;
+      font-size: 11.5px;
+      font-weight: 600;
       cursor: pointer;
+      transition: all 0.15s;
     }
     input[type="file"]::file-selector-button:hover {
-      background: #1e293b;
+      background: var(--bg-card-hover);
       border-color: #3b4c6b;
+    }
+    input[type="checkbox"] {
+      accent-color: var(--accent);
+      width: 15px;
+      height: 15px;
+      vertical-align: middle;
+      cursor: pointer;
+    }
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 6px;
+      background: #1e293b;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid #e0e7ff;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+      transition: transform 0.1s;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.12);
     }
     input:focus, select:focus, textarea:focus {
       outline: none;
       border-color: var(--border-focus);
-      box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.18);
     }
+
     label.field-label {
       display: block;
       font-size: 12px;
       font-weight: 600;
-      color: var(--text-muted);
+      color: var(--text-secondary);
       margin-bottom: 5px;
     }
     .field-row {
@@ -310,35 +427,37 @@
     @media (max-width: 680px) {
       .field-row, .field-row-3 { grid-template-columns: 1fr; }
     }
+
     /* Dropzone */
     .dropzone {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 6px;
+      gap: 5px;
       width: 100%;
-      border: 1.5px dashed #3b4c6b;
+      border: 1.5px dashed #334466;
       border-radius: var(--radius);
-      padding: 24px 18px;
+      padding: 20px 16px;
       text-align: center;
-      background: rgba(13, 19, 32, 0.65);
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.5), rgba(10, 14, 23, 0.7));
       cursor: pointer;
-      transition: all 0.15s;
-      margin: 4px 0 16px;
+      transition: all 0.18s ease;
+      margin: 2px 0 14px;
       position: relative;
       overflow: hidden;
     }
     .dropzone:hover, .dropzone.dragover {
       border-color: var(--accent);
       background: var(--accent-soft);
+      box-shadow: inset 0 0 20px rgba(99, 102, 241, 0.08);
     }
     .dropzone-icon {
-      width: 38px;
-      height: 38px;
+      width: 36px;
+      height: 36px;
       border-radius: 10px;
-      background: rgba(99, 102, 241, 0.15);
-      border: 1px solid rgba(99, 102, 241, 0.35);
+      background: rgba(99, 102, 241, 0.16);
+      border: 1px solid rgba(99, 102, 241, 0.38);
       color: #a5b4fc;
       display: grid;
       place-items: center;
@@ -348,38 +467,41 @@
     }
     .dropzone strong {
       display: block;
-      font-size: 14px;
+      font-size: 13.5px;
       color: var(--text);
     }
     .dropzone span {
       display: block;
-      font-size: 12px;
+      font-size: 11.5px;
       color: var(--text-muted);
       max-width: 520px;
     }
+
     /* Reference cards */
     .ref-list {
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
       margin-top: 6px;
     }
     .ref-card {
       display: grid;
-      grid-template-columns: 112px minmax(0, 1fr);
+      grid-template-columns: 104px minmax(0, 1fr);
       gap: 14px;
-      padding: 14px;
+      padding: 12px;
       border-radius: 10px;
       background: var(--bg-card);
       border: 1px solid var(--border);
       align-items: start;
+      transition: border-color 0.15s;
     }
-    .ref-card.inactive {
-      opacity: 0.55;
+    .ref-card:hover {
+      border-color: #2f4060;
     }
+    .ref-card.inactive { opacity: 0.5; }
     .ref-card.is-base {
       border-color: #10b981;
-      box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.35);
+      box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.3);
     }
     .ref-thumb-wrap {
       display: flex;
@@ -387,15 +509,15 @@
       gap: 6px;
     }
     .ref-thumb {
-      width: 112px;
-      height: 112px;
+      width: 104px;
+      height: 104px;
       object-fit: cover;
       border-radius: 7px;
-      background: #090d14;
+      background: #070a10;
       border: 1px solid var(--border);
     }
     .ref-meta {
-      font-size: 11px;
+      font-size: 10.5px;
       color: var(--text-muted);
       text-align: center;
     }
@@ -407,7 +529,7 @@
       margin-bottom: 8px;
       flex-wrap: wrap;
     }
-    .mention-chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 6px; }
+    .mention-chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 8px; }
     .mention-chips[hidden] { display: none; }
     .role-chips {
       display: flex;
@@ -424,6 +546,11 @@
       color: var(--text-muted);
       cursor: pointer;
       user-select: none;
+      transition: all 0.12s;
+    }
+    .role-chip:hover {
+      border-color: #3b4c6b;
+      color: var(--text);
     }
     .role-chip.selected {
       background: var(--accent);
@@ -431,36 +558,42 @@
       color: #fff;
       font-weight: 600;
     }
+
     /* Constraints list */
     .constraint-item {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 8px;
-      padding: 7px 10px;
+      padding: 7px 11px;
       border-radius: 7px;
       background: var(--bg-card);
       border: 1px solid var(--border);
       font-size: 12px;
       margin-top: 6px;
     }
+
     /* Output / prompt box */
     pre.codebox {
       background: var(--bg-input);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 12px;
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
       white-space: pre-wrap;
       word-break: break-word;
-      font-family: 'JetBrains Mono', Consolas, monospace;
-      font-size: 12.5px;
-      max-height: 360px;
+      font-family: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.55;
+      color: #e2e8f0;
+      max-height: 320px;
       overflow: auto;
-      margin: 10px 0;
+      margin: 8px 0;
     }
+
+    /* Alerts */
     .alert {
-      padding: 10px 12px;
-      border-radius: 8px;
+      padding: 9px 12px;
+      border-radius: var(--radius-sm);
       font-size: 12.5px;
       margin-bottom: 10px;
       border: 1px solid var(--border);
@@ -480,53 +613,70 @@
       border-color: rgba(239, 68, 68, 0.45);
       color: #fecaca;
     }
-    /* Strict canvas area */
+
+    /* Strict Canvas & Toolbars */
     .canvas-toolbar {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       gap: 8px;
-      padding: 10px;
+      padding: 9px 12px;
       background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      margin-bottom: 12px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 10px;
     }
     .canvas-stage {
-      background: repeating-conic-gradient(#111827 0% 25%, #0d1320 0% 50%) 50% / 20px 20px;
+      background: repeating-conic-gradient(#101726 0% 25%, #0a0f1a 0% 50%) 50% / 20px 20px;
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 10px;
+      border-radius: var(--radius-sm);
+      padding: 12px;
       display: grid;
       place-items: center;
       min-height: 320px;
       overflow: auto;
+      box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.45);
     }
     canvas#view, canvas#resultPreview {
       max-width: 100%;
-      max-height: 540px;
-      border: 1px solid #475569;
+      max-height: 520px;
+      border: 1px solid #334155;
+      border-radius: 4px;
       cursor: crosshair;
       display: block;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
     }
+
+    /* Galleries & Jobs */
+    .progress { height: 6px; background: #1e293b; border-radius: 999px; overflow: hidden; margin: 8px 0; }
+    .progress > i { display: block; height: 100%; background: linear-gradient(90deg, #6366f1, #8b5cf6); transition: width .3s; }
+    .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(156px, 1fr)); gap: 12px; margin-top: 10px; }
+    .gallery figure { margin: 0; border: 1px solid var(--border); border-radius: 9px; padding: 8px; background: var(--bg-card); min-width: 0; transition: border-color 0.15s; }
+    .gallery figure:hover { border-color: #384b6e; }
+    .gallery img { width: 100%; height: 136px; object-fit: contain; background: #090d16; border-radius: 6px; cursor: zoom-in; }
+    .gallery figcaption { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 7px; }
+    .timeline { font-size: 12px; margin: 6px 0; padding-left: 18px; color: var(--text-muted); }
+
     .job-card {
       background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: 9px;
-      padding: 14px;
+      border-radius: 10px;
+      padding: 14px 16px;
       margin-bottom: 12px;
     }
     .job-card ol {
       margin: 8px 0 12px 18px;
       padding: 0;
-      font-size: 13px;
+      font-size: 12.5px;
+      color: var(--text-secondary);
     }
     .job-card li { margin-bottom: 4px; }
+
     .source-map-list {
       display: flex;
       flex-direction: column;
       gap: 6px;
-      margin: 10px 0;
+      margin: 8px 0;
     }
     .source-map-item {
       display: flex;
@@ -544,18 +694,133 @@
       object-fit: cover;
       border-radius: 5px;
     }
-  .guide-steps { counter-reset: step; list-style: none; padding: 0; margin: 0; }
-.guide-steps > li { counter-increment: step; position: relative; padding: 4px 0 14px 44px; }
-.guide-steps > li::before {
-  content: counter(step); position: absolute; left: 0; top: 2px; width: 30px; height: 30px;
-  border-radius: 50%; background: #3b82f6; color: #fff; font-weight: 700;
-  display: flex; align-items: center; justify-content: center;
-}
-.guide-steps b { display: block; margin-bottom: 2px; }
-.guide-steps p, .guide-steps ul { margin: 2px 0; font-size: 13px; opacity: .9; }
-.guide-steps ul { padding-left: 18px; }
-.guide-steps code { background: rgba(127,127,127,.2); padding: 1px 5px; border-radius: 4px; }
-</style>
+
+    /* Guide Section */
+    .guide-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
+      gap: 18px;
+      align-items: start;
+    }
+    .guide-steps { counter-reset: step; list-style: none; padding: 0; margin: 0; }
+    .guide-steps > li { counter-increment: step; position: relative; padding: 3px 0 13px 40px; }
+    .guide-steps > li::before {
+      content: counter(step); position: absolute; left: 0; top: 2px; width: 26px; height: 26px;
+      border-radius: 7px; background: var(--accent-soft); border: 1px solid rgba(99, 102, 241, 0.4);
+      color: #a5b4fc; font-weight: 700; font-size: 12px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .guide-steps b { display: block; margin-bottom: 2px; color: #f8fafc; font-size: 13px; }
+    .guide-steps p, .guide-steps ul { margin: 2px 0; font-size: 12.5px; color: var(--text-muted); }
+    .guide-steps ul { padding-left: 18px; }
+    .guide-steps code {
+      background: rgba(99, 102, 241, 0.14);
+      color: #c7d2fe;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 11.5px;
+    }
+
+    /* Checkerboard & Filmstrip */
+    .checkerboard {
+      background-color: #121722;
+      background-image:
+        linear-gradient(45deg, #0b0f18 25%, transparent 25%),
+        linear-gradient(-45deg, #0b0f18 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #0b0f18 75%),
+        linear-gradient(-45deg, transparent 75%, #0b0f18 75%);
+      background-size: 16px 16px;
+      background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+    }
+    .filmstrip {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 8px 6px;
+      margin: 8px 0;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg-input);
+    }
+    .film-thumb {
+      position: relative;
+      flex: 0 0 70px;
+      height: 70px;
+      border: 2px solid #263248;
+      border-radius: 6px;
+      cursor: pointer;
+      overflow: hidden;
+      background: #05070b;
+      transition: border-color 0.12s, transform 0.12s;
+    }
+    .film-thumb:hover { border-color: #475569; transform: translateY(-1px); }
+    .film-thumb.active { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25); }
+    .film-thumb img { width: 100%; height: 100%; object-fit: contain; }
+    .film-thumb .f-num {
+      position: absolute;
+      bottom: 2px;
+      right: 2px;
+      background: rgba(7, 10, 16, 0.8);
+      font-size: 10px;
+      padding: 1px 5px;
+      border-radius: 4px;
+      color: #e2e8f0;
+    }
+
+    /* Console Dock */
+    #console-dock {
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+      background: rgba(10, 14, 23, 0.96);
+      backdrop-filter: blur(12px);
+      color: #d6deeb;
+      border-top: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      height: 168px; min-height: 36px;
+      font: 12px/1.5 'JetBrains Mono', ui-monospace, Consolas, monospace;
+      box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.45);
+    }
+    #console-dock.collapsed { height: 36px !important; }
+    #console-dock.collapsed #console-body { display: none; }
+    #console-resize {
+      height: 4px;
+      cursor: ns-resize;
+      background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.35), transparent);
+    }
+    #console-bar {
+      display: flex; align-items: center; gap: 8px; padding: 4px 16px;
+      background: rgba(21, 29, 46, 0.9); flex-wrap: wrap; min-height: 32px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    #console-bar strong {
+      font-size: 11.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: #a5b4fc;
+    }
+    #console-count {
+      font-size: 11px;
+      padding: 1px 7px;
+      border-radius: 999px;
+      background: rgba(99, 102, 241, 0.18);
+      color: #c7d2fe;
+    }
+    #console-bar button, #console-bar select {
+      font-size: 11px; padding: 3px 9px; border-radius: 5px; width: auto;
+      background: #1a2438; color: #d6deeb; border: 1px solid #2b3954; cursor: pointer;
+    }
+    #console-bar button:hover, #console-bar select:hover {
+      background: #24314d;
+    }
+    #console-body { flex: 1; overflow-y: auto; padding: 8px 16px; min-height: 0; }
+    .log-line { white-space: pre-wrap; word-break: break-word; padding: 1.5px 0; }
+    .log-line .t { color: #64748b; }
+    .log-line .j { color: #818cf8; }
+    .log-line.info .l { color: #60a5fa; }
+    .log-line.success .l { color: #34d399; }
+    .log-line.warn .l { color: #fbbf24; }
+    .log-line.error { color: #fca5a5; }
+    .log-line.error .l { color: #f87171; font-weight: 700; }
+  </style>
 </head>
 <body>
   <header class="topbar">
@@ -568,10 +833,11 @@
     </div>
 
     <nav class="nav-tabs" role="tablist">
-      <button class="tab-btn active" data-tab="tab-studio">1. Tạo &amp; Phối ảnh (Multi-Ref)</button>
-      <button class="tab-btn" data-tab="tab-strict">2. Sửa vùng Strict (PNG)</button>
-      <button class="tab-btn" data-tab="tab-jobs">3. Hàng đợi Job &amp; Lịch sử (<span id="job-count">0</span>)</button>
-      <button class="tab-btn" data-tab="tab-guide">4. Hướng dẫn sử dụng</button>
+      <button class="tab-btn active" data-tab="tab-studio" data-group="image" id="top-image">1. Image</button>
+      <button class="tab-btn" data-tab="tab-anim">2. Animation</button>
+      <button class="tab-btn" data-tab="tab-video">3. Video</button>
+      <button class="tab-btn" data-tab="tab-jobs">4. Hàng đợi Job (<span id="job-count">0</span>)</button>
+      <button class="tab-btn" data-tab="tab-guide">5. Hướng dẫn</button>
     </nav>
 
     <div class="top-actions">
@@ -581,6 +847,11 @@
   </header>
 
   <main class="container">
+    <div id="image-subnav" class="sub-nav show" role="tablist">
+      <button class="sub-btn active" data-tab="tab-studio">Phối ảnh (Multi-Ref)</button>
+      <button class="sub-btn" data-tab="tab-strict">Sửa vùng</button>
+      <button class="sub-btn" data-tab="tab-asset">Game Asset</button>
+    </div>
     <!-- TAB 1: MULTI-REFERENCE + PROMPT COMPILER + GENERATE -->
     <section id="tab-studio" class="tab-panel active">
       <div class="studio-grid">
@@ -804,34 +1075,50 @@
               <button id="mask-clear" class="sm danger">Xóa Mask</button>
             </div>
 
-            <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
-              <label class="field-label" style="margin:0;">Cỡ cọ: <strong id="brush-val">30</strong> px</label>
-              <input id="brush-size" type="range" min="2" max="300" value="30" style="max-width:220px;" />
-            </div>
-
-            <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
-              <label class="field-label" style="margin:0;">Feather làm mềm biên (chỉ hướng vào trong): <strong id="feather-val">2</strong> px</label>
-              <input id="feather" type="range" min="0" max="24" value="2" style="max-width:220px;" />
+            <div class="canvas-toolbar" style="justify-content:space-between; gap:16px;">
+              <div style="display:flex; align-items:center; gap:10px; flex:1; min-width:200px;">
+                <label class="field-label" style="margin:0; white-space:nowrap;">Cỡ cọ: <strong id="brush-val">30</strong> px</label>
+                <input id="brush-size" type="range" min="2" max="300" value="30" style="flex:1;" />
+              </div>
+              <div style="display:flex; align-items:center; gap:10px; flex:1; min-width:220px;">
+                <label class="field-label" style="margin:0; white-space:nowrap;">Làm mềm biên (Feather): <strong id="feather-val">2</strong> px</label>
+                <input id="feather" type="range" min="0" max="24" value="2" style="flex:1;" />
+              </div>
             </div>
 
             <div class="canvas-stage">
               <canvas id="view" width="640" height="400"></canvas>
             </div>
 
-            <div style="margin-top:14px; border-top:1px solid var(--border, #444); padding-top:12px;">
-              <label class="field-label">3. Sửa / Xóa vùng đã tô bằng Flow</label>
+            <div style="margin-top:14px; padding:14px; background:var(--bg-card); border:1px solid var(--border); border-radius:10px;">
+              <label class="field-label" style="font-size:13px; color:#f8fafc; margin-bottom:8px;">3. Sửa / Xóa vùng đã tô bằng Google Flow</label>
               <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
                 <select id="edit-mode" style="width:auto;">
                   <option value="edit">Sửa vùng theo prompt</option>
                   <option value="remove">Xóa vùng (tự lấp nền)</option>
                 </select>
                 <select id="edit-model" style="width:auto;"></select>
-                <select id="edit-count" style="width:auto;">
-                  <option value="1">1 ảnh</option>
-                  <option value="2">2 ảnh</option>
-                  <option value="3">3 ảnh</option>
-                  <option value="4">4 ảnh</option>
+                <!-- Live test 2026-10-30: gửi 2 ảnh sửa vùng song song bị Google chặn (PUBLIC_ERROR_UNUSUAL_ACTIVITY) 2/2 lần; 1 ảnh/lượt thì ổn. -->
+                <select id="edit-count" style="width:auto;" title="Gửi nhiều ảnh cùng lúc dễ bị Google chặn (unusual activity). Hãy tạo từng ảnh một.">
+                  <option value="1">1 ảnh mỗi lượt</option>
                 </select>
+              </div>
+              <div id="strict-ref-box" style="margin:10px 0; padding:10px 12px; background:var(--bg-input); border:1px dashed #2e3e5c; border-radius:8px;">
+                <label class="field-label" style="margin:0 0 6px;">Ảnh tham chiếu cho vùng tô (tùy chọn, tối đa 4). Ảnh gốc là ảnh 1, các ảnh này là ảnh 2, 3, ...</label>
+                <input id="strict-ref-input" type="file" accept="image/*" multiple />
+                <div id="strict-ref-list" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;"></div>
+                <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-top:8px;">
+                  <label>Màu đánh dấu:
+                    <select id="strict-marker-color" style="width:auto;">
+                      <option value="magenta">Tím (magenta)</option>
+                      <option value="red">Đỏ</option>
+                    </select>
+                  </label>
+                  <label><input id="strict-composite" type="checkbox" checked /> Ghép ngược (giữ nguyên ngoài vùng tô)</label>
+                  <label>Làm mềm biên: <strong id="strict-feather-val">6</strong> px
+                    <input id="strict-feather" type="range" min="0" max="40" value="6" style="max-width:140px;" />
+                  </label>
+                </div>
               </div>
               <textarea id="edit-prompt" rows="3" placeholder="Mô tả cần sửa vùng đã tô (vd: đổi thành chiếc mũ đỏ). Với chế độ Xóa có thể để trống."></textarea>
               <div style="display:flex; gap:10px; align-items:center; margin-top:8px;">
@@ -868,7 +1155,456 @@
       </div>
     </section>
 
-    <!-- TAB 3: JOBS & HISTORY -->
+    <!-- TAB 3: GAME ASSET GENERATOR -->
+    <section id="tab-asset" class="tab-panel">
+      <div class="studio-grid">
+        <!-- Cột trái: Cấu hình Asset & Prompt -->
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">Tạo Game Asset Đồng Bộ Style</h2>
+                <p class="card-sub">Nhập prompt, chọn loại asset, preset phong cách và đưa ảnh tham chiếu để tạo asset cùng style.</p>
+              </div>
+            </div>
+
+            <!-- Style References -->
+            <label class="field-label">1. Ảnh tham chiếu phong cách (Style References):</label>
+            <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px; flex-wrap:wrap;">
+              <input id="asset-ref-input" type="file" multiple accept="image/*" style="max-width:240px;" />
+              <button id="asset-sync-refs" class="sm">Lấy toàn bộ từ Tab 1 (Studio)</button>
+              <button id="asset-clear-refs" class="sm danger">Xóa danh sách</button>
+            </div>
+            <div id="asset-refs-list" style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; min-height:48px; padding:6px; border:1px dashed var(--border); border-radius:6px;">
+              <span class="card-sub" style="align-self:center; font-size:12px;">Chưa có ảnh ref style. Thêm ảnh để nhân vật/item sinh ra có cùng nét vẽ, màu sắc.</span>
+            </div>
+
+            <!-- Loại Asset & Style Preset -->
+            <div class="field-row">
+              <div>
+                <label class="field-label">2. Loại Asset (Type):</label>
+                <select id="asset-type">
+                  <option value="character">Nhân vật (Character Sprite)</option>
+                  <option value="item" selected>Vật phẩm / Icon (Item)</option>
+                  <option value="tile">Tilemap / Khối địa hình (Tile)</option>
+                  <option value="ui">Nút bấm / Khung UI (Game UI)</option>
+                  <option value="background">Bối cảnh nền (Backdrop)</option>
+                  <option value="fx">Hiệu ứng phép / Hạt (FX Sprite)</option>
+                </select>
+              </div>
+              <div>
+                <label class="field-label">3. Preset Style Game:</label>
+                <select id="asset-preset">
+                  <option value="none">Tự do theo prompt &amp; ref</option>
+                  <option value="pixel" selected>16-bit Pixel Art (sắc nét)</option>
+                  <option value="chibi">Chibi Anime 2D</option>
+                  <option value="isometric">Isometric 30° (Chiếu trục)</option>
+                  <option value="handpainted">Hand-painted Stylized</option>
+                  <option value="flat">Flat 2D Vector Clean</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Kích thước & Tách nền -->
+            <div class="field-row">
+              <div>
+                <label class="field-label">4. Kích thước (px):</label>
+                <select id="asset-size">
+                  <option value="256x256">256 × 256 (Icon, Tile)</option>
+                  <option value="512x512" selected>512 × 512 (Chuẩn HD)</option>
+                  <option value="1024x1024">1024 × 1024 (Chi tiết cao)</option>
+                  <option value="custom">Tùy chỉnh...</option>
+                </select>
+              </div>
+              <div>
+                <label class="field-label">5. Số lượng ảnh / lần:</label>
+                <select id="asset-count">
+                  <option value="1">1 ảnh</option>
+                  <option value="2">2 ảnh</option>
+                  <option value="3">3 ảnh</option>
+                  <option value="4" selected>4 biến thể</option>
+                </select>
+              </div>
+            </div>
+
+            <div id="asset-custom-size-box" class="field-row" hidden>
+              <div>
+                <label class="field-label">Rộng (px):</label>
+                <input id="asset-w" type="number" value="512" min="64" max="4096" />
+              </div>
+              <div>
+                <label class="field-label">Cao (px):</label>
+                <input id="asset-h" type="number" value="512" min="64" max="4096" />
+              </div>
+            </div>
+
+            <div style="margin:10px 0 14px 0; display:flex; align-items:center; gap:8px;">
+              <input id="asset-transparent" type="checkbox" checked style="width:auto; cursor:pointer;" />
+              <label for="asset-transparent" style="cursor:pointer; font-size:13px; font-weight:500;">
+                Tách nền trong suốt tự động (Chroma-key xanh lá &amp; khử ám viền)
+              </label>
+            </div>
+
+            <!-- Model & Prompt -->
+            <label class="field-label">6. Model AI:</label>
+            <select id="asset-model" style="margin-bottom:12px;"></select>
+
+            <label class="field-label">7. Prompt mô tả chi tiết:</label>
+            <textarea id="asset-prompt" rows="3" placeholder="Ví dụ: wooden treasure chest with iron bands and brass padlock, closed, isometric angle..."></textarea>
+
+            <div style="display:flex; gap:10px; align-items:center; margin-top:12px;">
+              <button id="asset-generate" class="primary">Generate Game Asset</button>
+              <span id="asset-status" class="card-sub"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cột phải: Thư viện Asset kết quả -->
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">Bộ sưu tập Game Asset</h2>
+                <p class="card-sub">Xem trước trên nền ô cờ caro trong suốt. Có thể tải PNG riêng hoặc tải trọn bộ ZIP.</p>
+              </div>
+              <button id="asset-download-zip" class="sm" hidden>Tải trọn bộ ZIP</button>
+            </div>
+
+            <div id="asset-gallery" class="gallery checkerboard" style="min-height:360px; padding:12px; border-radius:8px; border:1px solid var(--border);">
+              <p class="card-sub" style="align-self:center; margin:auto;">Chưa có asset nào được tạo. Nhập prompt và bấm Generate ở bên trái.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: ANIMATION LOOP -->
+    <section id="tab-anim" class="tab-panel">
+      <div class="studio-grid">
+        <!-- Cột trái: Cấu hình Animation -->
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">Tạo Animation Loop (Frame-by-Frame)</h2>
+                <p class="card-sub">Tạo chuyển động mượt mà với frame đầu và frame cuối khớp nhau hoàn hảo (seamless loop).</p>
+              </div>
+            </div>
+
+            <!-- Ảnh nhân vật / pose gốc -->
+            <label class="field-label">1. Ảnh tham chiếu nhân vật / Dáng gốc:</label>
+            <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
+              <input id="anim-ref-input" type="file" accept="image/*" style="max-width:260px;" />
+              <button id="anim-use-strict-result" class="sm">Lấy từ kết quả Tab 2</button>
+            </div>
+            <div id="anim-ref-preview" style="display:flex; gap:10px; align-items:center; min-height:50px; margin-bottom:12px;">
+              <span class="card-sub" style="font-size:12px;">Chưa chọn ảnh nhân vật.</span>
+            </div>
+
+            <!-- Chế độ sinh Animation -->
+            <div class="field-row">
+              <div>
+                <label class="field-label">2. Phương thức sinh:</label>
+                <select id="anim-mode">
+                  <option value="video" selected>Video Loop &amp; Cắt Frame (Khuyến nghị, mượt)</option>
+                  <option value="frames">Frame-by-Frame tuần tự (Từng ảnh)</option>
+                </select>
+              </div>
+              <div>
+                <label class="field-label">3. Số frame chuyển động:</label>
+                <select id="anim-frames">
+                  <option value="6">6 frames (pixel nhanh)</option>
+                  <option value="8">8 frames (chuẩn retro)</option>
+                  <option value="12" selected>12 frames (mượt mà)</option>
+                  <option value="16">16 frames</option>
+                  <option value="24">24 frames (mịn màng)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- FPS & Kích thước -->
+            <div class="field-row">
+              <div>
+                <label class="field-label">4. Tốc độ phát (FPS):</label>
+                <input id="anim-fps" type="number" value="12" min="1" max="30" />
+              </div>
+              <div>
+                <label class="field-label">5. Kích thước frame (px):</label>
+                <select id="anim-size">
+                  <option value="256x256">256 × 256 (Sprite chuẩn)</option>
+                  <option value="512x512" selected>512 × 512 (HD Sprite)</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="margin:10px 0 14px 0; display:flex; align-items:center; gap:8px;">
+              <input id="anim-transparent" type="checkbox" checked style="width:auto; cursor:pointer;" />
+              <label for="anim-transparent" style="cursor:pointer; font-size:13px; font-weight:500;">
+                Tách nền trong suốt tự động (Chroma-key xanh lá)
+              </label>
+            </div>
+
+            <div style="margin:0 0 14px 0; display:flex; align-items:center; gap:8px;">
+              <input id="anim-loop-blend" type="checkbox" style="width:auto; cursor:pointer;" />
+              <label for="anim-loop-blend" style="cursor:pointer; font-size:13px; font-weight:500;">
+                Trộn đuôi về frame đầu để loop mượt hơn (khuyên dùng cho chế độ frames)
+              </label>
+            </div>
+
+            <!-- Prompt chuyển động -->
+            <label class="field-label">6. Prompt mô tả chuyển động:</label>
+            <textarea id="anim-prompt" rows="3" placeholder="Ví dụ: idle breathing animation, slight body floating up and down, cape flutter, gentle motion loop..."></textarea>
+
+            <div style="display:flex; gap:10px; align-items:center; margin-top:12px;">
+              <button id="anim-generate" class="primary">Generate Animation Loop</button>
+              <span id="anim-status" class="card-sub"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cột phải: Trình chiếu & Công cụ Animation -->
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">Trình phát &amp; Kiểm định Loop</h2>
+                <p class="card-sub">Kiểm tra độ mượt, so sánh frame đầu-cuối và tải Spritesheet cho Game Engine.</p>
+              </div>
+            </div>
+
+            <!-- Stage Canvas Preview -->
+            <div class="checkerboard" style="display:flex; justify-content:center; align-items:center; min-height:280px; border-radius:8px; border:1px solid var(--border); overflow:hidden; position:relative;">
+              <canvas id="anim-preview-canvas" width="256" height="256" style="max-height:260px; object-fit:contain;"></canvas>
+              <div id="anim-loop-score-badge" style="position:absolute; top:8px; right:8px; background:rgba(15,23,42,0.85); border:1px solid var(--border); padding:3px 8px; border-radius:4px; font-size:11px; display:none;">
+                Loop Score: <strong id="anim-score-val">100%</strong>
+              </div>
+            </div>
+
+            <!-- Điều khiển Playback -->
+            <div style="display:flex; gap:8px; align-items:center; margin:10px 0; flex-wrap:wrap;">
+              <button id="anim-play-toggle" class="sm">Tạm dừng (Pause)</button>
+              <label style="font-size:12px; display:flex; align-items:center; gap:4px;">
+                Frame: <strong id="anim-curr-frame">1</strong> / <span id="anim-total-frames">12</span>
+              </label>
+              <input id="anim-scrub" type="range" min="0" max="11" value="0" style="flex:1; min-width:120px;" />
+              <label style="font-size:12px; display:flex; align-items:center; gap:4px; cursor:pointer;">
+                <input id="anim-onion" type="checkbox" style="width:auto;" /> Onion Skin
+              </label>
+            </div>
+
+            <!-- Filmstrip Thumbnail Frames -->
+            <label class="field-label" style="margin:4px 0;">Chuỗi Frame:</label>
+            <div id="anim-filmstrip" class="filmstrip">
+              <span class="card-sub" style="padding:12px; font-size:12px;">Chưa có frame nào. Bấm Generate Animation để bắt đầu.</span>
+            </div>
+
+            <!-- Chỉnh sửa chuỗi frame + so sánh đầu/cuối -->
+            <div id="anim-edit-box" style="margin:10px 0; padding:8px 10px; background:#161b22; border-radius:6px; border:1px solid var(--border);" hidden>
+              <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                <span style="font-size:12px; font-weight:600;">Chỉnh sửa frame đang chọn:</span>
+                <button id="anim-frame-left" class="sm" disabled>◀ Dời trái</button>
+                <button id="anim-frame-right" class="sm" disabled>Dời phải ▶</button>
+                <button id="anim-frame-del" class="sm danger" disabled>Xóa frame</button>
+                <button id="anim-frame-reset" class="sm">Hoàn tác</button>
+                <button id="anim-frame-apply" class="primary sm" disabled>Áp dụng</button>
+              </div>
+              <div style="display:flex; gap:16px; align-items:center; margin-top:10px; flex-wrap:wrap;">
+                <div style="text-align:center; font-size:11px;">Frame đầu<br />
+                  <img id="anim-cmp-first" alt="first" style="width:96px; height:96px; object-fit:contain; background:#000; border:1px solid var(--border); border-radius:4px;" /></div>
+                <div style="text-align:center; font-size:11px;">Frame cuối<br />
+                  <img id="anim-cmp-last" alt="last" style="width:96px; height:96px; object-fit:contain; background:#000; border:1px solid var(--border); border-radius:4px;" /></div>
+                <span class="card-sub" style="font-size:11px; flex:1; min-width:160px;">Frame cuối càng giống frame đầu thì loop càng mượt. Thay đổi chỉ có hiệu lực (và đóng gói lại file tải về) sau khi bấm Áp dụng.</span>
+              </div>
+            </div>
+
+            <!-- Reframe tool (Chọn lại frame từ video) -->
+            <div id="anim-reframe-box" style="margin:10px 0; padding:8px 10px; background:#161b22; border-radius:6px; border:1px solid var(--border);" hidden>
+              <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <span style="font-size:12px; font-weight:600;">Reframe video:</span>
+                <label style="font-size:11px;">Dịch pha offset: <input id="reframe-offset" type="number" value="0" style="width:60px; padding:2px 4px;" /></label>
+                <button id="anim-reframe-btn" class="sm">Cắt lại Frame</button>
+                <span class="card-sub" style="font-size:11px;">(Không tốn credit Flow)</span>
+              </div>
+            </div>
+
+            <!-- Download Actions -->
+            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; border-top:1px solid var(--border); padding-top:12px;">
+              <button id="anim-dl-sheet" class="primary sm" disabled>Tải Spritesheet PNG</button>
+              <button id="anim-dl-json" class="sm" disabled>Tải JSON Meta</button>
+              <button id="anim-dl-gif" class="sm" disabled>Tải GIF Loop</button>
+              <button id="anim-dl-webp" class="sm" disabled>Tải WebP</button>
+              <button id="anim-dl-zip" class="sm" disabled>Tải Trọn Bộ ZIP</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 5: JOBS & HISTORY -->
+    <section id="tab-video" class="tab-panel">
+      <div id="video-root" class="studio-grid">
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">Tạo Video (Omni Flash)</h2>
+                <p class="card-sub">Tạo video từ text, ảnh frame đầu/cuối hoặc ảnh tham chiếu. Có thể thêm phụ đề, giọng đọc và nhạc nền.</p>
+              </div>
+            </div>
+
+            <div class="field-row">
+              <div>
+                <label class="field-label" for="vid-model">Model:</label>
+                <select id="vid-model"><option value="omni-flash" selected>Omni Flash</option></select>
+              </div>
+              <div>
+                <label class="field-label" for="vid-mode">Chế độ:</label>
+                <select id="vid-mode"><option value="text" selected>Text → Video</option></select>
+              </div>
+            </div>
+
+            <label class="field-label" for="vid-prompt">Prompt:</label>
+            <textarea id="vid-prompt" rows="4" maxlength="2000" placeholder="Mô tả chuyển động, góc máy, ánh sáng..."></textarea>
+
+            <div id="vid-start-box" style="display:none; margin-top:10px;">
+              <label class="field-label">Frame đầu:</label>
+              <div style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
+                <input id="vid-start" type="file" accept="image/*" style="max-width:240px;" />
+                <button id="vid-start-use" class="sm" type="button">Lấy từ kết quả Image</button>
+              </div>
+              <div id="vid-start-preview" style="display:flex; gap:8px; align-items:center; min-height:48px;"></div>
+            </div>
+
+            <div id="vid-end-box" style="display:none; margin-top:10px;">
+              <label class="field-label">Frame cuối:</label>
+              <div style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
+                <input id="vid-end" type="file" accept="image/*" style="max-width:240px;" />
+                <button id="vid-end-use" class="sm" type="button">Lấy từ kết quả Image</button>
+              </div>
+              <div id="vid-end-preview" style="display:flex; gap:8px; align-items:center; min-height:48px;"></div>
+            </div>
+
+            <div id="vid-refs-box" style="display:none; margin-top:10px;">
+              <label class="field-label">Ảnh tham chiếu (tối đa 7):</label>
+              <input id="vid-refs-input" type="file" accept="image/*" multiple style="max-width:260px; margin-bottom:6px;" />
+              <div id="vid-refs-list" style="display:flex; gap:8px; flex-wrap:wrap; min-height:48px;"></div>
+            </div>
+
+            <div class="field-row" style="margin-top:10px;">
+              <div>
+                <label class="field-label" for="vid-duration">Thời lượng:</label>
+                <select id="vid-duration"><option value="8" selected>8 giây</option></select>
+              </div>
+              <div>
+                <label class="field-label" for="vid-res">Độ phân giải:</label>
+                <select id="vid-res"><option value="720p" selected>720p</option></select>
+              </div>
+            </div>
+            <div class="field-row">
+              <div>
+                <label class="field-label" for="vid-aspect">Tỉ lệ:</label>
+                <select id="vid-aspect"><option value="16:9" selected>16:9</option></select>
+              </div>
+              <div>
+                <label class="field-label" for="vid-seed">Seed (tùy chọn):</label>
+                <input id="vid-seed" type="text" inputmode="numeric" placeholder="để trống = ngẫu nhiên" />
+              </div>
+            </div>
+            <p id="vid-cost" class="card-sub" style="margin:6px 0 0;"></p>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><div><h2 class="card-title">Phụ đề</h2></div></div>
+            <label><input id="vid-sub-enable" type="checkbox" /> Thêm phụ đề</label>
+            <p class="card-sub" style="margin:6px 0;">Mỗi dòng một câu. Không ghi giờ: chia đều theo thời lượng. Có giờ: <code>0-2.5 Xin chào</code> hoặc <code>00:03 --&gt; 00:05 Tạm biệt</code>.</p>
+            <textarea id="vid-sub-text" rows="4" placeholder="Xin chào&#10;Tạm biệt"></textarea>
+            <div class="field-row">
+              <div>
+                <label class="field-label" for="vid-sub-mode">Xuất:</label>
+                <select id="vid-sub-mode">
+                  <option value="burn" selected>Ghi vào video</option>
+                  <option value="srt">Chỉ tệp .srt</option>
+                  <option value="both">Cả hai</option>
+                </select>
+              </div>
+              <div>
+                <label class="field-label" for="vid-sub-position">Vị trí:</label>
+                <select id="vid-sub-position">
+                  <option value="bottom" selected>Dưới</option>
+                  <option value="middle">Giữa</option>
+                  <option value="top">Trên</option>
+                </select>
+              </div>
+            </div>
+            <label class="field-label" for="vid-sub-size">Cỡ chữ:</label>
+            <input id="vid-sub-size" type="number" min="12" max="120" value="36" style="max-width:100px;" />
+          </div>
+
+          <div class="card">
+            <div class="card-header"><div><h2 class="card-title">Giọng đọc &amp; nhạc nền</h2></div></div>
+            <label><input id="vid-voice-enable" type="checkbox" /> Thêm giọng đọc</label>
+            <textarea id="vid-voice-text" rows="3" maxlength="2000" placeholder="Lời đọc..." style="margin-top:6px;"></textarea>
+            <div class="field-row">
+              <div>
+                <label class="field-label" for="vid-voice-engine">Engine:</label>
+                <select id="vid-voice-engine"><option value="edge" selected>edge</option></select>
+              </div>
+              <div>
+                <label class="field-label" for="vid-voice-voice">Giọng:</label>
+                <select id="vid-voice-voice"></select>
+              </div>
+            </div>
+            <div class="field-row">
+              <div>
+                <label class="field-label" for="vid-voice-speed">Tốc độ (0.5-2):</label>
+                <input id="vid-voice-speed" type="number" min="0.5" max="2" step="0.1" value="1" />
+              </div>
+              <div>
+                <label class="field-label" for="vid-voice-volume">Âm lượng (0-2):</label>
+                <input id="vid-voice-volume" type="number" min="0" max="2" step="0.1" value="1" />
+              </div>
+            </div>
+            <div style="display:flex; gap:8px; align-items:center; margin:6px 0 12px;">
+              <button id="vid-voice-preview" class="sm" type="button">Nghe thử</button>
+              <audio id="vid-voice-audio" controls style="display:none; height:32px;"></audio>
+            </div>
+
+            <label><input id="vid-music-enable" type="checkbox" /> Thêm nhạc nền</label>
+            <div style="display:flex; gap:8px; align-items:center; margin:6px 0;">
+              <input id="vid-music-file" type="file" accept="audio/*" style="max-width:240px;" />
+              <span id="vid-music-name" class="card-sub"></span>
+            </div>
+            <div class="field-row">
+              <div>
+                <label class="field-label" for="vid-music-volume">Âm lượng nhạc (0-1):</label>
+                <input id="vid-music-volume" type="number" min="0" max="1" step="0.05" value="0.25" />
+              </div>
+              <div>
+                <label><input id="vid-music-duck" type="checkbox" checked /> Hạ nhạc khi có giọng đọc</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="card">
+            <div class="card-header"><div><h2 class="card-title">Kết quả</h2></div></div>
+            <div style="display:flex; gap:8px; margin-bottom:10px;">
+              <button id="vid-generate" class="primary" type="button">Tạo video</button>
+              <button id="vid-cancel" class="danger" type="button" disabled>Hủy</button>
+            </div>
+            <p id="vid-status" class="card-sub" style="min-height:20px;">Sẵn sàng.</p>
+            <video id="vid-player" controls style="display:none; width:100%; max-height:420px; background:#000; border-radius:6px;"></video>
+            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;">
+              <button id="vid-download" class="sm" type="button" disabled>Tải video</button>
+              <button id="vid-download-srt" class="sm" type="button" disabled>Tải .srt</button>
+              <button id="vid-download-raw" class="sm" type="button" disabled>Tải bản gốc (không phụ đề/giọng)</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section id="tab-jobs" class="tab-panel">
       <div class="card">
         <div class="card-header">
@@ -883,6 +1619,7 @@
 
     <!-- TAB 4: HƯỚNG DẪN -->
     <section id="tab-guide" class="tab-panel">
+      <div class="guide-grid">
       <div class="card">
         <div class="card-header"><div>
           <h2 class="card-title">Phần A. Cài đặt (làm một lần)</h2>
@@ -918,29 +1655,70 @@
 
       <div class="card">
         <div class="card-header"><div>
-          <h2 class="card-title">Phần C. Sửa vùng ảnh nghiêm ngặt (Tab 2)</h2>
+          <h2 class="card-title">Phần C. Sửa vùng ảnh (Image › Sửa vùng)</h2>
         </div></div>
         <ol class="guide-steps">
           <li><b>Chọn ảnh gốc PNG</b><p>Tải file hoặc chọn từ danh sách Reference, rồi bấm "Dùng làm Ảnh gốc". Ảnh mới nạp có sẵn một vùng chữ nhật ở giữa, hãy bấm "Xóa Mask" nếu không cần.</p></li>
           <li><b>Bôi vùng cần sửa</b><p>Chọn công cụ <b>Cọ</b> (chỉnh cỡ cọ bằng thanh trượt), hoặc chữ nhật / khoanh tự do. Lớp "vùng cho phép sửa" là vùng sẽ gửi đi. Chế độ "Trừ bớt" để xóa nét bôi thừa.</p></li>
           <li><b>Nhập prompt và bấm Generate</b><p>Chọn "Sửa vùng" (cần prompt) hoặc "Xóa vùng" (prompt không bắt buộc), chọn model và số ảnh. Bridge gửi ảnh gốc cùng ảnh đánh dấu vùng tô tím cho Flow. Tiến độ hiện ngay dưới nút và ở Tab 3.</p></li>
           <li><b>Xem và tải kết quả</b><p>Kết quả được ghép tự động: chỉ pixel trong vùng tô lấy từ ảnh Flow, pixel ngoài vùng giữ nguyên từng byte. Nếu có nhiều ảnh, bấm "Ảnh N" để ghép ảnh khác. Tải PNG kết quả hoặc đưa vào Reference để sửa tiếp.</p></li>
+          <li><b>Thay vùng đã tô bằng ảnh tham chiếu</b><p>Trong ô "Ảnh tham chiếu cho vùng sửa" tải tối đa 4 ảnh (mỗi ảnh tối đa 8 MB). Ví dụ: tô vùng mặt nhân vật, tải ảnh khuôn mặt mới, rồi viết prompt "thay mặt ở vùng đánh dấu bằng khuôn mặt trong ảnh tham chiếu". Bridge báo cho Flow biết ảnh 1 là ảnh gốc có vùng đánh dấu, các ảnh sau là tham chiếu. Chọn màu đánh dấu (tím hoặc đỏ) và độ mềm viền; mặc định có tham chiếu thì kết quả được ghép lại để pixel ngoài vùng tô giữ nguyên. Tính năng này chưa được thử trên Flow thật.</p></li>
           <li><b>Lưu ý</b><p>Flow sửa theo prompt trên toàn ảnh, không có mask thật, nên chất lượng phụ thuộc cách Flow hiểu vùng đánh dấu. Mỗi lần Generate gửi một yêu cầu tới Google; nếu gặp "unusual activity" hãy nghỉ vài phút và giảm số ảnh.</p></li>
+        </ol>
+      </div>
+
+            <div class="card">
+        <div class="card-header"><div>
+          <h2 class="card-title">Phần D. Tạo Game Asset Đồng Bộ Style (Image › Game Asset)</h2>
+        </div></div>
+        <ol class="guide-steps">
+          <li><b>Thêm ảnh tham chiếu phong cách (Style References)</b><p>Tải ảnh phong cách từ máy hoặc bấm "Lấy toàn bộ từ Tab 1". Các asset sinh ra sẽ bám sát đường nét, bảng màu và cách đổ bóng của ảnh tham chiếu.</p></li>
+          <li><b>Chọn loại Asset &amp; Preset Style</b><p>Loại asset gồm: Nhân vật, Item, Tilemap, UI, Bối cảnh hoặc Hiệu ứng FX. Preset style gồm: 16-bit Pixel Art, Chibi 2D, Isometric 30°, Hand-painted hoặc Flat Vector.</p></li>
+          <li><b>Kích thước &amp; Tách nền trong suốt</b><p>Chọn kích thước chuẩn (256, 512, 1024 hoặc tùy chỉnh). Tích chọn "Tách nền trong suốt" để hệ thống tự động loại bỏ phông nền xanh và khử ám màu viền (despill).</p></li>
+          <li><b>Tải về &amp; Chuyển tiếp</b><p>Xem trước asset trên nền ô cờ caro. Tải từng ảnh PNG hoặc bấm "Tải trọn bộ ZIP". Bạn có thể bấm "Sang Anim" để tạo animation ngay từ asset vừa sinh, hoặc "Sửa vùng" để tinh chỉnh chi tiết.</p></li>
         </ol>
       </div>
 
       <div class="card">
         <div class="card-header"><div>
-          <h2 class="card-title">Phần D. Xử lý sự cố</h2>
+          <h2 class="card-title">Phần E. Tạo Animation Loop Frame-by-Frame (tab Animation)</h2>
+        </div></div>
+        <ol class="guide-steps">
+          <li><b>Nạp ảnh nhân vật / dáng gốc</b><p>Tải ảnh nhân vật hoặc bấm "Lấy từ kết quả Tab 2" để dùng chính hình ảnh bạn vừa chỉnh sửa xong.</p></li>
+          <li><b>Chọn phương thức sinh Animation</b><p><b>Video Loop &amp; Cắt Frame (Khuyến nghị):</b> Flow tạo video 8s lặp vô hạn (start frame = end frame), sau đó ffmpeg cắt ra N frame đều nhau. Nhanh, mượt và tiết kiệm credit. <b>Frame-by-Frame:</b> Sinh tuần tự từng ảnh theo chu kỳ 360°.</p></li>
+          <li><b>Trình phát &amp; Kiểm định Loop</b><p>Xem preview lặp vô hạn theo FPS tùy chỉnh. Bật công tắc <b>Onion Skin</b> để xem bóng mờ frame trước nhằm kiểm tra độ mượt. Thanh Loop Score đánh giá mức độ khớp giữa frame cuối và frame đầu.</p></li>
+          <li><b>Reframe video &amp; Xuất cho Game Engine</b><p>Nếu dùng mode video, bạn có thể chỉnh "Dịch pha offset" rồi bấm "Cắt lại Frame" mà không tốn credit Flow. Xuất Spritesheet PNG kèm JSON metadata (chuẩn Unity, Godot, Phaser), file GIF loop, WebP hoặc trọn bộ ZIP.</p></li>
+        </ol>
+      </div>
+
+<div class="card">
+        <div class="card-header"><div>
+          <h2 class="card-title">Phần F. Tạo Video (tab Video)</h2>
+          <p class="card-sub">Dùng model Omni Flash. Chưa thử trên Flow thật, nên hãy tạo thử một video 4 giây trước.</p>
+        </div></div>
+        <ol class="guide-steps">
+          <li><b>Chọn chế độ</b><p><b>Text → Video</b> chỉ cần prompt. <b>Ảnh → Video</b> dùng một ảnh làm frame đầu. <b>Frame đầu + cuối</b> cho video đi từ ảnh này sang ảnh kia. <b>Ảnh tham chiếu</b> nhận tối đa 7 ảnh để giữ nhân vật hoặc phong cách. Có thể bấm "Lấy từ kết quả Image" để dùng ảnh vừa sửa.</p></li>
+          <li><b>Thời lượng, độ phân giải, tỉ lệ</b><p>Thời lượng 4, 6, 8 hoặc 10 giây; độ phân giải 360p hoặc 720p; tỉ lệ 16:9 hoặc 9:16. Dòng "Ước tính" cho biết số credit (4 giây khoảng 15, 10 giây khoảng 30). Nếu trên 20 credit, tiện ích sẽ hỏi xác nhận trước khi gửi.</p></li>
+          <li><b>Phụ đề</b><p>Mỗi dòng một câu. Không ghi giờ thì chia đều theo thời lượng; có giờ thì viết <code>0-2.5 Xin chào</code>. Có thể ghi thẳng vào video, xuất tệp <code>.srt</code> riêng, hoặc cả hai.</p></li>
+          <li><b>Giọng đọc và nhạc nền</b><p>Nhập lời đọc, chọn engine và giọng rồi bấm "Nghe thử". Engine edge cần internet; pyttsx3 chạy offline bằng giọng của Windows. Nhạc nền tải từ máy (tối đa 30 MB), có thể tự hạ âm lượng khi có giọng đọc.</p></li>
+          <li><b>Tạo và tải</b><p>Bấm "Tạo video", việc chờ Flow thường mất 1-3 phút. Video đã ghép phụ đề và âm thanh nằm ở nút "Tải video"; bản gốc từ Flow nằm ở "Tải bản gốc". Nếu bước ghép lỗi, bạn vẫn nhận được bản gốc kèm cảnh báo. Video đã gửi lên Flow thì không hủy được.</p></li>
+        </ol>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div>
+          <h2 class="card-title">Phần G. Xử lý sự cố</h2>
         </div></div>
         <ul class="guide-steps" style="counter-reset:none;">
           <li style="padding-left:0;"><b>"Không kết nối được bridge server (127.0.0.1:8200)"</b><p>Bridge chưa chạy. Chạy <code>run.bat</code> hoặc <code>python bridge_server.py</code> trong thư mục FlowAutoTool, giữ cửa sổ đó mở.</p></li>
           <li style="padding-left:0;"><b>"FlowKit extension chưa kết nối"</b><p>Nạp extension FlowKit vào Chrome và mở tab <code>https://flow.google.com</code> đã đăng nhập, rồi thử lại.</p></li>
           <li style="padding-left:0;"><b>"Unusual activity" từ Google</b><p>Bridge tự dừng và chờ khoảng 300 giây trước khi gửi tiếp. Hãy giảm số ảnh mỗi lần và không chạy nhiều job cùng lúc. Bridge chỉ giảm tốc độ, không né kiểm tra của Google.</p></li>
           <li style="padding-left:0;"><b>Cổng 8100, 8200 hoặc 9222 đang bận</b><p>Có bridge cũ còn chạy. Đóng cửa sổ bridge cũ rồi chạy lại <code>run.bat</code>.</p></li>
+          <li style="padding-left:0;"><b>Video báo lỗi phụ đề hoặc giọng đọc</b><p>Giờ phụ đề phải nằm trong thời lượng video và không chồng nhau. Engine edge cần mạng; nếu lỗi, đổi sang pyttsx3. Nếu ffmpeg không có bộ lọc subtitles, chỉ xuất được <code>.srt</code>.</p></li>
           <li style="padding-left:0;"><b>Sửa vùng không đúng ý</b><p>Flow không có mask thật nên chỉ làm theo prompt. Tô vùng nhỏ và sát đối tượng, viết prompt cụ thể, thử lại với số ảnh 2–4. Pixel ngoài vùng tô luôn giữ nguyên nhờ bước ghép.</p></li>
           <li style="padding-left:0;"><b>Lưu ý</b><p>Tự động hóa Flow chưa được thử trên Flow thật và có thể vi phạm điều khoản của Flow. Dùng có cân nhắc.</p></li>
         </ul>
+      </div>
       </div>
     </section>
   </main>

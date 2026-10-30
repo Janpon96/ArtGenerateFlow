@@ -5,3 +5,5 @@ export * from './mask-engine';
 export * from './crop';
 export * from './strict';
 export * from './png-codec';
+export * from './spritesheet';
+export * from './loop-metrics';
