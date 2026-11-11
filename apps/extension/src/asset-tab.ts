@@ -12,7 +12,9 @@ export interface AssetRef {
 export interface BridgeJobResult {
   id: string;
   state: string;
-  images?: Array<{ index: number; url: string; file_path?: string }>;
+  count?: number;
+  steps?: Array<{ msg: string }>;
+  images?: Array<{ index: number; url: string; file_path?: string; order?: number }>;
   frames?: Array<{ index: number; url: string; file_path?: string }>;
   metrics?: Record<string, unknown>;
   error?: string | null;
@@ -20,7 +22,7 @@ export interface BridgeJobResult {
 
 export interface AssetTabContext {
   bridgeFetch: (path: string, init?: RequestInit) => Promise<Response>;
-  waitJob: (id: string) => Promise<BridgeJobResult>;
+  waitJob: (id: string, onProgress?: (job: BridgeJobResult) => void) => Promise<BridgeJobResult>;
   log: (level: 'info' | 'warn' | 'error', msg: string, jobId?: string) => void;
   switchTab: (tabId: string) => void;
   getTab1Refs: () => Array<{ name: string; mime: string; base64: string; dataUrl: string }>;
@@ -174,16 +176,18 @@ export function initAssetTab(ctx: AssetTabContext): void {
         throw new Error(`Bridge từ chối (HTTP ${res.status}): ${await res.text()}`);
       }
 
-      const created = (await res.json()) as { id: string };
-      setStatus(`Job #${created.id.slice(0, 8)} đã tạo. Đang xử lý...`);
+      const created = (await res.json()) as BridgeJobResult;
+      created.count ??= count;
+      renderAssetGallery(created, count);
+      setStatus(`Job #${created.id.slice(0, 8)} đã tạo (${count} asset). Đang xử lý...`);
 
-      const job = await ctx.waitJob(created.id);
+      const job = await ctx.waitJob(created.id, (liveJob) => renderAssetGallery(liveJob, count));
+      renderAssetGallery(job, count);
       if (job.state === 'error' || !job.images?.length) {
         throw new Error(job.error || 'Flow không trả ảnh nào.');
       }
 
       setStatus(`Hoàn tất ${job.images.length} game asset!`);
-      renderAssetGallery(job);
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       setStatus(msg);
@@ -193,94 +197,134 @@ export function initAssetTab(ctx: AssetTabContext): void {
     }
   });
 
-  function renderAssetGallery(job: BridgeJobResult): void {
+  function renderAssetGallery(job: BridgeJobResult, fallbackCount = 1): void {
     const gallery = $('asset-gallery');
+    gallery.className = 'jobs-grid-library';
     gallery.replaceChildren();
 
+    const images = job.images || [];
     const zipBtn = $<HTMLButtonElement>('asset-download-zip');
-    zipBtn.hidden = false;
+    zipBtn.hidden = images.length === 0;
     zipBtn.onclick = () => {
       window.open(`${ctx.getBridgeUrl()}/jobs/${job.id}/zip`, '_blank');
     };
 
-    const images = job.images || [];
-    for (const im of images) {
-      const fig = document.createElement('figure');
-      fig.style.cssText = 'background:#161b22; border:1px solid #30363d; border-radius:6px; padding:6px; margin:0; display:flex; flex-direction:column; gap:6px;';
+    const totalSlots = Math.max(Number(job.count) || fallbackCount || 1, images.length);
+    const isFinal = job.state === 'done' || job.state === 'error';
+    const latestStep = job.steps?.length ? job.steps[job.steps.length - 1]!.msg : 'Đang tạo asset...';
 
-      const img = document.createElement('img');
-      img.src = `${ctx.getBridgeUrl()}${im.url}`;
-      img.style.cssText = 'width:100%; height:160px; object-fit:contain; border-radius:4px; cursor:pointer;';
-      img.addEventListener('click', () => window.open(img.src, '_blank'));
+    for (let slotOrder = 1; slotOrder <= totalSlots; slotOrder++) {
+      const idx = slotOrder - 1;
+      const im = images.find((x) => x.order === slotOrder) ?? images[idx];
 
-      const cap = document.createElement('figcaption');
-      cap.style.cssText = 'display:flex; flex-direction:column; gap:4px; font-size:11px;';
+      const card = document.createElement('div');
+      card.className = 'job-slot-card';
+      if (!im && !isFinal) card.classList.add('is-generating');
+      if (!im && isFinal) card.classList.add('is-error');
 
-      const row1 = document.createElement('div');
-      row1.style.cssText = 'display:flex; gap:4px; justify-content:space-between; align-items:center;';
+      const thumb = document.createElement('div');
+      thumb.className = 'job-slot-thumb';
+      const badge = document.createElement('span');
+      badge.className = 'job-slot-badge';
+      badge.textContent = `Asset ${slotOrder}/${totalSlots}`;
+      thumb.append(badge);
 
-      const dl = document.createElement('a');
-      dl.className = 'btn sm primary';
-      dl.textContent = 'Tải PNG';
-      dl.href = `${ctx.getBridgeUrl()}${im.url}?download=true`;
-      dl.download = `asset_${String(job.id).slice(0, 8)}_${im.index + 1}.png`;
+      if (im) {
+        const tag = document.createElement('span');
+        tag.className = 'job-slot-status-tag done';
+        tag.textContent = 'Hoàn tất';
+        const img = document.createElement('img');
+        img.src = `${ctx.getBridgeUrl()}${im.url}`;
+        img.alt = `Asset ${slotOrder}`;
+        img.addEventListener('click', () => window.open(img.src, '_blank'));
+        thumb.append(tag, img);
+      } else if (!isFinal) {
+        thumb.classList.add('shimmer');
+        const tag = document.createElement('span');
+        tag.className = 'job-slot-status-tag running';
+        tag.textContent = 'Đang tạo';
+        const spin = document.createElement('div');
+        spin.className = 'slot-spinner';
+        const t1 = document.createElement('div');
+        t1.className = 'slot-placeholder-title';
+        t1.textContent = `Đang tạo asset ${slotOrder}/${totalSlots}...`;
+        const t2 = document.createElement('div');
+        t2.className = 'slot-placeholder-sub';
+        t2.textContent = latestStep;
+        thumb.append(tag, spin, t1, t2);
+      } else {
+        const tag = document.createElement('span');
+        tag.className = 'job-slot-status-tag error';
+        tag.textContent = 'Thất bại';
+        const t1 = document.createElement('div');
+        t1.className = 'slot-placeholder-title';
+        t1.textContent = `Asset ${slotOrder}/${totalSlots} lỗi`;
+        const t2 = document.createElement('div');
+        t2.className = 'slot-placeholder-sub';
+        t2.textContent = job.error || 'Không tạo được asset này.';
+        thumb.append(tag, t1, t2);
+      }
+      card.append(thumb);
 
-      const useStyle = document.createElement('button');
-      useStyle.className = 'sm';
-      useStyle.textContent = '+ Ref Style';
-      useStyle.title = 'Đưa ảnh này vào danh sách Style Reference của Asset';
-      useStyle.addEventListener('click', async () => {
-        const resp = await ctx.bridgeFetch(im.url);
-        const blob = await resp.blob();
-        const buf = await blob.arrayBuffer();
-        const bytes = new Uint8Array(buf);
-        let b64 = '';
-        for (let j = 0; j < bytes.length; j++) b64 += String.fromCharCode(bytes[j]!);
-        const btoaStr = btoa(b64);
-        assetRefs.push({
-          name: `asset_${im.index + 1}.png`,
-          mime: 'image/png',
-          base64: btoaStr,
-          dataUrl: `data:image/png;base64,${btoaStr}`,
+      if (im) {
+        const body = document.createElement('div');
+        body.className = 'job-slot-body';
+        const cap = document.createElement('div');
+        cap.className = 'job-slot-actions';
+
+        const dl = document.createElement('a');
+        dl.textContent = 'Tải PNG';
+        dl.href = `${ctx.getBridgeUrl()}${im.url}?download=true`;
+        dl.download = `asset_${String(job.id).slice(0, 8)}_${im.index + 1}.png`;
+
+        const useStyle = document.createElement('button');
+        useStyle.textContent = '+ Ref Style';
+        useStyle.title = 'Đưa ảnh này vào danh sách Style Reference của Asset';
+        useStyle.addEventListener('click', async () => {
+          const resp = await ctx.bridgeFetch(im.url);
+          const blob = await resp.blob();
+          const buf = await blob.arrayBuffer();
+          const bytes = new Uint8Array(buf);
+          let b64 = '';
+          for (let j = 0; j < bytes.length; j++) b64 += String.fromCharCode(bytes[j]!);
+          const btoaStr = btoa(b64);
+          assetRefs.push({
+            name: `asset_${im.index + 1}.png`,
+            mime: 'image/png',
+            base64: btoaStr,
+            dataUrl: `data:image/png;base64,${btoaStr}`,
+          });
+          renderAssetRefs();
+          alert('Đã thêm ảnh vào danh sách Style Ref!');
         });
-        renderAssetRefs();
-        alert('Đã thêm ảnh vào danh sách Style Ref!');
-      });
 
-      row1.append(dl, useStyle);
+        const toAnim = document.createElement('button');
+        toAnim.textContent = 'Sang Anim';
+        toAnim.title = 'Gửi ảnh này sang Tab 2 để làm nhân vật tạo Animation';
+        toAnim.addEventListener('click', async () => {
+          const resp = await ctx.bridgeFetch(im.url);
+          const blob = await resp.blob();
+          const file = new File([blob], `asset_anim_${Date.now()}.png`, { type: 'image/png' });
+          await ctx.sendToAnimTab(file);
+          ctx.switchTab('tab-anim');
+        });
 
-      const row2 = document.createElement('div');
-      row2.style.cssText = 'display:flex; gap:4px; justify-content:space-between;';
+        const toStrict = document.createElement('button');
+        toStrict.textContent = 'Sửa vùng';
+        toStrict.title = 'Gửi sang Tab Sửa vùng để chỉnh sửa chi tiết';
+        toStrict.addEventListener('click', async () => {
+          const resp = await ctx.bridgeFetch(im.url);
+          const blob = await resp.blob();
+          const bytes = new Uint8Array(await blob.arrayBuffer());
+          await ctx.sendToStrictTab(bytes, `Asset ${im.index + 1}`);
+          ctx.switchTab('tab-strict');
+        });
 
-      const toAnim = document.createElement('button');
-      toAnim.className = 'sm';
-      toAnim.textContent = 'Sang Anim';
-      toAnim.title = 'Gửi ảnh này sang Tab 4 để làm nhân vật tạo Animation';
-      toAnim.addEventListener('click', async () => {
-        const resp = await ctx.bridgeFetch(im.url);
-        const blob = await resp.blob();
-        const file = new File([blob], `asset_anim_${Date.now()}.png`, { type: 'image/png' });
-        await ctx.sendToAnimTab(file);
-        ctx.switchTab('tab-anim');
-      });
-
-      const toStrict = document.createElement('button');
-      toStrict.className = 'sm';
-      toStrict.textContent = 'Sửa vùng';
-      toStrict.title = 'Gửi sang Tab 2 (Sửa vùng Strict) để chỉnh sửa chi tiết';
-      toStrict.addEventListener('click', async () => {
-        const resp = await ctx.bridgeFetch(im.url);
-        const blob = await resp.blob();
-        const bytes = new Uint8Array(await blob.arrayBuffer());
-        await ctx.sendToStrictTab(bytes, `Asset ${im.index + 1}`);
-        ctx.switchTab('tab-strict');
-      });
-
-      row2.append(toAnim, toStrict);
-
-      cap.append(row1, row2);
-      fig.append(img, cap);
-      gallery.append(fig);
+        cap.append(dl, useStyle, toAnim, toStrict);
+        body.append(cap);
+        card.append(body);
+      }
+      gallery.append(card);
     }
   }
 }

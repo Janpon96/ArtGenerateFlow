@@ -1122,10 +1122,10 @@ const STATE_LABEL: Record<string, string> = {
 };
 
 interface BridgeStep { at?: string; level?: string; msg: string }
-interface BridgeImage { index: number; url: string }
+interface BridgeImage { index: number; url: string; label?: string; order?: number }
 interface BridgeJob {
   id: string; state: string; prompt?: string; model?: string; aspect_ratio?: string; count?: number;
-  error?: string | null; steps: BridgeStep[]; images: BridgeImage[];
+  labels?: string[]; created_at?: number; error?: string | null; steps: BridgeStep[]; images: BridgeImage[];
 }
 
 function say(msg: string): void {
@@ -1133,6 +1133,7 @@ function say(msg: string): void {
 }
 
 let bridgeJobs: BridgeJob[] = [];
+let jobsViewMode: 'library' | 'grouped' = 'library';
 const pollers = new Map<string, number>();
 const loggedSteps = new Map<string, number>();
 
@@ -1228,49 +1229,271 @@ async function useImageAsRef(img: BridgeImage, jobId: string): Promise<void> {
   }
 }
 
+async function sendJobImageToStrict(img: BridgeImage, jobId: string): Promise<void> {
+  try {
+    const res = await bridgeFetch(img.url);
+    if (!res.ok) throw new Error(`Không tải được ảnh (HTTP ${res.status})`);
+    const bytes = new Uint8Array(await res.arrayBuffer());
+    await loadBytesIntoStrictBase(bytes, `Job #${jobId.slice(0, 8)} • Ảnh ${img.order ?? img.index + 1}`);
+    switchTab('tab-strict');
+  } catch (e) {
+    log('error', e instanceof Error ? e.message : String(e), jobId);
+  }
+}
+
+function deleteJobById(jobId: string): void {
+  stopPolling(jobId);
+  loggedSteps.delete(jobId);
+  bridgeJobs = bridgeJobs.filter((j) => j.id !== jobId);
+  saveJobs();
+  renderBridgeJobs();
+}
+
+function clearFailedJobs(): void {
+  const failedIds = bridgeJobs.filter((j) => j.state === 'error').map((j) => j.id);
+  for (const id of failedIds) {
+    stopPolling(id);
+    loggedSteps.delete(id);
+  }
+  bridgeJobs = bridgeJobs.filter((j) => j.state !== 'error');
+  saveJobs();
+  renderBridgeJobs();
+}
+
+function clearAllJobs(): void {
+  for (const j of bridgeJobs) stopPolling(j.id);
+  pollers.clear();
+  loggedSteps.clear();
+  bridgeJobs = [];
+  saveJobs();
+  renderBridgeJobs();
+  log('info', 'Đã xóa toàn bộ hình đã generate và lịch sử job.');
+}
+
+function buildSlotCard(job: BridgeJob, slotOrder: number, totalSlots: number, showJobMeta: boolean): HTMLElement {
+  const idx = slotOrder - 1;
+  const imgItem = job.images?.find((im) => im.order === slotOrder) ?? job.images?.[idx];
+  const isFinal = FINAL_STATES.has(job.state);
+  const slotLabel = imgItem?.label || job.labels?.[idx] || '';
+  const latestStep = job.steps?.length ? job.steps[job.steps.length - 1]!.msg : (STATE_LABEL[job.state] ?? job.state);
+
+  const card = el('div', 'job-slot-card');
+  if (!imgItem && !isFinal) card.classList.add('is-generating');
+  if (!imgItem && isFinal) card.classList.add('is-error');
+
+  const thumb = el('div', 'job-slot-thumb');
+  const badgeText = totalSlots > 1
+    ? `Ảnh ${slotOrder}/${totalSlots}${slotLabel ? ` • ${slotLabel}` : ''}`
+    : (slotLabel || `Ảnh 1/1`);
+  thumb.append(el('span', 'job-slot-badge', badgeText));
+
+  if (imgItem) {
+    thumb.append(el('span', 'job-slot-status-tag done', 'Hoàn tất'));
+    const img = el('img');
+    img.src = `${API_URL}${imgItem.url}`;
+    img.alt = badgeText;
+    img.loading = 'lazy';
+    img.addEventListener('click', () => window.open(img.src, '_blank'));
+    thumb.append(img);
+  } else if (!isFinal) {
+    thumb.classList.add('shimmer');
+    thumb.append(el('span', 'job-slot-status-tag running', STATE_LABEL[job.state] ?? 'Đang tạo'));
+    thumb.append(
+      el('div', 'slot-spinner'),
+      el('div', 'slot-placeholder-title', `Đang tạo ảnh ${slotOrder}/${totalSlots}...`),
+      el('div', 'slot-placeholder-sub', latestStep),
+    );
+  } else {
+    thumb.append(el('span', 'job-slot-status-tag error', 'Thất bại'));
+    thumb.append(
+      el('div', 'slot-placeholder-title', `Ảnh ${slotOrder}/${totalSlots} không thành công`),
+      el('div', 'slot-placeholder-sub', job.error ?? 'Job kết thúc trước khi tạo xong ảnh này.'),
+    );
+  }
+  card.append(thumb);
+
+  const body = el('div', 'job-slot-body');
+  if (showJobMeta) {
+    const metaRow = el('div', 'job-slot-meta');
+    metaRow.title = job.prompt ?? '';
+    metaRow.textContent = `#${job.id.slice(0, 8)} • ${job.model ?? 'Flow'}${job.aspect_ratio ? ` • ${job.aspect_ratio}` : ''}${job.prompt ? ` — ${job.prompt}` : ''}`;
+    body.append(metaRow);
+  }
+
+  const actions = el('div', 'job-slot-actions');
+  if (imgItem) {
+    const dl = el('a', undefined, 'Tải về');
+    dl.href = `${API_URL}${imgItem.url}?download=true`;
+    dl.download = `flow_${job.id.slice(0, 8)}_${slotOrder}.jpg`;
+    const useRef = el('button', undefined, 'Dùng làm ref');
+    useRef.type = 'button';
+    useRef.addEventListener('click', () => void useImageAsRef(imgItem, job.id));
+    const toStrict = el('button', undefined, 'Sửa vùng');
+    toStrict.type = 'button';
+    toStrict.addEventListener('click', () => void sendJobImageToStrict(imgItem, job.id));
+    actions.append(dl, useRef, toStrict);
+  } else {
+    const statusInfo = el('span', 'job-meta-text', !isFinal ? 'Đang xử lý trên Google Flow...' : 'Không có dữ liệu ảnh');
+    actions.append(statusInfo);
+    if (showJobMeta) {
+      const delBtn = el('button', undefined, 'Xóa job');
+      delBtn.type = 'button';
+      delBtn.addEventListener('click', () => deleteJobById(job.id));
+      actions.append(delBtn);
+    }
+  }
+  body.append(actions);
+  card.append(body);
+  return card;
+}
+
 function renderBridgeJobs(): void {
   $('job-count').textContent = String(bridgeJobs.length);
+
+  // Thống kê tổng quan trên thanh công cụ
+  const statsBox = document.getElementById('jobs-stats');
+  let totalSlotsCount = 0;
+  let completedImagesCount = 0;
+  let generatingSlotsCount = 0;
+  let failedJobsCount = 0;
+  for (const job of bridgeJobs) {
+    const slots = Math.max(Number(job.count) || 1, job.images?.length || 0);
+    const done = job.images?.length || 0;
+    totalSlotsCount += slots;
+    completedImagesCount += done;
+    if (!FINAL_STATES.has(job.state)) generatingSlotsCount += Math.max(0, slots - done);
+    if (job.state === 'error') failedJobsCount += 1;
+  }
+
+  if (statsBox) {
+    statsBox.replaceChildren();
+    const makePill = (label: string, val: string | number, active = false): HTMLElement => {
+      const p = el('span', active ? 'jobs-stat-pill active-pill' : 'jobs-stat-pill');
+      p.append(document.createTextNode(`${label}: `), el('b', undefined, String(val)));
+      return p;
+    };
+    statsBox.append(
+      makePill('Tổng Job', bridgeJobs.length),
+      makePill('Tổng ô hình', totalSlotsCount),
+      makePill('Đang generate', generatingSlotsCount, generatingSlotsCount > 0),
+      makePill('Đã hoàn tất', completedImagesCount),
+    );
+    if (failedJobsCount > 0) statsBox.append(makePill('Job lỗi', failedJobsCount));
+  }
+
+  const clearAllBtn = document.getElementById('clear-all-jobs') as HTMLButtonElement | null;
+  if (clearAllBtn) clearAllBtn.disabled = bridgeJobs.length === 0;
+  const clearFailedBtn = document.getElementById('clear-failed-jobs') as HTMLButtonElement | null;
+  if (clearFailedBtn) clearFailedBtn.disabled = failedJobsCount === 0;
+
   const box = $('jobs');
   if (bridgeJobs.length === 0) {
-    box.replaceChildren(el('p', 'card-sub', 'Chưa có job nào. Bấm "Tạo Job Generate / Edit" ở Tab 1.'));
+    box.replaceChildren(
+      el('p', 'card-sub', 'Chưa có hình hoặc job nào. Khi bấm Generate ở bất kỳ tab nào, toàn bộ số lượng ô hình sẽ xuất hiện ngay tại đây.'),
+    );
     return;
   }
-  box.replaceChildren(...bridgeJobs.map((job) => {
-    const card = el('div', 'job-card');
-    const head = el('div');
-    head.append(
-      el('b', undefined, `#${job.id.slice(0, 8)} `),
-      el('span', undefined, `${STATE_LABEL[job.state] ?? job.state} • ${job.model ?? ''} • ${job.aspect_ratio ?? ''} • ${job.count ?? ''} ảnh`),
-    );
-    card.append(head);
-    if (job.prompt) card.append(el('p', 'card-sub', job.prompt.length > 200 ? `${job.prompt.slice(0, 200)}…` : job.prompt));
-    if (job.error) card.append(el('p', 'card-sub', `Lỗi: ${job.error}`));
-    const ol = el('ol');
-    for (const s of job.steps) ol.append(el('li', undefined, s.msg));
-    card.append(ol);
-    if (job.images?.length) {
-      const gallery = el('div', 'gallery');
-      for (const im of job.images) {
-        const fig = el('figure');
-        const img = el('img');
-        img.src = `${API_URL}${im.url}`;
-        img.alt = `Ảnh ${im.index + 1}`;
-        img.addEventListener('click', () => window.open(img.src, '_blank'));
-        const cap = el('figcaption');
-        const dl = el('a', undefined, 'Tải về');
-        dl.href = `${API_URL}${im.url}?download=true`;
-        dl.download = `flow_${job.id.slice(0, 8)}_${im.index + 1}.jpg`;
-        const useRef = el('button', undefined, 'Dùng làm ref');
-        useRef.addEventListener('click', () => void useImageAsRef(im, job.id));
-        cap.append(dl, useRef);
-        fig.append(img, cap);
-        gallery.append(fig);
+
+  if (jobsViewMode === 'library') {
+    const grid = el('div', 'jobs-grid-library');
+    for (const job of bridgeJobs) {
+      const totalSlots = Math.max(Number(job.count) || 1, job.images?.length || 0);
+      for (let slotOrder = 1; slotOrder <= totalSlots; slotOrder++) {
+        grid.append(buildSlotCard(job, slotOrder, totalSlots, true));
       }
-      card.append(gallery);
     }
+    box.replaceChildren(grid);
+    return;
+  }
+
+  // Chế độ xem theo từng Job kèm đầy đủ các ô hình của job đó
+  box.replaceChildren(...bridgeJobs.map((job) => {
+    const isFinal = FINAL_STATES.has(job.state);
+    const totalSlots = Math.max(Number(job.count) || 1, job.images?.length || 0);
+    const doneCount = job.images?.length || 0;
+
+    const card = el('div', 'job-card');
+    if (!isFinal) card.classList.add('is-running');
+    if (job.state === 'error') card.classList.add('is-error');
+
+    const head = el('div', 'job-card-head');
+    const titleWrap = el('div', 'job-card-title');
+    titleWrap.append(
+      el('span', 'job-id-pill', `#${job.id.slice(0, 8)}`),
+      el(
+        'span',
+        job.state === 'error' ? 'badge danger' : isFinal ? 'badge ok' : 'badge warn',
+        `${STATE_LABEL[job.state] ?? job.state} (${doneCount}/${totalSlots} ảnh)`,
+      ),
+      el('span', 'job-meta-text', [job.model, job.aspect_ratio].filter(Boolean).join(' • ')),
+    );
+
+    const headActions = el('div', 'jobs-actions');
+    if (doneCount > 1) {
+      const zipBtn = el('button', 'sm', 'Tải ZIP');
+      zipBtn.type = 'button';
+      zipBtn.addEventListener('click', () => window.open(`${API_URL}/jobs/${job.id}/zip`, '_blank'));
+      headActions.append(zipBtn);
+    }
+    const delBtn = el('button', 'sm danger', 'Xóa job');
+    delBtn.type = 'button';
+    delBtn.addEventListener('click', () => deleteJobById(job.id));
+    headActions.append(delBtn);
+
+    head.append(titleWrap, headActions);
+    card.append(head);
+
+    if (job.prompt) {
+      const p = el('div', 'job-prompt-text', job.prompt);
+      p.title = job.prompt;
+      card.append(p);
+    }
+    if (job.error) {
+      card.append(el('div', 'alert bad', `Lỗi: ${job.error}`));
+    }
+
+    const grid = el('div', 'jobs-grid-library');
+    for (let slotOrder = 1; slotOrder <= totalSlots; slotOrder++) {
+      grid.append(buildSlotCard(job, slotOrder, totalSlots, false));
+    }
+    card.append(grid);
+
+    if (job.steps?.length) {
+      const details = el('details', 'job-steps-details');
+      if (!isFinal || job.state === 'error') details.open = true;
+      const latestMsg = job.steps[job.steps.length - 1]?.msg ?? '';
+      details.append(el('summary', undefined, `Nhật ký thực thi (${job.steps.length} bước)${latestMsg ? ` — ${latestMsg}` : ''}`));
+      const ol = el('ol');
+      for (const s of job.steps) ol.append(el('li', undefined, s.msg));
+      details.append(ol);
+      card.append(details);
+    }
+
     return card;
   }));
 }
+
+document.getElementById('jobs-view-library')?.addEventListener('click', () => {
+  jobsViewMode = 'library';
+  document.getElementById('jobs-view-library')?.classList.add('active');
+  document.getElementById('jobs-view-grouped')?.classList.remove('active');
+  renderBridgeJobs();
+});
+
+document.getElementById('jobs-view-grouped')?.addEventListener('click', () => {
+  jobsViewMode = 'grouped';
+  document.getElementById('jobs-view-grouped')?.classList.add('active');
+  document.getElementById('jobs-view-library')?.classList.remove('active');
+  renderBridgeJobs();
+});
+
+document.getElementById('clear-all-jobs')?.addEventListener('click', () => {
+  clearAllJobs();
+});
+
+document.getElementById('clear-failed-jobs')?.addEventListener('click', () => {
+  clearFailedJobs();
+});
 
 function readSize(): { width: number; height: number } {
   const v = $<HTMLSelectElement>('size').value;
@@ -1328,6 +1551,9 @@ $('newjob').addEventListener('click', async () => {
     });
     if (!res.ok) throw new Error(`Bridge từ chối job (HTTP ${res.status}): ${await res.text()}`);
     const job = (await res.json()) as BridgeJob;
+    job.prompt ??= body.prompt;
+    job.aspect_ratio ??= body.aspect_ratio;
+    job.count ??= body.count;
     upsertJob(job);
     startPolling(job.id);
     say(`Đã tạo job #${job.id.slice(0, 8)}. Xem tiến độ ở Tab 3 và Console.`);
@@ -1395,12 +1621,13 @@ async function useEditResult(job: BridgeJob, im: BridgeImage): Promise<void> {
   $('run').click();
 }
 
-async function waitJob(id: string): Promise<BridgeJob> {
+async function waitJob(id: string, onProgress?: (job: BridgeJob) => void): Promise<BridgeJob> {
   for (;;) {
     const res = await bridgeFetch(`/jobs/${id}`);
     if (!res.ok) throw new Error(`Không đọc được job (HTTP ${res.status})`);
     const job = (await res.json()) as BridgeJob;
     upsertJob(job);
+    onProgress?.(job);
     if (FINAL_STATES.has(job.state)) return job;
     setEditStatus(`${STATE_LABEL[job.state] ?? job.state}... (xem chi tiết ở Tab 3)`);
     await new Promise((r) => window.setTimeout(r, 1500));

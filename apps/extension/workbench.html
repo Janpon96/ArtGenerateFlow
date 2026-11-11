@@ -662,20 +662,446 @@
     .gallery figcaption { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 7px; }
     .timeline { font-size: 12px; margin: 6px 0; padding-left: 18px; color: var(--text-muted); }
 
-    .job-card {
+    /* Job Queue & Grid Library */
+    .jobs-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 12px 16px;
       background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 14px 16px;
-      margin-bottom: 12px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 14px;
     }
-    .job-card ol {
-      margin: 8px 0 12px 18px;
-      padding: 0;
+    .jobs-stats {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
       font-size: 12.5px;
       color: var(--text-secondary);
     }
-    .job-card li { margin-bottom: 4px; }
+    .jobs-stat-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--text);
+    }
+    .jobs-stat-pill b {
+      color: #a5b4fc;
+      font-weight: 700;
+    }
+    .jobs-stat-pill.active-pill {
+      border-color: rgba(99, 102, 241, 0.5);
+      background: rgba(99, 102, 241, 0.14);
+      color: #c7d2fe;
+    }
+    .jobs-actions {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .jobs-view-switch {
+      display: inline-flex;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 2px;
+      gap: 2px;
+    }
+    .jobs-view-switch button {
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      padding: 5px 11px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .jobs-view-switch button.active {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35);
+    }
+
+    .jobs-grid-library {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 14px;
+    }
+    .job-slot-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      transition: border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+      min-width: 0;
+    }
+    .job-slot-card:hover {
+      border-color: #3b4f75;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+    }
+    .job-slot-card.is-generating {
+      border-color: rgba(99, 102, 241, 0.45);
+      box-shadow: inset 0 0 0 1px rgba(99, 102, 241, 0.15);
+    }
+    .job-slot-card.is-error {
+      border-color: rgba(239, 68, 68, 0.45);
+      background: rgba(239, 68, 68, 0.04);
+    }
+    .job-slot-thumb {
+      position: relative;
+      width: 100%;
+      height: 186px;
+      background: #070b12;
+      display: flex;
+       flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .job-slot-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      cursor: zoom-in;
+      display: block;
+      transition: transform 0.2s ease;
+    }
+    .job-slot-thumb img:hover {
+      transform: scale(1.02);
+    }
+    .job-slot-badge {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      padding: 2px 8px;
+      border-radius: 6px;
+      background: rgba(7, 10, 16, 0.82);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      color: #e2e8f0;
+      font-size: 11px;
+      font-weight: 600;
+      z-index: 2;
+    }
+    .job-slot-status-tag {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 10.5px;
+      font-weight: 600;
+      z-index: 2;
+    }
+    .job-slot-status-tag.done {
+      background: rgba(16, 185, 129, 0.2);
+      border: 1px solid rgba(16, 185, 129, 0.45);
+      color: #6ee7b7;
+    }
+    .job-slot-status-tag.running {
+      background: rgba(99, 102, 241, 0.22);
+      border: 1px solid rgba(99, 102, 241, 0.5);
+      color: #c7d2fe;
+    }
+    .job-slot-status-tag.error {
+      background: rgba(239, 68, 68, 0.22);
+      border: 1px solid rgba(239, 68, 68, 0.5);
+      color: #fca5a5;
+    }
+
+    @keyframes slot-shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    @keyframes slot-spin {
+      to { transform: rotate(360deg); }
+    }
+    .job-slot-thumb.shimmer {
+      background: linear-gradient(110deg, #090e18 25%, #151f36 50%, #090e18 75%);
+      background-size: 200% 100%;
+      animation: slot-shimmer 2.1s infinite linear;
+    }
+    .slot-spinner {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: 2.5px solid rgba(129, 140, 248, 0.22);
+      border-top-color: #818cf8;
+      animation: slot-spin 0.85s linear infinite;
+      margin-bottom: 10px;
+    }
+    .slot-placeholder-title {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #e2e8f0;
+      text-align: center;
+      padding: 0 12px;
+    }
+    .slot-placeholder-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: center;
+      padding: 4px 12px 0;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .job-slot-body {
+      padding: 9px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      flex: 1;
+      justify-content: space-between;
+    }
+    .job-slot-meta {
+      font-size: 11.5px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .job-slot-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+    .job-slot-actions a,
+    .job-slot-actions button {
+      flex: 1 1 auto;
+      text-align: center;
+      font-size: 11px;
+      padding: 4px 7px;
+      border-radius: 6px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      color: var(--text);
+      text-decoration: none;
+      cursor: pointer;
+      transition: background 0.14s, border-color 0.14s;
+    }
+    .job-slot-actions a:hover,
+    .job-slot-actions button:hover {
+      background: #1f2b42;
+      border-color: #3b4f75;
+    }
+
+    .job-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 14px;
+      transition: border-color 0.18s;
+    }
+    .job-card.is-running {
+      border-color: rgba(99, 102, 241, 0.45);
+      box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.12);
+    }
+    .job-card.is-error {
+      border-color: rgba(239, 68, 68, 0.4);
+    }
+    .job-card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .job-card-title {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 13px;
+    }
+    .job-id-pill {
+      font-family: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 6px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      color: #a5b4fc;
+    }
+    .job-meta-text {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .job-prompt-text {
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      margin: 4px 0 10px;
+      padding: 7px 10px;
+      background: rgba(9, 13, 22, 0.55);
+      border: 1px solid var(--border-subtle);
+      border-radius: 7px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .job-steps-details {
+      margin: 6px 0 10px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .job-steps-details summary {
+      cursor: pointer;
+      user-select: none;
+      color: var(--text-secondary);
+      font-weight: 500;
+      padding: 3px 0;
+    }
+    .job-card ol {
+      margin: 6px 0 8px 18px;
+      padding: 0;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    .job-card li { margin-bottom: 3px; }
+
+    /* Compact Panels & Collapsible Sections across Image / Animation / Video */
+    .field-row-4 {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    @media (max-width: 820px) {
+      .field-row-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    details.panel-details {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin: 10px 0;
+      overflow: hidden;
+      transition: border-color 0.15s ease;
+    }
+    details.panel-details[open] {
+      border-color: #2f4166;
+    }
+    details.panel-details > summary {
+      list-style: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 14px;
+      cursor: pointer;
+      user-select: none;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text);
+      background: rgba(15, 21, 34, 0.55);
+    }
+    details.panel-details > summary::-webkit-details-marker { display: none; }
+    details.panel-details > summary::after {
+      content: "▾";
+      font-size: 12px;
+      color: var(--text-muted);
+      transition: transform 0.15s ease;
+    }
+    details.panel-details[open] > summary::after {
+      transform: rotate(180deg);
+    }
+    details.panel-details > .panel-details-body {
+      padding: 12px 14px;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .compact-drop {
+      cursor: pointer;
+      min-height: 116px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 10px 14px;
+      border: 1.5px dashed #2e3e5c;
+      border-radius: 9px;
+      background: var(--bg-input);
+      margin-bottom: 8px;
+      transition: border-color 0.16s, background 0.16s;
+    }
+    .compact-drop:hover {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+    .compact-drop img {
+      max-width: 100%;
+      max-height: 210px;
+      border-radius: 6px;
+      object-fit: contain;
+    }
+
+    .check-scroll-box {
+      max-height: 210px;
+      overflow-y: auto;
+      padding: 10px 12px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin: 6px 0 10px;
+    }
+    .action-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding-top: 10px;
+      margin-top: 10px;
+      border-top: 1px solid var(--border-subtle);
+    }
+    .inline-checks {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin: 8px 0;
+      font-size: 12.5px;
+    }
+    .inline-checks label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      color: var(--text-secondary);
+    }
+    .video-stage {
+      min-height: 260px;
+      background: #060911;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      margin: 10px 0;
+      padding: 8px;
+    }
 
     .source-map-list {
       display: flex;
@@ -883,39 +1309,38 @@
 
             <div id="ref-status"></div>
             <div id="ref-list" class="ref-list"></div>
-          </div>
-
-          <!-- Ràng buộc thuộc tính chi tiết -->
-          <div class="card">
-            <div class="card-header">
-              <div>
-                <h2 class="card-title">Ràng buộc Thuộc tính (Keep / Change / Avoid)</h2>
-                <p class="card-sub">Khóa chặt các chi tiết cần giữ nguyên hoặc cần thay đổi trên từng nhân vật/chủ thể.</p>
+            <!-- Ràng buộc thuộc tính chi tiết (Thu gọn) -->
+            <details class="panel-details" style="margin-top:14px;">
+              <summary>
+                <span>Ràng buộc Thuộc tính (Keep / Change / Avoid)</span>
+                <span class="card-sub" style="margin:0; font-weight:400;">Tùy chọn khóa chi tiết chủ thể</span>
+              </summary>
+              <div class="panel-details-body">
+                <div class="field-row-3">
+                  <div>
+                    <label class="field-label">Chủ thể (Subject)</label>
+                    <input id="c-subject" type="text" placeholder="VD: main_hero" />
+                  </div>
+                  <div>
+                    <label class="field-label">Thuộc tính (Attribute)</label>
+                    <input id="c-attr" type="text" placeholder="VD: mắt, áo khoác, tóc" />
+                  </div>
+                  <div>
+                    <label class="field-label">Thao tác</label>
+                    <select id="c-op">
+                      <option value="preserve">Giữ nguyên (Preserve)</option>
+                      <option value="change_to">Đổi thành (Change to)</option>
+                      <option value="avoid">Tránh (Avoid)</option>
+                    </select>
+                  </div>
+                </div>
+                <div style="display:flex; gap:8px;">
+                  <input id="c-val" type="text" placeholder="Giá trị chi tiết (VD: áo giáp bạc có vết xước, không đội mũ)" />
+                  <button id="add-constraint">+ Thêm</button>
+                </div>
+                <div id="constraint-list"></div>
               </div>
-            </div>
-            <div class="field-row-3">
-              <div>
-                <label class="field-label">Chủ thể (Subject)</label>
-                <input id="c-subject" type="text" placeholder="VD: main_hero" />
-              </div>
-              <div>
-                <label class="field-label">Thuộc tính (Attribute)</label>
-                <input id="c-attr" type="text" placeholder="VD: mắt, áo khoác, tóc" />
-              </div>
-              <div>
-                <label class="field-label">Thao tác</label>
-                <select id="c-op">
-                  <option value="preserve">Giữ nguyên (Preserve)</option>
-                  <option value="change_to">Đổi thành (Change to)</option>
-                  <option value="avoid">Tránh (Avoid)</option>
-                </select>
-              </div>
-            </div>
-            <div style="display:flex; gap:8px;">
-              <input id="c-val" type="text" placeholder="Giá trị chi tiết (VD: áo giáp bạc có vết xước, không đội mũ)" />
-              <button id="add-constraint">+ Thêm</button>
-            </div>
-            <div id="constraint-list"></div>
+            </details>
           </div>
         </div>
 
@@ -930,11 +1355,11 @@
               <button id="load-sample" class="sm">Nạp mẫu thử</button>
             </div>
 
-            <div style="margin-bottom:12px;">
+            <div style="margin-bottom:10px;">
               <label class="field-label" for="brief">Mô tả cảnh &amp; nội dung cần tạo / chỉnh sửa *</label>
               <div id="mention-chips" class="mention-chips" hidden></div>
-              <textarea id="brief" rows="4" placeholder="VD: vẽ lại @hinh1 dựa vào nhân vật @hinh2, bám sát pose của @hinh3"></textarea>
-              <p class="card-sub" style="margin-top:4px;">Dùng <b>@định_danh</b> để chỉ đúng ảnh (định danh sửa được trên từng thẻ ảnh). Prompt xuất ra sẽ đổi thành "Image N".</p>
+              <textarea id="brief" rows="3" placeholder="VD: vẽ lại @hinh1 dựa vào nhân vật @hinh2, bám sát pose của @hinh3"></textarea>
+              <p class="card-sub" style="margin-top:4px;">Dùng <b>@định_danh</b> để chỉ đúng ảnh. Prompt xuất ra tự đổi thành "Image N".</p>
             </div>
 
             <div class="field-row">
@@ -948,19 +1373,19 @@
               </div>
             </div>
 
-            <div class="field-row-3">
+            <div class="field-row-4">
               <div>
-                <label class="field-label" for="model">Model mục tiêu trong Flow</label>
+                <label class="field-label" for="model">Model Flow</label>
                 <select id="model">
                   <option value="Nano Banana 2.1">Nano Banana 2.1</option>
                   <option value="Nano Banana Pro">Nano Banana Pro</option>
-                  <option value="">Agent Auto (để Flow tự chọn)</option>
-                  <option value="__custom__">Khác (nhập tên model)...</option>
+                  <option value="">Agent Auto</option>
+                  <option value="__custom__">Khác...</option>
                 </select>
-                <input id="model-custom" type="text" placeholder="Tên model đúng như hiển thị trong Flow" hidden style="margin-top:6px;" />
+                <input id="model-custom" type="text" placeholder="Tên model trong Flow" hidden style="margin-top:6px;" />
               </div>
               <div>
-                <label class="field-label" for="ratio">Tỉ lệ khung hình</label>
+                <label class="field-label" for="ratio">Tỉ lệ khung</label>
                 <select id="ratio">
                   <option value="16:9">16:9 (Ngang)</option>
                   <option value="9:16">9:16 (Dọc)</option>
@@ -970,54 +1395,64 @@
                 </select>
               </div>
               <div>
-                <label class="field-label" for="out-count">Số lượng ảnh</label>
-                <input id="out-count" type="number" min="1" max="8" step="1" value="1" title="Số ảnh tạo trong một lần bấm (1-8). Bridge gửi lần lượt, tối đa 2 ảnh cùng lúc, để tránh bị Google chặn." />
-              </div>
-            </div>
-            <label style="display:flex; align-items:center; gap:8px; margin:10px 0 0; font-size:12.5px; cursor:pointer;">
-              <input id="remove-watermark" type="checkbox" checked style="width:auto;" />
-              Xóa watermark (logo ngôi sao mờ) ở góc phải dưới ảnh
-            </label>
-
-            <div class="field-row-3">
-              <div>
-                <label class="field-label" for="size">Kích thước ảnh xuất</label>
+                <label class="field-label" for="size">Kích thước xuất</label>
                 <select id="size">
-                  <option value="0x0">Giữ nguyên theo Flow</option>
-                  <option value="1920x1080" selected>1920 x 1080 (Full HD ngang)</option>
-                  <option value="1080x1920">1080 x 1920 (Full HD dọc)</option>
-                  <option value="1080x1080">1080 x 1080 (Vuông)</option>
-                  <option value="3840x2160">3840 x 2160 (4K ngang)</option>
-                  <option value="__custom__">Tùy chỉnh (nhập số)...</option>
+                  <option value="0x0">Theo Flow</option>
+                  <option value="1920x1080" selected>1920 × 1080 (FHD)</option>
+                  <option value="1080x1920">1080 × 1920 (Dọc)</option>
+                  <option value="1080x1080">1080 × 1080 (Vuông)</option>
+                  <option value="3840x2160">3840 × 2160 (4K)</option>
+                  <option value="__custom__">Tùy chỉnh...</option>
                 </select>
               </div>
-              <div id="size-custom" hidden>
-                <label class="field-label" for="size-w">Rộng x Cao (px)</label>
-                <div style="display:flex; gap:6px; align-items:center;">
-                  <input id="size-w" type="number" min="64" max="8192" value="1920" style="width:90px;" />
-                  <span>x</span>
-                  <input id="size-h" type="number" min="64" max="8192" value="1080" style="width:90px;" />
-                </div>
+              <div>
+                <label class="field-label" for="out-count">Số lượng ảnh</label>
+                <input id="out-count" type="number" min="1" max="8" step="1" value="1" title="Số ảnh tạo trong một lần bấm (1-8)." />
               </div>
             </div>
-            <p class="card-sub">Flow chỉ tạo 3 tỉ lệ (ngang, dọc, vuông) ở khoảng 1376×768. Nếu kích thước chọn lớn hơn, bridge tự upscale 2K/4K trên Flow rồi cắt giữa và thu nhỏ về đúng kích thước này để giữ nét; mỗi ảnh mất thêm thời gian. Log của job ghi rõ ảnh xuất từ nguồn nào và cảnh báo nếu không đủ nét.</p>
 
-            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:6px;">
-              <button id="compile" class="primary">Biên dịch Prompt</button>
-              <button id="copy-prompt">Sao chép Prompt</button>
-              <button id="newjob" class="primary">Tạo Job Generate / Edit</button>
+            <div id="size-custom" hidden style="margin-bottom:10px;">
+              <label class="field-label" for="size-w">Rộng × Cao tùy chỉnh (px)</label>
+              <div style="display:flex; gap:6px; align-items:center;">
+                <input id="size-w" type="number" min="64" max="8192" value="1920" style="width:100px;" />
+                <span>×</span>
+                <input id="size-h" type="number" min="64" max="8192" value="1080" style="width:100px;" />
+              </div>
             </div>
 
-            <div id="compile-warnings" style="margin-top:12px;"></div>
+            <div class="inline-checks" style="justify-content:space-between;">
+              <label title="Tự động xóa logo ngôi sao mờ ở góc phải dưới ảnh">
+                <input id="remove-watermark" type="checkbox" checked />
+                Xóa watermark góc phải dưới
+              </label>
+              <span class="card-sub" style="margin:0;">Tự động upscale 2K/4K trên Flow khi xuất cỡ lớn</span>
+            </div>
+
+            <div class="action-bar">
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <button id="compile">Biên dịch Prompt</button>
+                <button id="copy-prompt">Sao chép</button>
+              </div>
+              <button id="newjob" class="primary">Tạo Job Generate / Edit</button>
+            </div>
+            <p id="jobmsg" class="card-sub" style="margin-top:6px;"></p>
+
+            <div id="compile-warnings" style="margin-top:8px;"></div>
 
             <div id="source-map-box" hidden>
-              <label class="field-label" style="margin-top:12px;">Thứ tự tải ảnh lên Flow (Source Map):</label>
+              <label class="field-label" style="margin-top:10px;">Thứ tự tải ảnh lên Flow (Source Map):</label>
               <div id="source-map-list" class="source-map-list"></div>
             </div>
 
-            <label class="field-label" style="margin-top:12px;">Prompt đã biên dịch:</label>
-            <pre id="compiled" class="codebox">Bấm "Biên dịch Prompt" sau khi thêm ảnh tham chiếu và nhập mô tả...</pre>
-            <p id="jobmsg" class="card-sub"></p>
+            <details class="panel-details" style="margin-top:10px;" open>
+              <summary>
+                <span>Prompt đã biên dịch</span>
+                <span class="card-sub" style="margin:0; font-weight:400;">Xem câu lệnh gửi tới Flow</span>
+              </summary>
+              <div class="panel-details-body" style="padding:8px 10px;">
+                <pre id="compiled" class="codebox" style="margin:0; max-height:200px;">Bấm "Biên dịch Prompt" sau khi thêm ảnh tham chiếu và nhập mô tả...</pre>
+              </div>
+            </details>
           </div>
         </div>
       </div>
@@ -1031,7 +1466,7 @@
             <div class="card-header">
               <div>
                 <h2 class="card-title">Vẽ Mask &amp; Khoanh vùng Chỉnh sửa</h2>
-                <p class="card-sub">Mọi pixel nằm ngoài vùng cho phép sửa (hoặc nằm trong vùng Bảo vệ) được giữ nguyên tuyệt đối từng byte RGBA.</p>
+                <p class="card-sub">Mọi pixel nằm ngoài vùng cho phép sửa (hoặc trong vùng Bảo vệ) được giữ nguyên tuyệt đối từng byte RGBA.</p>
               </div>
             </div>
 
@@ -1041,17 +1476,14 @@
                 <input id="base" type="file" accept="image/png,image/jpeg,image/webp" />
               </div>
               <div>
-                <label class="field-label">2. Ảnh ứng viên đã sửa (cùng cỡ)</label>
-                <input id="cand" type="file" accept="image/png,image/jpeg,image/webp" />
+                <label class="field-label">Hoặc lấy nhanh từ Reference</label>
+                <div style="display:flex; gap:6px; align-items:center;">
+                  <select id="pick-ref-as-base" style="flex:1;">
+                    <option value="">-- Chọn ảnh từ Reference --</option>
+                  </select>
+                  <button id="use-ref-base" class="sm">Nạp</button>
+                </div>
               </div>
-            </div>
-
-            <div style="display:flex; gap:8px; align-items:center; margin-bottom:12px; flex-wrap:wrap;">
-              <select id="pick-ref-as-base" style="max-width:280px;">
-                <option value="">-- Hoặc lấy từ ảnh trong Reference --</option>
-              </select>
-              <button id="use-ref-base" class="sm">Dùng làm Ảnh gốc</button>
-              <button id="make-demo-cand" class="sm">Tạo ảnh ứng viên thử nghiệm (Demo)</button>
             </div>
 
             <div class="canvas-toolbar">
@@ -1066,15 +1498,15 @@
               <label style="font-size:12px; display:flex; align-items:center; gap:5px;">
                 Lớp vẽ:
                 <select id="mask-target" style="width:auto; padding:5px 8px;">
-                  <option value="allow">Vùng cho phép sửa (Đỏ)</option>
-                  <option value="protect">Vùng bảo vệ tuyệt đối (Xanh lá)</option>
+                  <option value="allow">Cho phép sửa (Đỏ)</option>
+                  <option value="protect">Bảo vệ tuyệt đối (Xanh lá)</option>
                 </select>
               </label>
               <label style="font-size:12px; display:flex; align-items:center; gap:5px;">
                 Chế độ:
                 <select id="mask-mode" style="width:auto; padding:5px 8px;">
-                  <option value="add">Cộng thêm (+)</option>
-                  <option value="subtract">Trừ bớt (-)</option>
+                  <option value="add">Cộng (+)</option>
+                  <option value="subtract">Trừ (-)</option>
                 </select>
               </label>
               <button id="mask-undo" class="sm">Hoàn tác</button>
@@ -1083,56 +1515,86 @@
             </div>
 
             <div class="canvas-toolbar" style="justify-content:space-between; gap:16px;">
-              <div style="display:flex; align-items:center; gap:10px; flex:1; min-width:200px;">
+              <div style="display:flex; align-items:center; gap:10px; flex:1; min-width:190px;">
                 <label class="field-label" style="margin:0; white-space:nowrap;">Cỡ cọ: <strong id="brush-val">30</strong> px</label>
                 <input id="brush-size" type="range" min="2" max="300" value="30" style="flex:1;" />
               </div>
-              <div style="display:flex; align-items:center; gap:10px; flex:1; min-width:220px;">
-                <label class="field-label" style="margin:0; white-space:nowrap;">Làm mềm biên (Feather): <strong id="feather-val">2</strong> px</label>
+              <div style="display:flex; align-items:center; gap:10px; flex:1; min-width:210px;">
+                <label class="field-label" style="margin:0; white-space:nowrap;">Mềm biên (Feather): <strong id="feather-val">2</strong> px</label>
                 <input id="feather" type="range" min="0" max="24" value="2" style="flex:1;" />
               </div>
             </div>
 
-            <div class="canvas-stage">
+            <div class="canvas-stage" style="min-height:280px;">
               <canvas id="view" width="640" height="400"></canvas>
             </div>
 
-            <div style="margin-top:14px; padding:14px; background:var(--bg-card); border:1px solid var(--border); border-radius:10px;">
-              <label class="field-label" style="font-size:13px; color:#f8fafc; margin-bottom:8px;">3. Sửa / Xóa vùng đã tô bằng Google Flow</label>
-              <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
-                <select id="edit-mode" style="width:auto;">
-                  <option value="edit">Sửa vùng theo prompt</option>
-                  <option value="remove">Xóa vùng (tự lấp nền)</option>
-                </select>
-                <select id="edit-model" style="width:auto;"></select>
-                <!-- Live test 2026-10-30: gửi 2 ảnh sửa vùng song song bị Google chặn (PUBLIC_ERROR_UNUSUAL_ACTIVITY) 2/2 lần; 1 ảnh/lượt thì ổn. -->
-                <select id="edit-count" style="width:auto;" title="Gửi nhiều ảnh cùng lúc dễ bị Google chặn (unusual activity). Hãy tạo từng ảnh một.">
-                  <option value="1">1 ảnh mỗi lượt</option>
-                </select>
-              </div>
-              <div id="strict-ref-box" style="margin:10px 0; padding:10px 12px; background:var(--bg-input); border:1px dashed #2e3e5c; border-radius:8px;">
-                <label class="field-label" style="margin:0 0 6px;">Ảnh tham chiếu cho vùng tô (tùy chọn, tối đa 4). Ảnh gốc là ảnh 1, các ảnh này là ảnh 2, 3, ...</label>
-                <input id="strict-ref-input" type="file" accept="image/*" multiple />
-                <div id="strict-ref-list" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;"></div>
-                <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-top:8px;">
-                  <label>Màu đánh dấu:
-                    <select id="strict-marker-color" style="width:auto;">
-                      <option value="magenta">Tím (magenta)</option>
-                      <option value="red">Đỏ</option>
-                    </select>
-                  </label>
-                  <label><input id="strict-composite" type="checkbox" checked /> Ghép ngược (giữ nguyên ngoài vùng tô)</label>
-                  <label>Làm mềm biên: <strong id="strict-feather-val">6</strong> px
-                    <input id="strict-feather" type="range" min="0" max="40" value="6" style="max-width:140px;" />
-                  </label>
+            <div style="margin-top:12px; padding:12px 14px; background:var(--bg-card); border:1px solid var(--border); border-radius:10px;">
+              <div class="field-row-3" style="margin-bottom:8px;">
+                <div>
+                  <label class="field-label">Chế độ</label>
+                  <select id="edit-mode">
+                    <option value="edit">Sửa vùng theo prompt</option>
+                    <option value="remove">Xóa vùng (tự lấp nền)</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="field-label">Model Flow</label>
+                  <select id="edit-model"></select>
+                </div>
+                <div>
+                  <label class="field-label">Số lượt</label>
+                  <select id="edit-count" title="Gửi nhiều ảnh cùng lúc dễ bị Google chặn (unusual activity). Hãy tạo từng ảnh một.">
+                    <option value="1">1 ảnh mỗi lượt</option>
+                  </select>
                 </div>
               </div>
-              <textarea id="edit-prompt" rows="3" placeholder="Mô tả cần sửa vùng đã tô (vd: đổi thành chiếc mũ đỏ). Với chế độ Xóa có thể để trống."></textarea>
-              <div style="display:flex; gap:10px; align-items:center; margin-top:8px;">
-                <button id="edit-generate" class="primary">Generate (sửa/xóa vùng đã tô)</button>
+
+              <textarea id="edit-prompt" rows="2" placeholder="Mô tả cần sửa vùng đã tô (vd: đổi thành chiếc mũ đỏ). Với chế độ Xóa có thể để trống."></textarea>
+
+              <details id="strict-ref-box" class="panel-details" style="margin:8px 0;">
+                <summary>
+                  <span>Ảnh tham chiếu vùng sửa &amp; Cấu hình nâng cao</span>
+                  <span class="card-sub" style="margin:0; font-weight:400;">Tùy chọn (tối đa 4 ảnh, màu đánh dấu, ghép ngược)</span>
+                </summary>
+                <div class="panel-details-body">
+                  <label class="field-label" style="margin:0 0 6px;">Ảnh tham chiếu cho vùng tô (Ảnh gốc là ảnh 1, các ảnh này là ảnh 2, 3...):</label>
+                  <input id="strict-ref-input" type="file" accept="image/*" multiple />
+                  <div id="strict-ref-list" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;"></div>
+                  <div class="inline-checks" style="margin-top:8px;">
+                    <label>Màu đánh dấu:
+                      <select id="strict-marker-color" style="width:auto; padding:4px 8px;">
+                        <option value="magenta">Tím (magenta)</option>
+                        <option value="red">Đỏ</option>
+                      </select>
+                    </label>
+                    <label><input id="strict-composite" type="checkbox" checked /> Ghép ngược ngoài vùng tô</label>
+                    <label>Mềm biên Flow: <strong id="strict-feather-val">6</strong> px
+                      <input id="strict-feather" type="range" min="0" max="40" value="6" style="width:110px;" />
+                    </label>
+                  </div>
+                </div>
+              </details>
+
+              <div class="action-bar" style="margin-top:6px; padding-top:8px;">
+                <button id="edit-generate" class="primary">Generate (Sửa / Xóa vùng đã tô)</button>
                 <span id="edit-status" class="card-sub"></span>
               </div>
             </div>
+
+            <details class="panel-details" style="margin-top:10px;">
+              <summary>
+                <span>Ghép thủ công với Ảnh ứng viên có sẵn (Offline Strict Test)</span>
+                <span class="card-sub" style="margin:0; font-weight:400;">Dành cho kiểm thử không qua Flow</span>
+              </summary>
+              <div class="panel-details-body">
+                <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                  <input id="cand" type="file" accept="image/png,image/jpeg,image/webp" style="flex:1; min-width:200px;" />
+                  <button id="make-demo-cand" class="sm">Tạo ảnh ứng viên Demo</button>
+                  <button id="run" class="sm primary">Chạy Ghép &amp; Kiểm định</button>
+                </div>
+              </div>
+            </details>
           </div>
         </div>
 
@@ -1143,19 +1605,18 @@
                 <h2 class="card-title">Kết quả Ghép &amp; Kiểm định Strict</h2>
                 <p class="card-sub">Giải mã lại từ đúng byte PNG xuất ra để đối chiếu 100% pixel ngoài vùng chọn.</p>
               </div>
-              <button id="run" class="primary">Chạy Ghép &amp; Kiểm định Strict</button>
             </div>
 
             <div id="report"></div>
 
-            <div class="canvas-stage" style="min-height:260px; margin:12px 0;">
+            <div class="canvas-stage" style="min-height:280px; margin:10px 0;">
               <canvas id="resultPreview" width="640" height="400"></canvas>
             </div>
 
-            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
               <a id="download" class="btn primary" hidden download="strict-result.png">Tải PNG Kết quả</a>
-              <button id="use-result-as-base" class="primary" hidden>Dùng kết quả này làm Ảnh gốc để sửa tiếp</button>
-              <button id="send-result-to-ref" hidden>Đưa kết quả vào danh sách Reference</button>
+              <button id="use-result-as-base" class="primary" hidden>Dùng làm Ảnh gốc sửa tiếp</button>
+              <button id="send-result-to-ref" hidden>Đưa vào Reference</button>
             </div>
           </div>
         </div>
@@ -1171,51 +1632,55 @@
             <div class="card-header">
               <div>
                 <h2 class="card-title">Tạo Game Asset Đồng Bộ Style</h2>
-                <p class="card-sub">Nhập prompt, chọn loại asset, preset phong cách và đưa ảnh tham chiếu để tạo asset cùng style.</p>
+                <p class="card-sub">Tạo nhân vật, item, tilemap, UI đồng bộ phong cách và tự động tách nền trong suốt.</p>
               </div>
             </div>
 
             <!-- Style References -->
-            <label class="field-label">1. Ảnh tham chiếu phong cách (Style References):</label>
-            <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px; flex-wrap:wrap;">
-              <input id="asset-ref-input" type="file" multiple accept="image/*" style="max-width:240px;" />
-              <button id="asset-sync-refs" class="sm">Lấy toàn bộ từ Tab 1 (Studio)</button>
-              <button id="asset-clear-refs" class="sm danger">Xóa danh sách</button>
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:6px;">
+              <label class="field-label" style="margin:0;">1. Ảnh tham chiếu phong cách (Style Refs):</label>
+              <div style="display:flex; gap:6px;">
+                <button id="asset-sync-refs" class="sm">Lấy từ Tab 1</button>
+                <button id="asset-clear-refs" class="sm danger">Xóa</button>
+              </div>
             </div>
-            <div id="asset-refs-list" style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; min-height:48px; padding:6px; border:1px dashed var(--border); border-radius:6px;">
-              <span class="card-sub" style="align-self:center; font-size:12px;">Chưa có ảnh ref style. Thêm ảnh để nhân vật/item sinh ra có cùng nét vẽ, màu sắc.</span>
+            <input id="asset-ref-input" type="file" multiple accept="image/*" style="margin-bottom:8px;" />
+            <div id="asset-refs-list" style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; min-height:44px; padding:6px 8px; border:1px dashed var(--border); border-radius:6px; background:var(--bg-input);">
+              <span class="card-sub" style="align-self:center; font-size:12px;">Chưa có ảnh ref style. Thêm ảnh để đồng bộ nét vẽ và bảng màu.</span>
             </div>
 
-            <!-- Loại Asset & Style Preset -->
-            <div class="field-row">
+            <div class="field-row-3">
               <div>
-                <label class="field-label">2. Loại Asset (Type):</label>
+                <label class="field-label">2. Loại Asset</label>
                 <select id="asset-type">
-                  <option value="character">Nhân vật (Character Sprite)</option>
-                  <option value="item" selected>Vật phẩm / Icon (Item)</option>
-                  <option value="tile">Tilemap / Khối địa hình (Tile)</option>
-                  <option value="ui">Nút bấm / Khung UI (Game UI)</option>
-                  <option value="background">Bối cảnh nền (Backdrop)</option>
-                  <option value="fx">Hiệu ứng phép / Hạt (FX Sprite)</option>
+                  <option value="character">Nhân vật (Sprite)</option>
+                  <option value="item" selected>Vật phẩm / Icon</option>
+                  <option value="tile">Tilemap / Địa hình</option>
+                  <option value="ui">Khung / Nút Game UI</option>
+                  <option value="background">Bối cảnh (Backdrop)</option>
+                  <option value="fx">Hiệu ứng (FX Sprite)</option>
                 </select>
               </div>
               <div>
-                <label class="field-label">3. Preset Style Game:</label>
+                <label class="field-label">3. Preset Style</label>
                 <select id="asset-preset">
-                  <option value="none">Tự do theo prompt &amp; ref</option>
-                  <option value="pixel" selected>16-bit Pixel Art (sắc nét)</option>
+                  <option value="none">Tự do theo ref</option>
+                  <option value="pixel" selected>16-bit Pixel Art</option>
                   <option value="chibi">Chibi Anime 2D</option>
-                  <option value="isometric">Isometric 30° (Chiếu trục)</option>
-                  <option value="handpainted">Hand-painted Stylized</option>
-                  <option value="flat">Flat 2D Vector Clean</option>
+                  <option value="isometric">Isometric 30°</option>
+                  <option value="handpainted">Hand-painted</option>
+                  <option value="flat">Flat 2D Vector</option>
                 </select>
+              </div>
+              <div>
+                <label class="field-label">4. Model AI</label>
+                <select id="asset-model"></select>
               </div>
             </div>
 
-            <!-- Kích thước & Tách nền -->
             <div class="field-row">
               <div>
-                <label class="field-label">4. Kích thước (px):</label>
+                <label class="field-label">5. Kích thước (px)</label>
                 <select id="asset-size">
                   <option value="256x256">256 × 256 (Icon, Tile)</option>
                   <option value="512x512" selected>512 × 512 (Chuẩn HD)</option>
@@ -1224,7 +1689,7 @@
                 </select>
               </div>
               <div>
-                <label class="field-label">5. Số lượng ảnh / lần:</label>
+                <label class="field-label">6. Số lượng ảnh / lần</label>
                 <select id="asset-count">
                   <option value="1">1 ảnh</option>
                   <option value="2">2 ảnh</option>
@@ -1245,21 +1710,17 @@
               </div>
             </div>
 
-            <div style="margin:10px 0 14px 0; display:flex; align-items:center; gap:8px;">
-              <input id="asset-transparent" type="checkbox" checked style="width:auto; cursor:pointer;" />
-              <label for="asset-transparent" style="cursor:pointer; font-size:13px; font-weight:500;">
+            <div class="inline-checks">
+              <label for="asset-transparent">
+                <input id="asset-transparent" type="checkbox" checked />
                 Tách nền trong suốt tự động (Chroma-key xanh lá &amp; khử ám viền)
               </label>
             </div>
 
-            <!-- Model & Prompt -->
-            <label class="field-label">6. Model AI:</label>
-            <select id="asset-model" style="margin-bottom:12px;"></select>
-
             <label class="field-label">7. Prompt mô tả chi tiết:</label>
             <textarea id="asset-prompt" rows="3" placeholder="Ví dụ: wooden treasure chest with iron bands and brass padlock, closed, isometric angle..."></textarea>
 
-            <div style="display:flex; gap:10px; align-items:center; margin-top:12px;">
+            <div class="action-bar">
               <button id="asset-generate" class="primary">Generate Game Asset</button>
               <span id="asset-status" class="card-sub"></span>
             </div>
@@ -1272,12 +1733,12 @@
             <div class="card-header">
               <div>
                 <h2 class="card-title">Bộ sưu tập Game Asset</h2>
-                <p class="card-sub">Xem trước trên nền ô cờ caro trong suốt. Có thể tải PNG riêng hoặc tải trọn bộ ZIP.</p>
+                <p class="card-sub">Xem trước trên nền ô cờ caro trong suốt. Tải lẻ PNG hoặc tải trọn bộ ZIP.</p>
               </div>
               <button id="asset-download-zip" class="sm" hidden>Tải trọn bộ ZIP</button>
             </div>
 
-            <div id="asset-gallery" class="gallery checkerboard" style="min-height:360px; padding:12px; border-radius:8px; border:1px solid var(--border);">
+            <div id="asset-gallery" class="gallery checkerboard" style="min-height:340px; padding:12px; border-radius:8px; border:1px solid var(--border);">
               <p class="card-sub" style="align-self:center; margin:auto;">Chưa có asset nào được tạo. Nhập prompt và bấm Generate ở bên trái.</p>
             </div>
           </div>
@@ -1292,53 +1753,62 @@
           <div class="card">
             <div class="card-header">
               <div>
-                <h2 class="card-title">BG Room: từ phòng chibi isometric ra illust BG 2D</h2>
-                <p class="card-sub">Nạp một ảnh phòng chibi dạng isometric. Mỗi góc nhìn được chọn tạo ra một ảnh nền 2D, nhìn từ vị trí nhân vật đứng giữa phòng.</p>
+                <h2 class="card-title">BG Room: Phòng Isometric sang Illust BG 2D</h2>
+                <p class="card-sub">Nạp ảnh phòng chibi isometric, tự động vẽ lại các góc nhìn 2D từ vị trí giữa phòng.</p>
               </div>
             </div>
 
-            <label class="field-label">1. Ảnh phòng isometric (1 ảnh; ảnh lớn được tự thu nhỏ)</label>
-            <input id="room-input" type="file" accept="image/*" hidden />
-            <div id="room-drop" style="cursor:pointer; min-height:180px; display:flex; align-items:center; justify-content:center; padding:10px; border:1px dashed #2e3e5c; border-radius:8px; background:var(--bg-input); margin-bottom:12px;">
-              <span id="room-drop-hint" class="card-sub">Bấm để chọn hoặc kéo thả ảnh phòng vào đây</span>
-              <img id="room-preview" alt="Ảnh phòng isometric" hidden style="max-width:100%; max-height:320px; border-radius:6px;" />
+            <div style="display:flex; justify-content:space-between; align-items:baseline; gap:8px;">
+              <label class="field-label">1. Ảnh phòng isometric nguồn</label>
+              <span id="room-source-info" class="card-sub" style="margin:0;">Chưa chọn ảnh.</span>
             </div>
-            <p id="room-source-info" class="card-sub" style="margin:-6px 0 12px;">Chưa có ảnh nào được chọn.</p>
+            <input id="room-input" type="file" accept="image/*" hidden />
+            <div id="room-drop" class="compact-drop">
+              <span id="room-drop-hint" class="card-sub">Bấm chọn hoặc kéo thả ảnh phòng isometric vào đây</span>
+              <img id="room-preview" alt="Ảnh phòng isometric" hidden />
+            </div>
 
-            <label class="field-label">2. Góc nhìn từ giữa phòng (mỗi mục một ảnh)</label>
-            <div id="room-views" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:6px 14px; margin-bottom:12px;"></div>
+            <label class="field-label" style="margin-top:8px;">2. Góc nhìn từ giữa phòng (mỗi mục một ảnh)</label>
+            <div id="room-views" class="check-scroll-box" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(190px, 1fr)); gap:6px 12px;"></div>
 
-            <label class="field-label" for="room-objects">3. Nhìn vào vật thể cụ thể (tùy chọn, cách nhau dấu phẩy; mỗi vật một ảnh)</label>
-            <input id="room-objects" type="text" placeholder="VD: giường, bàn học, kệ sách, cửa sổ" />
+            <div class="field-row">
+              <div>
+                <label class="field-label" for="room-objects">3. Vật thể cụ thể (cách nhau dấu phẩy)</label>
+                <input id="room-objects" type="text" placeholder="VD: giường, bàn học, cửa sổ" />
+              </div>
+              <div>
+                <label class="field-label" for="room-style">4. Phong cách nghệ thuật</label>
+                <input id="room-style" type="text" value="anime style, clean cel shading, highly details, soft thin brown outline  Negate black outlines" />
+              </div>
+            </div>
 
-            <label class="field-label" for="room-style" style="margin-top:12px;">4. Phong cách nghệ thuật</label>
-            <input id="room-style" type="text" value="anime style, clean cel shading, highly details, soft thin brown outline  Negate black outlines" />
-
-            <label class="field-label" for="room-notes" style="margin-top:12px;">5. Ghi chú thêm (tùy chọn)</label>
-            <textarea id="room-notes" rows="2" placeholder="VD: buổi chiều, nắng vàng chiếu qua cửa sổ, không khí ấm áp"></textarea>
-
-            <div class="field-row" style="margin-top:12px;">
+            <div class="field-row-3">
               <div>
                 <label class="field-label" for="room-model">Model</label>
                 <select id="room-model"></select>
               </div>
               <div>
-                <label class="field-label" for="room-size">Kích thước ảnh xuất</label>
+                <label class="field-label" for="room-size">Kích thước xuất</label>
                 <select id="room-size">
-                  <option value="1920x1080" selected>1920 x 1080 (Full HD ngang)</option>
-                  <option value="1080x1920">1080 x 1920 (Full HD dọc)</option>
-                  <option value="3840x2160">3840 x 2160 (4K ngang)</option>
-                  <option value="0x0">Giữ nguyên theo Flow (ngang)</option>
+                  <option value="1920x1080" selected>1920 × 1080 (FHD ngang)</option>
+                  <option value="1080x1920">1080 × 1920 (FHD dọc)</option>
+                  <option value="3840x2160">3840 × 2160 (4K ngang)</option>
+                  <option value="0x0">Theo Flow</option>
                 </select>
+              </div>
+              <div>
+                <label class="field-label" for="room-notes">5. Ghi chú bối cảnh</label>
+                <input id="room-notes" type="text" placeholder="VD: nắng chiều ấm áp..." />
               </div>
             </div>
 
-            <div style="display:flex; gap:12px; align-items:center; margin-top:14px; flex-wrap:wrap;">
-              <button id="room-generate" class="primary">Generate BG Room</button>
-              <span id="room-count" class="card-sub"></span>
+            <div class="action-bar">
+              <div style="display:flex; gap:10px; align-items:center;">
+                <button id="room-generate" class="primary">Generate BG Room</button>
+                <span id="room-count" class="card-sub"></span>
+              </div>
+              <span id="room-status" class="card-sub"></span>
             </div>
-            <p id="room-status" class="card-sub" style="margin-top:8px;"></p>
-            <p class="card-sub" style="margin-top:6px;">Ảnh isometric chỉ lộ hai bức tường phía sau. Mục "Phía đối diện" là phần AI tự suy diễn nên có thể không khớp ý bạn. Tùy chọn xóa watermark dùng chung với tab Phối ảnh.</p>
           </div>
         </div>
 
@@ -1346,12 +1816,12 @@
           <div class="card">
             <div class="card-header">
               <div>
-                <h2 class="card-title">Kết quả illust BG</h2>
-                <p class="card-sub">Mỗi ảnh ghi rõ góc nhìn. Bấm ảnh để xem cỡ đầy đủ.</p>
+                <h2 class="card-title">Kết quả Illust BG</h2>
+                <p class="card-sub">Hiển thị tức thì các góc nhìn đang tạo. Bấm vào ảnh để xem kích thước gốc.</p>
               </div>
               <button id="room-download-zip" class="sm" hidden>Tải trọn bộ ZIP</button>
             </div>
-            <div id="room-gallery" class="gallery" style="grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); min-height:360px;">
+            <div id="room-gallery" class="gallery" style="grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); min-height:340px;">
               <p class="card-sub" style="margin:auto;">Chưa có ảnh nào. Nạp ảnh phòng và bấm Generate BG Room.</p>
             </div>
           </div>
@@ -1366,62 +1836,73 @@
           <div class="card">
             <div class="card-header">
               <div>
-                <h2 class="card-title">Camera Image: đổi góc máy của ảnh illust</h2>
-                <p class="card-sub">Nạp một ảnh illust, chọn các góc máy. Mỗi góc máy tạo ra một ảnh vẽ lại cùng cảnh, cùng nhân vật, cùng nét vẽ.</p>
+                <h2 class="card-title">Camera Image: Đổi góc máy Ảnh Illust</h2>
+                <p class="card-sub">Nạp một ảnh illust, chọn các góc máy để vẽ lại cùng cảnh và nhân vật từ góc độ mới.</p>
               </div>
             </div>
 
-            <label class="field-label">1. Ảnh illust nguồn (1 ảnh; ảnh lớn được tự thu nhỏ)</label>
-            <input id="cam-input" type="file" accept="image/*" hidden />
-            <div id="cam-drop" style="cursor:pointer; min-height:180px; display:flex; align-items:center; justify-content:center; padding:10px; border:1px dashed #2e3e5c; border-radius:8px; background:var(--bg-input); margin-bottom:12px;">
-              <span id="cam-drop-hint" class="card-sub">Bấm để chọn hoặc kéo thả ảnh illust vào đây</span>
-              <img id="cam-preview" alt="Ảnh illust nguồn" hidden style="max-width:100%; max-height:320px; border-radius:6px;" />
+            <div style="display:flex; justify-content:space-between; align-items:baseline; gap:8px;">
+              <label class="field-label">1. Ảnh illust nguồn</label>
+              <span id="cam-source-info" class="card-sub" style="margin:0;">Chưa chọn ảnh.</span>
             </div>
-            <p id="cam-source-info" class="card-sub" style="margin:-6px 0 12px;">Chưa có ảnh nào được chọn.</p>
+            <input id="cam-input" type="file" accept="image/*" hidden />
+            <div id="cam-drop" class="compact-drop">
+              <span id="cam-drop-hint" class="card-sub">Bấm chọn hoặc kéo thả ảnh illust vào đây</span>
+              <img id="cam-preview" alt="Ảnh illust nguồn" hidden />
+            </div>
 
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <label class="field-label" style="margin:0;">2. Góc máy mới (mỗi mục được tick là một ảnh)</label>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
+              <label class="field-label" style="margin:0;">2. Chọn góc máy mới (mỗi mục là một ảnh)</label>
               <button id="cam-clear" class="sm">Bỏ chọn hết</button>
             </div>
-            <div id="cam-options" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:6px 14px; margin:6px 0 12px;"></div>
+            <div id="cam-options" class="check-scroll-box" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(190px, 1fr)); gap:6px 12px;"></div>
 
-            <label class="field-label" for="cam-custom">3. Góc máy tự nhập (tùy chọn; mỗi dòng là một ảnh)</label>
-            <textarea id="cam-custom" rows="2" placeholder="VD: góc thấp từ dưới lên, cận cảnh khuôn mặt"></textarea>
+            <div class="field-row">
+              <div>
+                <label class="field-label" for="cam-custom">3. Góc máy tự nhập (mỗi dòng 1 ảnh)</label>
+                <textarea id="cam-custom" rows="2" placeholder="VD: góc thấp từ dưới lên, cận cảnh khuôn mặt"></textarea>
+              </div>
+              <div>
+                <label class="field-label" for="cam-notes">4. Ghi chú thêm (tùy chọn)</label>
+                <textarea id="cam-notes" rows="2" placeholder="VD: giữ ánh đèn vàng phía sau, nền mờ nhẹ"></textarea>
+              </div>
+            </div>
 
-            <label style="display:flex; align-items:center; gap:8px; margin:12px 0 0; font-size:12.5px; cursor:pointer;">
-              <input id="cam-keep-pose" type="checkbox" checked style="width:auto;" />
-              Giữ nguyên tư thế nhân vật (bỏ tick để cho phép chỉnh nhẹ tư thế cho hợp góc máy)
-            </label>
-
-            <label class="field-label" for="cam-style" style="margin-top:12px;">4. Phong cách nghệ thuật</label>
-            <input id="cam-style" type="text" value="anime style, clean cel shading, highly details, soft thin brown outline  Negate black outlines" />
-
-            <label class="field-label" for="cam-notes" style="margin-top:12px;">5. Ghi chú thêm (tùy chọn)</label>
-            <textarea id="cam-notes" rows="2" placeholder="VD: giữ nguyên ánh đèn vàng phía sau, nền mờ nhẹ"></textarea>
-
-            <div class="field-row" style="margin-top:12px;">
+            <div class="field-row-3">
+              <div>
+                <label class="field-label" for="cam-style">5. Phong cách nghệ thuật</label>
+                <input id="cam-style" type="text" value="anime style, clean cel shading, highly details, soft thin brown outline  Negate black outlines" />
+              </div>
               <div>
                 <label class="field-label" for="cam-model">Model</label>
                 <select id="cam-model"></select>
               </div>
               <div>
-                <label class="field-label" for="cam-size">Kích thước ảnh xuất</label>
+                <label class="field-label" for="cam-size">Kích thước xuất</label>
                 <select id="cam-size">
-                  <option value="auto" selected>Theo tỉ lệ ảnh nguồn (cỡ gốc của Flow)</option>
-                  <option value="1920x1080">1920 x 1080 (Full HD ngang)</option>
-                  <option value="1080x1920">1080 x 1920 (Full HD dọc)</option>
-                  <option value="1080x1080">1080 x 1080 (Vuông)</option>
-                  <option value="3840x2160">3840 x 2160 (4K ngang)</option>
+                  <option value="auto" selected>Theo tỉ lệ ảnh nguồn</option>
+                  <option value="1920x1080">1920 × 1080 (FHD ngang)</option>
+                  <option value="1080x1920">1080 × 1920 (FHD dọc)</option>
+                  <option value="1080x1080">1080 × 1080 (Vuông)</option>
+                  <option value="3840x2160">3840 × 2160 (4K ngang)</option>
                 </select>
               </div>
             </div>
 
-            <div style="display:flex; gap:12px; align-items:center; margin-top:14px; flex-wrap:wrap;">
-              <button id="cam-generate" class="primary">Generate góc máy mới</button>
-              <span id="cam-count" class="card-sub"></span>
+            <div class="inline-checks">
+              <label>
+                <input id="cam-keep-pose" type="checkbox" checked />
+                Giữ nguyên tư thế nhân vật (bỏ tick để cho phép điều chỉnh tư thế theo góc máy)
+              </label>
             </div>
-            <p id="cam-status" class="card-sub" style="margin-top:8px;"></p>
-            <p class="card-sub" style="margin-top:6px;">AI vẽ lại cả cảnh nên chi tiết nhỏ có thể khác ảnh nguồn; phần bị khuất trong ảnh nguồn (lưng nhân vật, phía sau máy) là AI tự suy diễn. Tùy chọn xóa watermark dùng chung với tab Phối ảnh.</p>
+
+            <div class="action-bar">
+              <div style="display:flex; gap:10px; align-items:center;">
+                <button id="cam-generate" class="primary">Generate Góc máy mới</button>
+                <span id="cam-count" class="card-sub"></span>
+              </div>
+              <span id="cam-status" class="card-sub"></span>
+            </div>
           </div>
         </div>
 
@@ -1429,12 +1910,12 @@
           <div class="card">
             <div class="card-header">
               <div>
-                <h2 class="card-title">Kết quả theo góc máy</h2>
-                <p class="card-sub">Mỗi ảnh ghi rõ góc máy. Bấm ảnh để xem cỡ đầy đủ.</p>
+                <h2 class="card-title">Kết quả theo Góc máy</h2>
+                <p class="card-sub">Hiển thị tức thì các góc máy đang tạo. Có thể dùng tiếp làm ảnh nguồn hoặc sửa vùng.</p>
               </div>
               <button id="cam-download-zip" class="sm" hidden>Tải trọn bộ ZIP</button>
             </div>
-            <div id="cam-gallery" class="gallery" style="grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); min-height:360px;">
+            <div id="cam-gallery" class="gallery" style="grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); min-height:340px;">
               <p class="card-sub" style="margin:auto;">Chưa có ảnh nào. Nạp ảnh illust, chọn góc máy và bấm Generate.</p>
             </div>
           </div>
@@ -1456,26 +1937,27 @@
             </div>
 
             <!-- Ảnh nhân vật / pose gốc -->
-            <label class="field-label">1. Ảnh tham chiếu nhân vật / Dáng gốc:</label>
-            <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
-              <input id="anim-ref-input" type="file" accept="image/*" style="max-width:260px;" />
-              <button id="anim-use-strict-result" class="sm">Lấy từ kết quả Tab 2</button>
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:6px;">
+              <label class="field-label" style="margin:0;">1. Ảnh nhân vật / Dáng gốc:</label>
+              <button id="anim-use-strict-result" class="sm">Lấy từ kết quả Sửa vùng</button>
             </div>
-            <div id="anim-ref-preview" style="display:flex; gap:10px; align-items:center; min-height:50px; margin-bottom:12px;">
-              <span class="card-sub" style="font-size:12px;">Chưa chọn ảnh nhân vật.</span>
+            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:12px;">
+              <input id="anim-ref-input" type="file" accept="image/*" style="max-width:250px;" />
+              <div id="anim-ref-preview" style="display:flex; gap:8px; align-items:center; min-height:42px;">
+                <span class="card-sub" style="font-size:12px;">Chưa chọn ảnh nhân vật.</span>
+              </div>
             </div>
 
-            <!-- Chế độ sinh Animation -->
             <div class="field-row">
               <div>
-                <label class="field-label">2. Phương thức sinh:</label>
+                <label class="field-label">2. Phương thức sinh</label>
                 <select id="anim-mode">
-                  <option value="video" selected>Video Loop &amp; Cắt Frame (Khuyến nghị, mượt)</option>
-                  <option value="frames">Frame-by-Frame tuần tự (Từng ảnh)</option>
+                  <option value="video" selected>Video Loop &amp; Cắt Frame (Mượt)</option>
+                  <option value="frames">Frame-by-Frame tuần tự</option>
                 </select>
               </div>
               <div>
-                <label class="field-label">3. Số frame chuyển động:</label>
+                <label class="field-label">3. Số frame chuyển động</label>
                 <select id="anim-frames">
                   <option value="6">6 frames (pixel nhanh)</option>
                   <option value="8">8 frames (chuẩn retro)</option>
@@ -1486,14 +1968,13 @@
               </div>
             </div>
 
-            <!-- FPS & Kích thước -->
             <div class="field-row">
               <div>
-                <label class="field-label">4. Tốc độ phát (FPS):</label>
+                <label class="field-label">4. Tốc độ phát (FPS)</label>
                 <input id="anim-fps" type="number" value="12" min="1" max="30" />
               </div>
               <div>
-                <label class="field-label">5. Kích thước frame (px):</label>
+                <label class="field-label">5. Kích thước frame (px)</label>
                 <select id="anim-size">
                   <option value="256x256">256 × 256 (Sprite chuẩn)</option>
                   <option value="512x512" selected>512 × 512 (HD Sprite)</option>
@@ -1501,17 +1982,14 @@
               </div>
             </div>
 
-            <div style="margin:10px 0 14px 0; display:flex; align-items:center; gap:8px;">
-              <input id="anim-transparent" type="checkbox" checked style="width:auto; cursor:pointer;" />
-              <label for="anim-transparent" style="cursor:pointer; font-size:13px; font-weight:500;">
-                Tách nền trong suốt tự động (Chroma-key xanh lá)
+            <div class="inline-checks">
+              <label for="anim-transparent">
+                <input id="anim-transparent" type="checkbox" checked />
+                Tách nền trong suốt (Chroma-key xanh lá)
               </label>
-            </div>
-
-            <div style="margin:0 0 14px 0; display:flex; align-items:center; gap:8px;">
-              <input id="anim-loop-blend" type="checkbox" style="width:auto; cursor:pointer;" />
-              <label for="anim-loop-blend" style="cursor:pointer; font-size:13px; font-weight:500;">
-                Trộn đuôi về frame đầu để loop mượt hơn (khuyên dùng cho chế độ frames)
+              <label for="anim-loop-blend">
+                <input id="anim-loop-blend" type="checkbox" />
+                Trộn đuôi về frame đầu (Loop Blend)
               </label>
             </div>
 
@@ -1519,7 +1997,7 @@
             <label class="field-label">6. Prompt mô tả chuyển động:</label>
             <textarea id="anim-prompt" rows="3" placeholder="Ví dụ: idle breathing animation, slight body floating up and down, cape flutter, gentle motion loop..."></textarea>
 
-            <div style="display:flex; gap:10px; align-items:center; margin-top:12px;">
+            <div class="action-bar">
               <button id="anim-generate" class="primary">Generate Animation Loop</button>
               <span id="anim-status" class="card-sub"></span>
             </div>
@@ -1532,79 +2010,80 @@
             <div class="card-header">
               <div>
                 <h2 class="card-title">Trình phát &amp; Kiểm định Loop</h2>
-                <p class="card-sub">Kiểm tra độ mượt, so sánh frame đầu-cuối và tải Spritesheet cho Game Engine.</p>
+                <p class="card-sub">Kiểm tra độ mượt, chỉnh thứ tự frame và xuất Spritesheet cho Game Engine.</p>
               </div>
             </div>
 
             <!-- Stage Canvas Preview -->
-            <div class="checkerboard" style="display:flex; justify-content:center; align-items:center; min-height:280px; border-radius:8px; border:1px solid var(--border); overflow:hidden; position:relative;">
-              <canvas id="anim-preview-canvas" width="256" height="256" style="max-height:260px; object-fit:contain;"></canvas>
-              <div id="anim-loop-score-badge" style="position:absolute; top:8px; right:8px; background:rgba(15,23,42,0.85); border:1px solid var(--border); padding:3px 8px; border-radius:4px; font-size:11px; display:none;">
+            <div class="checkerboard" style="display:flex; justify-content:center; align-items:center; min-height:260px; border-radius:8px; border:1px solid var(--border); overflow:hidden; position:relative;">
+              <canvas id="anim-preview-canvas" width="256" height="256" style="max-height:240px; object-fit:contain;"></canvas>
+              <div id="anim-loop-score-badge" style="position:absolute; top:8px; right:8px; background:rgba(15,23,42,0.88); border:1px solid var(--border); padding:3px 9px; border-radius:6px; font-size:11px; display:none;">
                 Loop Score: <strong id="anim-score-val">100%</strong>
               </div>
             </div>
 
             <!-- Điều khiển Playback -->
-            <div style="display:flex; gap:8px; align-items:center; margin:10px 0; flex-wrap:wrap;">
+            <div class="canvas-toolbar" style="margin:10px 0 8px;">
               <button id="anim-play-toggle" class="sm">Tạm dừng (Pause)</button>
               <label style="font-size:12px; display:flex; align-items:center; gap:4px;">
                 Frame: <strong id="anim-curr-frame">1</strong> / <span id="anim-total-frames">12</span>
               </label>
-              <input id="anim-scrub" type="range" min="0" max="11" value="0" style="flex:1; min-width:120px;" />
-              <label style="font-size:12px; display:flex; align-items:center; gap:4px; cursor:pointer;">
+              <input id="anim-scrub" type="range" min="0" max="11" value="0" style="flex:1; min-width:110px;" />
+              <label style="font-size:12px; display:flex; align-items:center; gap:5px; cursor:pointer;">
                 <input id="anim-onion" type="checkbox" style="width:auto;" /> Onion Skin
               </label>
             </div>
 
             <!-- Filmstrip Thumbnail Frames -->
-            <label class="field-label" style="margin:4px 0;">Chuỗi Frame:</label>
             <div id="anim-filmstrip" class="filmstrip">
-              <span class="card-sub" style="padding:12px; font-size:12px;">Chưa có frame nào. Bấm Generate Animation để bắt đầu.</span>
+              <span class="card-sub" style="padding:10px; font-size:12px;">Chưa có frame nào. Bấm Generate Animation để bắt đầu.</span>
             </div>
 
             <!-- Chỉnh sửa chuỗi frame + so sánh đầu/cuối -->
-            <div id="anim-edit-box" style="margin:10px 0; padding:8px 10px; background:#161b22; border-radius:6px; border:1px solid var(--border);" hidden>
-              <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-                <span style="font-size:12px; font-weight:600;">Chỉnh sửa frame đang chọn:</span>
+            <div id="anim-edit-box" style="margin:8px 0; padding:10px 12px; background:var(--bg-card); border-radius:8px; border:1px solid var(--border);" hidden>
+              <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+                <span style="font-size:12px; font-weight:600; margin-right:4px;">Chỉnh frame chọn:</span>
                 <button id="anim-frame-left" class="sm" disabled>◀ Dời trái</button>
                 <button id="anim-frame-right" class="sm" disabled>Dời phải ▶</button>
-                <button id="anim-frame-del" class="sm danger" disabled>Xóa frame</button>
+                <button id="anim-frame-del" class="sm danger" disabled>Xóa</button>
                 <button id="anim-frame-reset" class="sm">Hoàn tác</button>
                 <button id="anim-frame-apply" class="primary sm" disabled>Áp dụng</button>
               </div>
-              <div style="display:flex; gap:16px; align-items:center; margin-top:10px; flex-wrap:wrap;">
+              <div style="display:flex; gap:14px; align-items:center; margin-top:8px; flex-wrap:wrap;">
                 <div style="text-align:center; font-size:11px;">Frame đầu<br />
-                  <img id="anim-cmp-first" alt="first" style="width:96px; height:96px; object-fit:contain; background:#000; border:1px solid var(--border); border-radius:4px;" /></div>
+                  <img id="anim-cmp-first" alt="first" style="width:76px; height:76px; object-fit:contain; background:#05070b; border:1px solid var(--border); border-radius:5px;" /></div>
                 <div style="text-align:center; font-size:11px;">Frame cuối<br />
-                  <img id="anim-cmp-last" alt="last" style="width:96px; height:96px; object-fit:contain; background:#000; border:1px solid var(--border); border-radius:4px;" /></div>
-                <span class="card-sub" style="font-size:11px; flex:1; min-width:160px;">Frame cuối càng giống frame đầu thì loop càng mượt. Thay đổi chỉ có hiệu lực (và đóng gói lại file tải về) sau khi bấm Áp dụng.</span>
+                  <img id="anim-cmp-last" alt="last" style="width:76px; height:76px; object-fit:contain; background:#05070b; border:1px solid var(--border); border-radius:5px;" /></div>
+                <span class="card-sub" style="font-size:11px; flex:1; min-width:150px;">Frame cuối càng khớp frame đầu thì loop càng mượt. Bấm <b>Áp dụng</b> để đóng gói lại file tải về.</span>
               </div>
             </div>
 
             <!-- Reframe tool (Chọn lại frame từ video) -->
-            <div id="anim-reframe-box" style="margin:10px 0; padding:8px 10px; background:#161b22; border-radius:6px; border:1px solid var(--border);" hidden>
+            <div id="anim-reframe-box" style="margin:8px 0; padding:8px 12px; background:var(--bg-card); border-radius:8px; border:1px solid var(--border);" hidden>
               <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
                 <span style="font-size:12px; font-weight:600;">Reframe video:</span>
-                <label style="font-size:11px;">Dịch pha offset: <input id="reframe-offset" type="number" value="0" style="width:60px; padding:2px 4px;" /></label>
+                <label style="font-size:11.5px; display:flex; align-items:center; gap:6px;">Dịch pha offset: <input id="reframe-offset" type="number" value="0" style="width:64px; padding:3px 6px;" /></label>
                 <button id="anim-reframe-btn" class="sm">Cắt lại Frame</button>
-                <span class="card-sub" style="font-size:11px;">(Không tốn credit Flow)</span>
+                <span class="card-sub" style="font-size:11px; margin:0;">(Không tốn credit Flow)</span>
               </div>
             </div>
 
             <!-- Download Actions -->
-            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; border-top:1px solid var(--border); padding-top:12px;">
-              <button id="anim-dl-sheet" class="primary sm" disabled>Tải Spritesheet PNG</button>
-              <button id="anim-dl-json" class="sm" disabled>Tải JSON Meta</button>
-              <button id="anim-dl-gif" class="sm" disabled>Tải GIF Loop</button>
-              <button id="anim-dl-webp" class="sm" disabled>Tải WebP</button>
-              <button id="anim-dl-zip" class="sm" disabled>Tải Trọn Bộ ZIP</button>
+            <div class="action-bar">
+              <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                <button id="anim-dl-sheet" class="primary sm" disabled>Tải Spritesheet PNG</button>
+                <button id="anim-dl-json" class="sm" disabled>JSON Meta</button>
+                <button id="anim-dl-gif" class="sm" disabled>GIF Loop</button>
+                <button id="anim-dl-webp" class="sm" disabled>WebP</button>
+                <button id="anim-dl-zip" class="sm" disabled>Trọn bộ ZIP</button>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- TAB 5: JOBS & HISTORY -->
+    <!-- TAB 5: VIDEO -->
     <section id="tab-video" class="tab-panel">
       <div id="video-root" class="studio-grid">
         <div>
@@ -1612,157 +2091,192 @@
             <div class="card-header">
               <div>
                 <h2 class="card-title">Tạo Video (Omni Flash)</h2>
-                <p class="card-sub">Tạo video từ text, ảnh frame đầu/cuối hoặc ảnh tham chiếu. Có thể thêm phụ đề, giọng đọc và nhạc nền.</p>
+                <p class="card-sub">Tạo video từ text, frame đầu/cuối hoặc ảnh tham chiếu; tích hợp phụ đề, giọng đọc và nhạc nền.</p>
               </div>
+              <span id="vid-cost" class="badge"></span>
             </div>
 
             <div class="field-row">
               <div>
-                <label class="field-label" for="vid-model">Model:</label>
+                <label class="field-label" for="vid-model">Model</label>
                 <select id="vid-model"><option value="omni-flash" selected>Omni Flash</option></select>
               </div>
               <div>
-                <label class="field-label" for="vid-mode">Chế độ:</label>
+                <label class="field-label" for="vid-mode">Chế độ</label>
                 <select id="vid-mode"><option value="text" selected>Text → Video</option></select>
               </div>
             </div>
 
-            <label class="field-label" for="vid-prompt">Prompt:</label>
-            <textarea id="vid-prompt" rows="4" maxlength="2000" placeholder="Mô tả chuyển động, góc máy, ánh sáng..."></textarea>
+            <label class="field-label" for="vid-prompt">Prompt mô tả chuyển động &amp; cảnh quay:</label>
+            <textarea id="vid-prompt" rows="3" maxlength="2000" placeholder="Mô tả chuyển động, góc máy, ánh sáng..."></textarea>
 
-            <div id="vid-start-box" style="display:none; margin-top:10px;">
-              <label class="field-label">Frame đầu:</label>
-              <div style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
-                <input id="vid-start" type="file" accept="image/*" style="max-width:240px;" />
+            <div id="vid-start-box" style="display:none; margin-top:10px; padding:10px; background:var(--bg-card); border:1px solid var(--border); border-radius:8px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <label class="field-label" style="margin:0;">Frame đầu:</label>
                 <button id="vid-start-use" class="sm" type="button">Lấy từ kết quả Image</button>
               </div>
-              <div id="vid-start-preview" style="display:flex; gap:8px; align-items:center; min-height:48px;"></div>
+              <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <input id="vid-start" type="file" accept="image/*" style="max-width:240px;" />
+                <div id="vid-start-preview" style="display:flex; gap:8px; align-items:center; min-height:42px;"></div>
+              </div>
             </div>
 
-            <div id="vid-end-box" style="display:none; margin-top:10px;">
-              <label class="field-label">Frame cuối:</label>
-              <div style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
-                <input id="vid-end" type="file" accept="image/*" style="max-width:240px;" />
+            <div id="vid-end-box" style="display:none; margin-top:10px; padding:10px; background:var(--bg-card); border:1px solid var(--border); border-radius:8px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <label class="field-label" style="margin:0;">Frame cuối:</label>
                 <button id="vid-end-use" class="sm" type="button">Lấy từ kết quả Image</button>
               </div>
-              <div id="vid-end-preview" style="display:flex; gap:8px; align-items:center; min-height:48px;"></div>
+              <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <input id="vid-end" type="file" accept="image/*" style="max-width:240px;" />
+                <div id="vid-end-preview" style="display:flex; gap:8px; align-items:center; min-height:42px;"></div>
+              </div>
             </div>
 
-            <div id="vid-refs-box" style="display:none; margin-top:10px;">
+            <div id="vid-refs-box" style="display:none; margin-top:10px; padding:10px; background:var(--bg-card); border:1px solid var(--border); border-radius:8px;">
               <label class="field-label">Ảnh tham chiếu (tối đa 7):</label>
-              <input id="vid-refs-input" type="file" accept="image/*" multiple style="max-width:260px; margin-bottom:6px;" />
-              <div id="vid-refs-list" style="display:flex; gap:8px; flex-wrap:wrap; min-height:48px;"></div>
+              <input id="vid-refs-input" type="file" accept="image/*" multiple style="margin-bottom:6px;" />
+              <div id="vid-refs-list" style="display:flex; gap:8px; flex-wrap:wrap; min-height:42px;"></div>
             </div>
 
-            <div class="field-row" style="margin-top:10px;">
+            <div class="field-row-4" style="margin-top:10px;">
               <div>
-                <label class="field-label" for="vid-duration">Thời lượng:</label>
+                <label class="field-label" for="vid-duration">Thời lượng</label>
                 <select id="vid-duration"><option value="8" selected>8 giây</option></select>
               </div>
               <div>
-                <label class="field-label" for="vid-res">Độ phân giải:</label>
+                <label class="field-label" for="vid-res">Độ phân giải</label>
                 <select id="vid-res"><option value="720p" selected>720p</option></select>
               </div>
-            </div>
-            <div class="field-row">
               <div>
-                <label class="field-label" for="vid-aspect">Tỉ lệ:</label>
+                <label class="field-label" for="vid-aspect">Tỉ lệ khung</label>
                 <select id="vid-aspect"><option value="16:9" selected>16:9</option></select>
               </div>
               <div>
-                <label class="field-label" for="vid-seed">Seed (tùy chọn):</label>
-                <input id="vid-seed" type="text" inputmode="numeric" placeholder="để trống = ngẫu nhiên" />
+                <label class="field-label" for="vid-seed">Seed</label>
+                <input id="vid-seed" type="text" inputmode="numeric" placeholder="Ngẫu nhiên" />
               </div>
-            </div>
-            <p id="vid-cost" class="card-sub" style="margin:6px 0 0;"></p>
-          </div>
-
-          <div class="card">
-            <div class="card-header"><div><h2 class="card-title">Phụ đề</h2></div></div>
-            <label><input id="vid-sub-enable" type="checkbox" /> Thêm phụ đề</label>
-            <p class="card-sub" style="margin:6px 0;">Mỗi dòng một câu. Không ghi giờ: chia đều theo thời lượng. Có giờ: <code>0-2.5 Xin chào</code> hoặc <code>00:03 --&gt; 00:05 Tạm biệt</code>.</p>
-            <textarea id="vid-sub-text" rows="4" placeholder="Xin chào&#10;Tạm biệt"></textarea>
-            <div class="field-row">
-              <div>
-                <label class="field-label" for="vid-sub-mode">Xuất:</label>
-                <select id="vid-sub-mode">
-                  <option value="burn" selected>Ghi vào video</option>
-                  <option value="srt">Chỉ tệp .srt</option>
-                  <option value="both">Cả hai</option>
-                </select>
-              </div>
-              <div>
-                <label class="field-label" for="vid-sub-position">Vị trí:</label>
-                <select id="vid-sub-position">
-                  <option value="bottom" selected>Dưới</option>
-                  <option value="middle">Giữa</option>
-                  <option value="top">Trên</option>
-                </select>
-              </div>
-            </div>
-            <label class="field-label" for="vid-sub-size">Cỡ chữ:</label>
-            <input id="vid-sub-size" type="number" min="12" max="120" value="36" style="max-width:100px;" />
-          </div>
-
-          <div class="card">
-            <div class="card-header"><div><h2 class="card-title">Giọng đọc &amp; nhạc nền</h2></div></div>
-            <label><input id="vid-voice-enable" type="checkbox" /> Thêm giọng đọc</label>
-            <textarea id="vid-voice-text" rows="3" maxlength="2000" placeholder="Lời đọc..." style="margin-top:6px;"></textarea>
-            <div class="field-row">
-              <div>
-                <label class="field-label" for="vid-voice-engine">Engine:</label>
-                <select id="vid-voice-engine"><option value="edge" selected>edge</option></select>
-              </div>
-              <div>
-                <label class="field-label" for="vid-voice-voice">Giọng:</label>
-                <select id="vid-voice-voice"></select>
-              </div>
-            </div>
-            <div class="field-row">
-              <div>
-                <label class="field-label" for="vid-voice-speed">Tốc độ (0.5-2):</label>
-                <input id="vid-voice-speed" type="number" min="0.5" max="2" step="0.1" value="1" />
-              </div>
-              <div>
-                <label class="field-label" for="vid-voice-volume">Âm lượng (0-2):</label>
-                <input id="vid-voice-volume" type="number" min="0" max="2" step="0.1" value="1" />
-              </div>
-            </div>
-            <div style="display:flex; gap:8px; align-items:center; margin:6px 0 12px;">
-              <button id="vid-voice-preview" class="sm" type="button">Nghe thử</button>
-              <audio id="vid-voice-audio" controls style="display:none; height:32px;"></audio>
             </div>
 
-            <label><input id="vid-music-enable" type="checkbox" /> Thêm nhạc nền</label>
-            <div style="display:flex; gap:8px; align-items:center; margin:6px 0;">
-              <input id="vid-music-file" type="file" accept="audio/*" style="max-width:240px;" />
-              <span id="vid-music-name" class="card-sub"></span>
-            </div>
-            <div class="field-row">
-              <div>
-                <label class="field-label" for="vid-music-volume">Âm lượng nhạc (0-1):</label>
-                <input id="vid-music-volume" type="number" min="0" max="1" step="0.05" value="0.25" />
+            <!-- Phụ đề thu gọn -->
+            <details class="panel-details" style="margin-top:12px;">
+              <summary>
+                <span>Phụ đề (Subtitles / .SRT)</span>
+                <label style="display:inline-flex; align-items:center; gap:6px; font-weight:500; cursor:pointer;" onclick="event.stopPropagation()">
+                  <input id="vid-sub-enable" type="checkbox" /> Bật phụ đề
+                </label>
+              </summary>
+              <div class="panel-details-body">
+                <p class="card-sub" style="margin:0 0 6px;">Mỗi dòng một câu. Có thể ghi giờ: <code>0-2.5 Xin chào</code> hoặc <code>00:03 --&gt; 00:05 Tạm biệt</code>.</p>
+                <textarea id="vid-sub-text" rows="3" placeholder="Xin chào&#10;Tạm biệt" style="margin-bottom:8px;"></textarea>
+                <div class="field-row-3" style="margin-bottom:0;">
+                  <div>
+                    <label class="field-label" for="vid-sub-mode">Chế độ xuất</label>
+                    <select id="vid-sub-mode">
+                      <option value="burn" selected>Ghi vào video</option>
+                      <option value="srt">Chỉ tệp .srt</option>
+                      <option value="both">Cả hai</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="field-label" for="vid-sub-position">Vị trí</label>
+                    <select id="vid-sub-position">
+                      <option value="bottom" selected>Dưới</option>
+                      <option value="middle">Giữa</option>
+                      <option value="top">Trên</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="field-label" for="vid-sub-size">Cỡ chữ (px)</label>
+                    <input id="vid-sub-size" type="number" min="12" max="120" value="36" />
+                  </div>
+                </div>
               </div>
-              <div>
-                <label><input id="vid-music-duck" type="checkbox" checked /> Hạ nhạc khi có giọng đọc</label>
+            </details>
+
+            <!-- Giọng đọc & Nhạc nền thu gọn -->
+            <details class="panel-details">
+              <summary>
+                <span>Giọng đọc AI (TTS) &amp; Nhạc nền</span>
+                <span style="display:inline-flex; gap:12px; font-weight:500;" onclick="event.stopPropagation()">
+                  <label style="display:inline-flex; align-items:center; gap:5px; cursor:pointer;"><input id="vid-voice-enable" type="checkbox" /> Giọng đọc</label>
+                  <label style="display:inline-flex; align-items:center; gap:5px; cursor:pointer;"><input id="vid-music-enable" type="checkbox" /> Nhạc nền</label>
+                </span>
+              </summary>
+              <div class="panel-details-body">
+                <label class="field-label">Lời thoại giọng đọc:</label>
+                <textarea id="vid-voice-text" rows="2" maxlength="2000" placeholder="Nhập lời đọc thuyết minh..." style="margin-bottom:8px;"></textarea>
+                <div class="field-row-4">
+                  <div>
+                    <label class="field-label" for="vid-voice-engine">Engine</label>
+                    <select id="vid-voice-engine"><option value="edge" selected>edge</option></select>
+                  </div>
+                  <div>
+                    <label class="field-label" for="vid-voice-voice">Giọng đọc</label>
+                    <select id="vid-voice-voice"></select>
+                  </div>
+                  <div>
+                    <label class="field-label" for="vid-voice-speed">Tốc độ (0.5-2)</label>
+                    <input id="vid-voice-speed" type="number" min="0.5" max="2" step="0.1" value="1" />
+                  </div>
+                  <div>
+                    <label class="field-label" for="vid-voice-volume">Âm lượng (0-2)</label>
+                    <input id="vid-voice-volume" type="number" min="0" max="2" step="0.1" value="1" />
+                  </div>
+                </div>
+                <div style="display:flex; gap:8px; align-items:center; margin:4px 0 12px;">
+                  <button id="vid-voice-preview" class="sm" type="button">Nghe thử giọng</button>
+                  <audio id="vid-voice-audio" controls style="display:none; height:30px;"></audio>
+                </div>
+
+                <div style="border-top:1px solid var(--border-subtle); padding-top:10px;">
+                  <label class="field-label">Tệp nhạc nền &amp; Âm lượng:</label>
+                  <div class="field-row" style="align-items:center; margin-bottom:6px;">
+                    <div>
+                      <input id="vid-music-file" type="file" accept="audio/*" />
+                      <span id="vid-music-name" class="card-sub"></span>
+                    </div>
+                    <div style="display:flex; gap:10px; align-items:center;">
+                      <div style="flex:1;">
+                        <label class="field-label" for="vid-music-volume">Âm lượng (0-1)</label>
+                        <input id="vid-music-volume" type="number" min="0" max="1" step="0.05" value="0.25" />
+                      </div>
+                      <label style="font-size:12px; display:inline-flex; align-items:center; gap:6px; margin-top:16px; cursor:pointer;">
+                        <input id="vid-music-duck" type="checkbox" checked /> Hạ nhạc khi đọc
+                      </label>
+                    </div>
+                  </div>
+                </div>
               </div>
+            </details>
+
+            <div class="action-bar">
+              <div style="display:flex; gap:8px;">
+                <button id="vid-generate" class="primary" type="button">Tạo Video</button>
+                <button id="vid-cancel" class="danger" type="button" disabled>Hủy</button>
+              </div>
+              <p id="vid-status" class="card-sub" style="margin:0;">Sẵn sàng.</p>
             </div>
           </div>
         </div>
 
         <div>
           <div class="card">
-            <div class="card-header"><div><h2 class="card-title">Kết quả</h2></div></div>
-            <div style="display:flex; gap:8px; margin-bottom:10px;">
-              <button id="vid-generate" class="primary" type="button">Tạo video</button>
-              <button id="vid-cancel" class="danger" type="button" disabled>Hủy</button>
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">Trình phát &amp; Tải Video</h2>
+                <p class="card-sub">Xem trước kết quả video hoàn chỉnh và tải xuống các định dạng.</p>
+              </div>
             </div>
-            <p id="vid-status" class="card-sub" style="min-height:20px;">Sẵn sàng.</p>
-            <video id="vid-player" controls style="display:none; width:100%; max-height:420px; background:#000; border-radius:6px;"></video>
-            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;">
-              <button id="vid-download" class="sm" type="button" disabled>Tải video</button>
-              <button id="vid-download-srt" class="sm" type="button" disabled>Tải .srt</button>
-              <button id="vid-download-raw" class="sm" type="button" disabled>Tải bản gốc (không phụ đề/giọng)</button>
+            <div class="video-stage">
+              <video id="vid-player" controls style="display:none; width:100%; max-height:420px; background:#000; border-radius:6px;"></video>
+              <span id="vid-empty-hint" class="card-sub">Video sau khi hoàn tất sẽ hiển thị tại đây.</span>
+            </div>
+            <div class="action-bar">
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <button id="vid-download" class="primary sm" type="button" disabled>Tải Video</button>
+                <button id="vid-download-srt" class="sm" type="button" disabled>Tải .SRT</button>
+                <button id="vid-download-raw" class="sm" type="button" disabled>Tải bản gốc (Raw)</button>
+              </div>
             </div>
           </div>
         </div>
@@ -1773,9 +2287,20 @@
       <div class="card">
         <div class="card-header">
           <div>
-            <h2 class="card-title">Hàng đợi Job Assisted &amp; Lịch sử thực thi</h2>
-            <p class="card-sub">Mỗi job lưu lại bản chụp Prompt, danh sách ảnh tham chiếu theo đúng thứ tự và trạng thái xác nhận.</p>
+            <h2 class="card-title">Thư viện Ảnh &amp; Hàng đợi Job</h2>
+            <p class="card-sub">Hiển thị tức thì toàn bộ ô ảnh đang khởi tạo theo dạng Grid Library, theo dõi tiến độ từng ảnh và quản lý lịch sử.</p>
           </div>
+          <div class="jobs-actions">
+            <div class="jobs-view-switch" role="group" aria-label="Chế độ xem">
+              <button id="jobs-view-library" type="button" class="active" title="Gộp toàn bộ ảnh &amp; ô đang tạo thành một lưới thư viện">Grid Library</button>
+              <button id="jobs-view-grouped" type="button" title="Nhóm các ô ảnh theo từng Job cùng nhật ký chi tiết">Theo từng Job</button>
+            </div>
+            <button id="clear-failed-jobs" class="sm" type="button" title="Chỉ xóa các job bị lỗi">Xóa job lỗi</button>
+            <button id="clear-all-jobs" class="sm danger" type="button" title="Xóa toàn bộ hình đã generate và lịch sử job">Xóa toàn bộ hình</button>
+          </div>
+        </div>
+        <div id="jobs-toolbar" class="jobs-toolbar">
+          <div id="jobs-stats" class="jobs-stats"></div>
         </div>
         <div id="jobs"></div>
       </div>

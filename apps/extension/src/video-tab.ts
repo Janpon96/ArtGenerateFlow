@@ -366,6 +366,8 @@ export function initVideoTab(ctx: VideoTabContext): { reloadCaps: () => Promise<
     const player = $<HTMLVideoElement>('vid-player');
     player.src = fileUrl(job.id, 'final', `&v=${Date.now()}`);
     player.style.display = '';
+    const emptyHint = document.getElementById('vid-empty-hint');
+    if (emptyHint) emptyHint.style.display = 'none';
     $<HTMLButtonElement>('vid-download').disabled = false;
     $<HTMLButtonElement>('vid-download-srt').disabled = !job.outputs?.srt;
     $<HTMLButtonElement>('vid-download-raw').disabled = !job.outputs?.raw;
@@ -407,6 +409,11 @@ export function initVideoTab(ctx: VideoTabContext): { reloadCaps: () => Promise<
     $<HTMLButtonElement>('vid-download-srt').disabled = true;
     $<HTMLButtonElement>('vid-download-raw').disabled = true;
     $('vid-player').style.display = 'none';
+    const emptyHint = document.getElementById('vid-empty-hint');
+    if (emptyHint) {
+      emptyHint.style.display = '';
+      emptyHint.textContent = 'Đang khởi tạo và kết xuất video trên Google Flow...';
+    }
     setStatus('Đang gửi yêu cầu tới bridge...');
     try {
       const res = await ctx.bridgeFetch('/videos', {

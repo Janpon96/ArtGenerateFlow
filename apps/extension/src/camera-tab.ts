@@ -9,11 +9,11 @@ import {
 import { readSourceImage } from './source-image';
 
 interface CamImage { index: number; url: string; label?: string; order?: number }
-interface CamJob { id: string; state: string; images?: CamImage[]; error?: string | null }
+interface CamJob { id: string; state: string; count?: number; labels?: string[]; steps?: Array<{ msg: string }>; images?: CamImage[]; error?: string | null }
 
 export interface CameraTabContext {
   bridgeFetch: (path: string, init?: RequestInit) => Promise<Response>;
-  waitJob: (id: string) => Promise<CamJob>;
+  waitJob: (id: string, onProgress?: (job: CamJob) => void) => Promise<CamJob>;
   log: (level: 'info' | 'warn' | 'error', msg: string, jobId?: string) => void;
   switchTab: (tabId: string) => void;
   getBridgeUrl: () => string;
@@ -155,10 +155,13 @@ export function initCameraTab(ctx: CameraTabContext): void {
       });
       if (!res.ok) throw new Error(`Bridge từ chối (HTTP ${res.status}): ${await res.text()}`);
       const created = (await res.json()) as CamJob;
-      setStatus(`Job #${created.id.slice(0, 8)} đang chạy: ${prompts.length} ảnh, tạo lần lượt. Xem tiến độ ở tab Hàng đợi Job.`);
-      const job = await ctx.waitJob(created.id);
+      created.count ??= prompts.length;
+      created.labels ??= prompts.map((p) => p.label);
+      renderGallery(created, prompts.map((p) => p.label));
+      setStatus(`Job #${created.id.slice(0, 8)} đang chạy: ${prompts.length} ảnh, tạo lần lượt. Xem tiến độ ngay bên phải hoặc ở tab Hàng đợi Job.`);
+      const job = await ctx.waitJob(created.id, (liveJob) => renderGallery(liveJob, prompts.map((p) => p.label)));
+      renderGallery(job, prompts.map((p) => p.label));
       if (!job.images?.length) throw new Error(job.error || 'Flow không trả ảnh nào.');
-      renderGallery(job);
       setStatus(job.images.length < prompts.length
         ? `Xong ${job.images.length}/${prompts.length} ảnh. Một số góc máy bị lỗi, xem Console.`
         : `Hoàn tất ${job.images.length} ảnh.`);
@@ -171,68 +174,120 @@ export function initCameraTab(ctx: CameraTabContext): void {
     }
   });
 
-  function renderGallery(job: CamJob): void {
+  function renderGallery(job: CamJob, fallbackLabels: string[] = []): void {
     const gallery = $('cam-gallery');
+    gallery.className = 'jobs-grid-library';
     gallery.replaceChildren();
     const zip = $<HTMLButtonElement>('cam-download-zip');
-    zip.hidden = false;
+    const images = job.images ?? [];
+    zip.hidden = images.length === 0;
     zip.onclick = () => window.open(`${ctx.getBridgeUrl()}/jobs/${job.id}/zip`, '_blank');
 
-    // Ảnh hoàn tất không theo thứ tự gửi; sắp lại theo thứ tự góc máy đã chọn.
-    const images = [...(job.images ?? [])].sort((a, b) => (a.order ?? a.index) - (b.order ?? b.index));
-    for (const im of images) {
-      const label = im.label || `Ảnh ${im.index + 1}`;
-      const fig = document.createElement('figure');
-      const img = document.createElement('img');
-      img.src = `${ctx.getBridgeUrl()}${im.url}`;
-      img.alt = label;
-      img.style.height = '200px';
-      img.addEventListener('click', () => window.open(img.src, '_blank'));
+    const labels = job.labels?.length ? job.labels : fallbackLabels;
+    const totalSlots = Math.max(Number(job.count) || 1, labels.length, images.length);
+    const isFinal = job.state === 'done' || job.state === 'error';
+    const latestStep = job.steps?.length ? job.steps[job.steps.length - 1]!.msg : 'Đang tạo ảnh...';
 
-      const title = document.createElement('div');
-      title.textContent = label;
-      title.style.cssText = 'font-size:12px; font-weight:600; margin-top:6px;';
+    for (let slotOrder = 1; slotOrder <= totalSlots; slotOrder++) {
+      const idx = slotOrder - 1;
+      const im = images.find((x) => x.order === slotOrder) ?? images[idx];
+      const label = im?.label || labels[idx] || `Ảnh ${slotOrder}`;
 
-      const fetchBlob = async (): Promise<Blob> => {
-        const resp = await ctx.bridgeFetch(im.url);
-        if (!resp.ok) throw new Error(`Không tải được ảnh (HTTP ${resp.status})`);
-        return resp.blob();
-      };
-      const guard = (fn: () => Promise<void>) => () => void fn().catch((e) => setStatus(e instanceof Error ? e.message : String(e)));
+      const card = document.createElement('div');
+      card.className = 'job-slot-card';
+      if (!im && !isFinal) card.classList.add('is-generating');
+      if (!im && isFinal) card.classList.add('is-error');
 
-      const cap = document.createElement('figcaption');
-      const dl = document.createElement('a');
-      dl.textContent = 'Tải về';
-      dl.href = `${ctx.getBridgeUrl()}${im.url}?download=true`;
+      const thumb = document.createElement('div');
+      thumb.className = 'job-slot-thumb';
+      const badge = document.createElement('span');
+      badge.className = 'job-slot-badge';
+      badge.textContent = `${slotOrder}/${totalSlots} • ${label}`;
+      thumb.append(badge);
 
-      const again = document.createElement('button');
-      again.textContent = 'Làm ảnh nguồn';
-      again.title = 'Dùng ảnh này làm ảnh nguồn để đổi góc máy tiếp';
-      again.addEventListener('click', guard(async () => {
-        const blob = await fetchBlob();
-        await loadSource(new File([blob], `camera_${job.id.slice(0, 8)}_${im.index + 1}.png`, { type: blob.type || 'image/png' }));
-      }));
+      if (im) {
+        const tag = document.createElement('span');
+        tag.className = 'job-slot-status-tag done';
+        tag.textContent = 'Hoàn tất';
+        const img = document.createElement('img');
+        img.src = `${ctx.getBridgeUrl()}${im.url}`;
+        img.alt = label;
+        img.addEventListener('click', () => window.open(img.src, '_blank'));
+        thumb.append(tag, img);
+      } else if (!isFinal) {
+        thumb.classList.add('shimmer');
+        const tag = document.createElement('span');
+        tag.className = 'job-slot-status-tag running';
+        tag.textContent = 'Đang tạo';
+        const spin = document.createElement('div');
+        spin.className = 'slot-spinner';
+        const t1 = document.createElement('div');
+        t1.className = 'slot-placeholder-title';
+        t1.textContent = `Đang tạo góc máy ${slotOrder}/${totalSlots}...`;
+        const t2 = document.createElement('div');
+        t2.className = 'slot-placeholder-sub';
+        t2.textContent = latestStep;
+        thumb.append(tag, spin, t1, t2);
+      } else {
+        const tag = document.createElement('span');
+        tag.className = 'job-slot-status-tag error';
+        tag.textContent = 'Thất bại';
+        const t1 = document.createElement('div');
+        t1.className = 'slot-placeholder-title';
+        t1.textContent = `Góc máy ${slotOrder}/${totalSlots} lỗi`;
+        const t2 = document.createElement('div');
+        t2.className = 'slot-placeholder-sub';
+        t2.textContent = job.error || 'Không tạo được góc máy này.';
+        thumb.append(tag, t1, t2);
+      }
+      card.append(thumb);
 
-      const toRef = document.createElement('button');
-      toRef.textContent = 'Dùng làm ref';
-      toRef.title = 'Đưa ảnh này vào bộ ảnh tham chiếu của tab Phối ảnh';
-      toRef.addEventListener('click', guard(async () => {
-        const blob = await fetchBlob();
-        await ctx.addAsReference(new File([blob], `camera_${job.id.slice(0, 8)}_${im.index + 1}.png`, { type: blob.type || 'image/png' }));
-        ctx.switchTab('tab-studio');
-      }));
+      if (im) {
+        const fetchBlob = async (): Promise<Blob> => {
+          const resp = await ctx.bridgeFetch(im.url);
+          if (!resp.ok) throw new Error(`Không tải được ảnh (HTTP ${resp.status})`);
+          return resp.blob();
+        };
+        const guard = (fn: () => Promise<void>) => () => void fn().catch((e) => setStatus(e instanceof Error ? e.message : String(e)));
 
-      const toStrict = document.createElement('button');
-      toStrict.textContent = 'Sửa vùng';
-      toStrict.addEventListener('click', guard(async () => {
-        const blob = await fetchBlob();
-        await ctx.sendToStrictTab(new Uint8Array(await blob.arrayBuffer()), label);
-        ctx.switchTab('tab-strict');
-      }));
+        const body = document.createElement('div');
+        body.className = 'job-slot-body';
+        const cap = document.createElement('div');
+        cap.className = 'job-slot-actions';
+        const dl = document.createElement('a');
+        dl.textContent = 'Tải về';
+        dl.href = `${ctx.getBridgeUrl()}${im.url}?download=true`;
 
-      cap.append(dl, again, toRef, toStrict);
-      fig.append(img, title, cap);
-      gallery.append(fig);
+        const again = document.createElement('button');
+        again.textContent = 'Làm ảnh nguồn';
+        again.title = 'Dùng ảnh này làm ảnh nguồn để đổi góc máy tiếp';
+        again.addEventListener('click', guard(async () => {
+          const blob = await fetchBlob();
+          await loadSource(new File([blob], `camera_${job.id.slice(0, 8)}_${im.index + 1}.png`, { type: blob.type || 'image/png' }));
+        }));
+
+        const toRef = document.createElement('button');
+        toRef.textContent = 'Dùng làm ref';
+        toRef.title = 'Đưa ảnh này vào bộ ảnh tham chiếu của tab Phối ảnh';
+        toRef.addEventListener('click', guard(async () => {
+          const blob = await fetchBlob();
+          await ctx.addAsReference(new File([blob], `camera_${job.id.slice(0, 8)}_${im.index + 1}.png`, { type: blob.type || 'image/png' }));
+          ctx.switchTab('tab-studio');
+        }));
+
+        const toStrict = document.createElement('button');
+        toStrict.textContent = 'Sửa vùng';
+        toStrict.addEventListener('click', guard(async () => {
+          const blob = await fetchBlob();
+          await ctx.sendToStrictTab(new Uint8Array(await blob.arrayBuffer()), label);
+          ctx.switchTab('tab-strict');
+        }));
+
+        cap.append(dl, again, toRef, toStrict);
+        body.append(cap);
+        card.append(body);
+      }
+      gallery.append(card);
     }
   }
 }
