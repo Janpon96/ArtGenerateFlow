@@ -299,7 +299,8 @@ async function addReferenceFiles(fileList: FileList | File[]): Promise<void> {
         assetId: id,
         alias: cleanName,
         handle: nextHandle(),
-        roles: ['style'],
+        // Không gán vai trò mặc định: vai trò "chỉ lấy phong cách" từng mâu thuẫn với mô tả của người dùng.
+        roles: [],
         subjectKey: 'main_subject',
         priority: refs.length === 0 ? 'primary' : 'secondary',
         includeTraits: [],
@@ -1286,6 +1287,14 @@ $('size').addEventListener('change', () => {
   $('size-custom').hidden = $<HTMLSelectElement>('size').value !== '__custom__';
 });
 
+/** Số ảnh mỗi lần tạo, ép về 1..8 và ghi lại vào ô nhập để người dùng thấy giá trị thật sự được gửi. */
+function readCount(): number {
+  const input = $<HTMLInputElement>('out-count');
+  const n = Math.min(8, Math.max(1, Math.round(Number(input.value) || 1)));
+  input.value = String(n);
+  return n;
+}
+
 $('newjob').addEventListener('click', async () => {
   try {
     const doc = await runCompile();
@@ -1296,13 +1305,20 @@ $('newjob').addEventListener('click', async () => {
     const references = refs
       .filter((r) => r.binding.active && r.asset.id !== baseAssetId)
       .map((r) => ({ name: r.binding.handle, mime: r.asset.mimeType, base64: base64FromBytes(r.bytes) }));
+    // Ảnh gốc là "Image 1" trong prompt nên phải được gửi kèm, nếu không Flow không có gì để sửa.
+    const baseItem = refs.find((r) => r.asset.id === baseAssetId);
+    const base = baseItem
+      ? { name: baseItem.binding.handle ?? 'base', mime: baseItem.asset.mimeType, base64: base64FromBytes(baseItem.bytes) }
+      : null;
     const body = {
       prompt: doc.compiledText,
       model,
       aspect_ratio: $<HTMLSelectElement>('ratio').value,
-      count: Number($<HTMLSelectElement>('out-count').value) || 1,
+      count: readCount(),
+      remove_watermark: $<HTMLInputElement>('remove-watermark').checked,
       ...readSize(),
       references,
+      base,
     };
     say('Đang gửi job tới bridge server...');
     const res = await bridgeFetch('/jobs', {
@@ -1460,6 +1476,7 @@ $('edit-generate').addEventListener('click', async () => {
       references: editRefs.map((r) => ({ name: r.name, mime: r.mime, base64: r.base64 })),
       marker_color: $<HTMLSelectElement>('strict-marker-color').value,
       composite_back: $<HTMLInputElement>('strict-composite').checked,
+      remove_watermark: $<HTMLInputElement>('remove-watermark').checked,
       feather_px: Number($<HTMLInputElement>('strict-feather').value) || 0,
     };
     setEditStatus('Đang gửi tới bridge server...');
@@ -1492,6 +1509,61 @@ $('edit-generate').addEventListener('click', async () => {
   }
 });
 
+// ---- Trạng thái bridge / FlowKit ở thanh trên cùng ----
+type BridgeView = 'offline' | 'no-flow' | 'cooldown' | 'ready';
+
+function showBridgeStatus(view: BridgeView, cooldownS = 0): void {
+  const badge = $('bridge-status');
+  const map: Record<BridgeView, { cls: string; text: string; title: string }> = {
+    offline: { cls: 'badge danger', text: 'Bridge: tắt', title: 'Không kết nối được bridge server (127.0.0.1:8200). Hãy chạy run.bat và giữ cửa sổ đó mở.' },
+    'no-flow': { cls: 'badge warn', text: 'FlowKit: chưa kết nối', title: 'Bridge đang chạy nhưng FlowKit extension chưa kết nối. Nạp extension FlowKit vào Chrome và mở tab flow.google.com đã đăng nhập.' },
+    cooldown: { cls: 'badge warn', text: `Flow: nghỉ ${cooldownS}s`, title: 'Google báo unusual activity. Bridge tạm nghỉ trước khi gửi tiếp.' },
+    ready: { cls: 'badge ok', text: 'Flow: sẵn sàng', title: 'Bridge và FlowKit extension đã kết nối. Có thể tạo ảnh.' },
+  };
+  const v = map[view];
+  badge.className = v.cls;
+  badge.textContent = v.text;
+  badge.title = v.title;
+}
+
+/** Hỏi /health định kỳ. Khi bridge vừa chạy lại thì nạp lại model và khả năng video. */
+async function watchBridge(onBackOnline: () => void): Promise<void> {
+  let last: BridgeView | null = null;
+  // Lúc mở trang, nếu bridge chưa chạy thì danh sách model đang trống và cần nạp lại khi bridge lên.
+  let needReload = $<HTMLSelectElement>('model').options.length <= 2 && !$<HTMLSelectElement>('model').value;
+  for (;;) {
+    let view: BridgeView = 'offline';
+    let cd = 0;
+    try {
+      const res = await fetch(`${API_URL}/health`, { signal: AbortSignal.timeout(3000) });
+      if (res.ok) {
+        const h = (await res.json()) as { extension_connected?: boolean; cooldown_remaining_s?: number };
+        cd = Math.ceil(Number(h.cooldown_remaining_s ?? 0));
+        view = !h.extension_connected ? 'no-flow' : cd > 0 ? 'cooldown' : 'ready';
+      }
+    } catch { /* offline */ }
+    showBridgeStatus(view, cd);
+    if (view !== last) {
+      if (view === 'offline') {
+        needReload = true;
+        log('warn', 'Mất kết nối bridge server (127.0.0.1:8200). Hãy chạy run.bat.');
+      } else {
+        if (last === 'offline') log('info', 'Đã kết nối lại bridge server.');
+        if (view === 'no-flow') log('warn', 'FlowKit extension chưa kết nối. Mở tab flow.google.com đã đăng nhập trong Chrome có nạp FlowKit.');
+        if (view === 'ready' && last !== 'cooldown') log('info', 'FlowKit extension đã kết nối. Sẵn sàng tạo ảnh với Google Flow.');
+        if (needReload) {
+          needReload = false;
+          await fetchModels();
+          syncEditModels();
+          onBackOnline();
+        }
+      }
+      last = view;
+    }
+    await new Promise((r) => window.setTimeout(r, view === 'offline' ? 3000 : 5000));
+  }
+}
+
 async function initBridge(): Promise<void> {
   try {
     bridgeJobs = JSON.parse(localStorage.getItem(JOBS_KEY) ?? '[]') as BridgeJob[];
@@ -1510,12 +1582,13 @@ async function initBridge(): Promise<void> {
     getStrictLastResultBytes: () => lastResultBytes,
   });
 
-  initVideoTab({
+  const videoController = initVideoTab({
     bridgeFetch,
     log,
     getBridgeUrl: () => API_URL,
     getImageResultBytes: () => lastResultBytes,
   });
+  void watchBridge(() => void videoController.reloadCaps());
 
   initAssetTab({
     bridgeFetch,

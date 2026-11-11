@@ -83,7 +83,7 @@ describe('@handle mentions', () => {
     expect(doc.compiledText).toContain(
       'vẽ lại Image 1 (@hinh1) dựa vào nhân vật Image 2 (@hinh2), bám sát pose của Image 3 (@hinh3)',
     );
-    expect(doc.compiledText).toContain('Image 2 [@hinh2 - r2]: use only for identity');
+    expect(doc.compiledText).toContain('Image 2 [@hinh2 - r2]: use it the way INSTRUCTIONS says. Also tagged for identity');
     expect(doc.rawBrief).toContain('@hinh2');
     expect(doc.warnings).toEqual([]);
   });
@@ -146,5 +146,43 @@ describe('@handle mentions', () => {
     expect(w?.severity).toBe('info');
     expect(w?.message).toContain('@hinh3');
     expect(hasBlockingWarning(doc)).toBe(false);
+  });
+});
+
+describe('references steered by the brief', () => {
+  const two = (roles: ReferenceBinding['roles']): ReferenceBinding[] => [
+    ref('r1', { handle: 'hinh1', roles, subjectKey: 'main_subject' }),
+    ref('r2', { handle: 'hinh2', roles, subjectKey: 'main_subject' }),
+  ];
+  const brief = 'vẽ lại hình @hinh1 , dựa vào nhân vật ở hình @hinh2 , bám sát pose nhân vật ở hình @hinh1';
+  const mk = (roles: ReferenceBinding['roles'], rawBrief = brief): CompileInput => ({
+    rawBrief, artStyle: 'anime style', language: 'vi', exactText: [], constraints: [],
+    references: two(roles), assetHashes: { a_r1: 'h1', a_r2: 'h2' },
+  });
+
+  it('lets the brief decide how a mentioned image is used, never "use only for" a role', async () => {
+    const doc = await compilePrompt(mk(['style']));
+    expect(doc.compiledText).not.toContain('use only for');
+    expect(doc.compiledText).toContain('Image 1 [@hinh1 - r1]: use it the way INSTRUCTIONS says.');
+    expect(doc.compiledText).toContain('Create one new image from the 2 attached reference images');
+    expect(doc.compiledText).toContain('RULES:');
+  });
+
+  it('accepts a mentioned reference without any role', async () => {
+    const doc = await compilePrompt(mk([]));
+    expect(hasBlockingWarning(doc)).toBe(false);
+    expect(doc.compiledText).toContain('Image 2 [@hinh2 - r2]: use it the way INSTRUCTIONS says.');
+    expect(doc.compiledText).not.toContain('Also tagged');
+  });
+
+  it('still blocks a reference that has neither a role nor a mention', async () => {
+    const doc = await compilePrompt(mk([], 'vẽ một cô gái'));
+    expect(doc.warnings.some((w) => w.code === 'MISSING_ROLE' && w.severity === 'blocking')).toBe(true);
+  });
+
+  it('stays readable after the provider flattens newlines', async () => {
+    const flat = (await compilePrompt(mk([]))).compiledText.replace(/\s+/g, ' ');
+    expect(flat).toContain('TASK: Create one new image');
+    expect(flat).toContain('nhân vật ở hình Image 1 (@hinh1). ART DIRECTION: anime style. RULES:');
   });
 });

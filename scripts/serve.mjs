@@ -3,10 +3,11 @@
 import http from 'node:http';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'apps', 'extension', 'dist');
-const PORT = Number(process.env.FRS_PORT ?? 5173);
+export const WORKBENCH_PORT = Number(process.env.FRS_PORT ?? 5173);
+export const WORKBENCH_URL = `http://127.0.0.1:${WORKBENCH_PORT}/workbench.html`;
 const TYPES = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
@@ -15,7 +16,7 @@ const TYPES = {
   '.png': 'image/png',
 };
 
-const server = http.createServer(async (req, res) => {
+async function handle(req, res) {
   try {
     const rawPath = decodeURIComponent((req.url ?? '/').split('?')[0] ?? '/');
     const rel = rawPath === '/' ? '/workbench.html' : rawPath;
@@ -34,17 +35,46 @@ const server = http.createServer(async (req, res) => {
   } catch {
     res.writeHead(404).end('Not found');
   }
-});
+}
 
-server.on('error', (e) => {
-  if (e.code === 'EADDRINUSE') {
-    console.log(`Cong ${PORT} dang duoc dung (co the server da chay san). Dung trang da mo.`);
-    process.exit(0);
+/** True when something on the Workbench port already serves workbench.html. */
+async function alreadyServing() {
+  try {
+    const res = await fetch(WORKBENCH_URL, { signal: AbortSignal.timeout(2000) });
+    return res.ok && (await res.text()).includes('Flow Reference Studio');
+  } catch {
+    return false;
   }
-  throw e;
-});
+}
 
-server.listen(PORT, '127.0.0.1', () => {
-  console.log(`Workbench: http://127.0.0.1:${PORT}/workbench.html`);
-  console.log('Dong cua so nay de tat server.');
-});
+/**
+ * Starts the static server. Resolves `{ reused: true }` when a Workbench server is already
+ * running on the port, and rejects when the port is held by something else.
+ */
+export function startWorkbenchServer() {
+  return new Promise((resolve, reject) => {
+    const server = http.createServer(handle);
+    server.on('error', async (e) => {
+      if (e.code === 'EADDRINUSE') {
+        if (await alreadyServing()) resolve({ reused: true, server: null });
+        else reject(new Error(`Cổng ${WORKBENCH_PORT} đang bị chương trình khác dùng. Đóng chương trình đó hoặc đặt biến FRS_PORT sang cổng khác.`));
+        return;
+      }
+      reject(e);
+    });
+    server.listen(WORKBENCH_PORT, '127.0.0.1', () => resolve({ reused: false, server }));
+  });
+}
+
+// Run directly: node scripts/serve.mjs
+if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
+  try {
+    const { reused } = await startWorkbenchServer();
+    console.log(reused ? `Workbench đã chạy sẵn: ${WORKBENCH_URL}` : `Workbench: ${WORKBENCH_URL}`);
+    if (reused) process.exit(0);
+    console.log('Đóng cửa sổ này để tắt server.');
+  } catch (e) {
+    console.error(e.message);
+    process.exit(1);
+  }
+}

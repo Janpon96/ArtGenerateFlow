@@ -1,6 +1,6 @@
 import type { PromptDocument, ReferenceBinding, ReferenceRole, TraitConstraint } from '@frs/domain';
 
-export const COMPILER_VERSION = 'prompt-core/1.1.0';
+export const COMPILER_VERSION = 'prompt-core/1.2.0';
 
 export interface CompileInput {
   rawBrief: string;
@@ -94,11 +94,20 @@ type Warning = PromptDocument['warnings'][number];
 export function lintPrompt(input: CompileInput): Warning[] {
   const warnings: Warning[] = [];
   const active = input.references.filter((r) => r.active);
+  const mentionedHandles = new Set(findMentions(input.rawBrief));
 
-  for (const ref of active) {
-    if (ref.roles.length === 0) {
-      warnings.push({ code: 'MISSING_ROLE', severity: 'blocking', message: `Reference "${ref.alias}" has no role.` });
+  active.forEach((ref) => {
+    const handle = normalizeHandle(ref.handle ?? `hinh${input.references.indexOf(ref) + 1}`);
+    // A reference needs a job: either a role, or an @mention in the brief that says how to use it.
+    if (ref.roles.length === 0 && !mentionedHandles.has(handle)) {
+      warnings.push({
+        code: 'MISSING_ROLE',
+        severity: 'blocking',
+        message: `Reference "${ref.alias}" has no role and is not mentioned in the brief. Pick a role or mention @${handle}.`,
+      });
     }
+  });
+  for (const ref of active) {
     if (ref.roles.some((r) => SUBJECT_ROLES.includes(r)) && !ref.subjectKey) {
       warnings.push({ code: 'MISSING_SUBJECT', severity: 'blocking', message: `Reference "${ref.alias}" needs a subject.` });
     }
@@ -176,10 +185,17 @@ export async function compilePrompt(input: CompileInput): Promise<PromptDocument
   const lines: string[] = [];
   const table = buildHandleTable(input);
 
-  lines.push('TASK');
-  lines.push(input.base ? 'Edit the supplied base image as described below.' : 'Create one image as described below.');
-  lines.push('');
-  lines.push('REFERENCE MAP: images are supplied in this exact order');
+  // The provider flattens newlines to spaces, so every heading ends with a colon and every line with a period.
+  const mentioned = new Set(findMentions(input.rawBrief));
+  const attached = active.length + (input.base ? 1 : 0);
+  lines.push('TASK:');
+  if (input.base) lines.push('Edit the supplied base image as described in INSTRUCTIONS.');
+  else if (attached > 0) lines.push(`Create one new image from the ${attached} attached reference image${attached > 1 ? 's' : ''}, exactly as described in INSTRUCTIONS.`);
+  else lines.push('Create one image as described in INSTRUCTIONS.');
+  if (attached > 0) {
+    lines.push('');
+    lines.push('REFERENCE MAP (images are attached in this exact order):');
+  }
 
   let index = 0;
   if (input.base) {
@@ -207,20 +223,31 @@ export async function compilePrompt(input: CompileInput): Promise<PromptDocument
     const roles = ref.roles.map((r) => ROLE_TEXT[r]).join('; ');
     const who = ref.subjectKey ? ` for subject ${ref.subjectKey}` : '';
     const tag = entry ? `@${entry.handle} - ${ref.alias}` : ref.alias;
-    let line = `Image ${index} [${tag}]: use only for ${roles}${who}.`;
+    // When the brief names this image, the brief decides how it is used; roles are only extra tags.
+    const isMentioned = entry ? mentioned.has(entry.handle) : false;
+    let line: string;
+    if (isMentioned) {
+      line = `Image ${index} [${tag}]: use it the way INSTRUCTIONS says.`;
+      if (roles) line += ` Also tagged for ${roles}${who}.`;
+    } else if (roles) {
+      line = `Image ${index} [${tag}]: use only for ${roles}${who}.`;
+    } else {
+      line = `Image ${index} [${tag}]: general reference.`;
+    }
     if (ref.includeTraits.length) line += ` Preserve: ${ref.includeTraits.join(', ')}.`;
     if (ref.excludeTraits.length) line += ` Do not transfer: ${ref.excludeTraits.join(', ')}.`;
     lines.push(line);
   }
 
+  const endStop = (s: string): string => (/[.!?…。]$/.test(s) ? s : `${s}.`);
   lines.push('');
-  lines.push('SUBJECT AND SCENE');
-  lines.push(resolveBrief(nl(input.rawBrief), table));
+  lines.push('INSTRUCTIONS (highest priority; "Image N" means the Nth attached image):');
+  lines.push(endStop(resolveBrief(nl(input.rawBrief), table)));
 
   if (input.artStyle.trim()) {
     lines.push('');
-    lines.push('ART DIRECTION');
-    lines.push(nl(input.artStyle));
+    lines.push('ART DIRECTION:');
+    lines.push(endStop(nl(input.artStyle)));
   }
 
   const keep = input.constraints.filter((c) => c.operation === 'preserve');
@@ -228,19 +255,25 @@ export async function compilePrompt(input: CompileInput): Promise<PromptDocument
   const avoid = input.constraints.filter((c) => c.operation === 'avoid');
   if (keep.length || change.length) {
     lines.push('');
-    lines.push('MUST KEEP / MUST CHANGE');
+    lines.push('MUST KEEP / MUST CHANGE:');
     for (const c of keep) lines.push(`Keep ${c.subjectKey} ${c.attribute}: ${c.value}.`);
     for (const c of change) lines.push(`Change ${c.subjectKey} ${c.attribute} to: ${c.value}.`);
   }
   if (input.exactText.length) {
     lines.push('');
-    lines.push('EXACT TEXT (reproduce verbatim)');
+    lines.push('EXACT TEXT (reproduce verbatim):');
     for (const t of input.exactText) lines.push(JSON.stringify(t));
   }
   if (avoid.length) {
     lines.push('');
-    lines.push('AVOID');
+    lines.push('AVOID:');
     for (const c of avoid) lines.push(`${c.subjectKey} ${c.attribute}: ${c.value}.`);
+  }
+  if (mentioned.size > 0 && attached > 0) {
+    lines.push('');
+    lines.push('RULES:');
+    lines.push('Take from each attached image exactly what INSTRUCTIONS asks of it (for example pose, character, outfit or style) and nothing else.');
+    lines.push('The result must clearly come from the attached images. Do not invent an unrelated subject, and do not paste an attached image unchanged.');
   }
 
   const compiledText = lines.join('\n');

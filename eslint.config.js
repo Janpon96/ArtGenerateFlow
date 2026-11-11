@@ -9,7 +9,10 @@ export default tseslint.config(
     // Node scripts (build and packaging) run outside the browser.
     files: ['**/*.mjs', 'eslint.config.js'],
     languageOptions: {
-      globals: { console: 'readonly', process: 'readonly', Buffer: 'readonly' },
+      globals: {
+        console: 'readonly', process: 'readonly', Buffer: 'readonly',
+        fetch: 'readonly', AbortSignal: 'readonly', setTimeout: 'readonly',
+      },
     },
   },
   {

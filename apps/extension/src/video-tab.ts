@@ -80,7 +80,7 @@ async function fileToB64(file: File): Promise<FileB64> {
   return { name: file.name, mime: file.type || 'application/octet-stream', base64: bytesToBase64(bytes) };
 }
 
-export function initVideoTab(ctx: VideoTabContext): void {
+export function initVideoTab(ctx: VideoTabContext): { reloadCaps: () => Promise<void> } {
   const $ = <T extends HTMLElement>(id: string) => {
     const el = document.getElementById(id);
     if (!el) throw new Error(`Không tìm thấy phần tử #${id}`);
@@ -559,4 +559,5 @@ export function initVideoTab(ctx: VideoTabContext): void {
   refreshCost();
   setBusy(false);
   void loadCaps();
+  return { reloadCaps: loadCaps };
 }

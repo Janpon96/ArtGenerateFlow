@@ -263,6 +263,11 @@
       color: #6ee7b7;
       border-color: rgba(16, 185, 129, 0.35);
     }
+    .badge.warn {
+      background: var(--warn-soft);
+      color: #fcd34d;
+      border-color: rgba(245, 158, 11, 0.35);
+    }
     .badge.danger {
       background: var(--danger-soft);
       color: #fca5a5;
@@ -841,6 +846,7 @@
     </nav>
 
     <div class="top-actions">
+      <span id="bridge-status" class="badge" title="Đang kiểm tra bridge server...">Bridge: đang kiểm tra</span>
       <span class="mode-pill">Chế độ Assisted • Local-First</span>
       <button id="backup" class="sm">Xuất Backup JSON</button>
     </div>
@@ -963,14 +969,13 @@
               </div>
               <div>
                 <label class="field-label" for="out-count">Số lượng ảnh</label>
-                <select id="out-count">
-                  <option value="1">1 ảnh</option>
-                  <option value="2">2 ảnh</option>
-                  <option value="3">3 ảnh</option>
-                  <option value="4">4 ảnh</option>
-                </select>
+                <input id="out-count" type="number" min="1" max="8" step="1" value="1" title="Số ảnh tạo trong một lần bấm (1-8). Bridge gửi lần lượt, tối đa 2 ảnh cùng lúc, để tránh bị Google chặn." />
               </div>
             </div>
+            <label style="display:flex; align-items:center; gap:8px; margin:10px 0 0; font-size:12.5px; cursor:pointer;">
+              <input id="remove-watermark" type="checkbox" checked style="width:auto;" />
+              Xóa watermark (logo ngôi sao mờ) ở góc phải dưới ảnh
+            </label>
 
             <div class="field-row-3">
               <div>
@@ -993,7 +998,7 @@
                 </div>
               </div>
             </div>
-            <p class="card-sub">Flow chỉ tạo 3 tỉ lệ (ngang, dọc, vuông). Bridge chọn tỉ lệ gần nhất, tạo ảnh rồi cắt giữa và resize về đúng kích thước này.</p>
+            <p class="card-sub">Flow chỉ tạo 3 tỉ lệ (ngang, dọc, vuông) ở khoảng 1376×768. Nếu kích thước chọn lớn hơn, bridge tự upscale 2K/4K trên Flow rồi cắt giữa và thu nhỏ về đúng kích thước này để giữ nét; mỗi ảnh mất thêm thời gian. Log của job ghi rõ ảnh xuất từ nguồn nào và cảnh báo nếu không đủ nét.</p>
 
             <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:6px;">
               <button id="compile" class="primary">Biên dịch Prompt</button>
@@ -1632,7 +1637,7 @@
             <li>Bấm <b>Load unpacked</b>, chọn thư mục <code>apps/extension/dist</code>.</li>
             <li>Sau mỗi lần build lại, bấm nút tải lại (⟳) trên thẻ tiện ích.</li></ul></li>
           <li><b>Nạp extension FlowKit và mở Google Flow</b><p>Nạp extension trong <code>FlowAutoTool\upstream-flowkit\extension</code> vào Chrome (Load unpacked), mở <code>https://flow.google.com</code> và đăng nhập. Giữ tab này mở trong lúc tạo ảnh.</p></li>
-          <li><b>Chạy bridge và Workbench</b><p>Chạy <code>run.bat</code>. File này mở bridge server (cổng 8200) và Workbench tại <code>http://127.0.0.1:5173/workbench.html</code>. Nếu Console báo "Không kết nối được bridge server" thì cửa sổ bridge chưa chạy hoặc đã tắt.</p></li>
+          <li><b>Chạy bridge và Workbench</b><p>Chạy <code>run.bat</code>. File này tự build, khởi động bridge server (cổng 8200), mở Workbench tại <code>http://127.0.0.1:5173/workbench.html</code> và tự chạy lại bridge nếu nó dừng. Giữ cửa sổ đó mở. Nhãn ở góc phải trên cho biết trạng thái: <b>Flow: sẵn sàng</b>, <b>FlowKit: chưa kết nối</b> hoặc <b>Bridge: tắt</b>. Log của bridge nằm ở <code>logs\bridge.log</code>.</p></li>
         </ol>
       </div>
 
@@ -1710,10 +1715,10 @@
           <h2 class="card-title">Phần G. Xử lý sự cố</h2>
         </div></div>
         <ul class="guide-steps" style="counter-reset:none;">
-          <li style="padding-left:0;"><b>"Không kết nối được bridge server (127.0.0.1:8200)"</b><p>Bridge chưa chạy. Chạy <code>run.bat</code> hoặc <code>python bridge_server.py</code> trong thư mục FlowAutoTool, giữ cửa sổ đó mở.</p></li>
+          <li style="padding-left:0;"><b>"Không kết nối được bridge server (127.0.0.1:8200)"</b><p>Bridge chưa chạy. Chạy <code>run.bat</code> và giữ cửa sổ đó mở. Nếu thư mục FlowAutoTool không nằm cạnh thư mục dự án, đặt biến môi trường <code>FRS_BRIDGE_DIR</code> trỏ tới nó trước khi chạy.</p></li>
           <li style="padding-left:0;"><b>"FlowKit extension chưa kết nối"</b><p>Nạp extension FlowKit vào Chrome và mở tab <code>https://flow.google.com</code> đã đăng nhập, rồi thử lại.</p></li>
           <li style="padding-left:0;"><b>"Unusual activity" từ Google</b><p>Bridge tự dừng và chờ khoảng 300 giây trước khi gửi tiếp. Hãy giảm số ảnh mỗi lần và không chạy nhiều job cùng lúc. Bridge chỉ giảm tốc độ, không né kiểm tra của Google.</p></li>
-          <li style="padding-left:0;"><b>Cổng 8100, 8200 hoặc 9222 đang bận</b><p>Có bridge cũ còn chạy. Đóng cửa sổ bridge cũ rồi chạy lại <code>run.bat</code>.</p></li>
+          <li style="padding-left:0;"><b>Cổng 8100, 8200 hoặc 9222 đang bận</b><p>Có chương trình khác đang giữ cổng (thường là YTF Studio hoặc FlowKit backend). <code>run.bat</code> in ra PID đang giữ cổng; đóng chương trình đó rồi chạy lại. Nếu chính bridge đang chạy sẵn, <code>run.bat</code> sẽ dùng lại.</p></li>
           <li style="padding-left:0;"><b>Video báo lỗi phụ đề hoặc giọng đọc</b><p>Giờ phụ đề phải nằm trong thời lượng video và không chồng nhau. Engine edge cần mạng; nếu lỗi, đổi sang pyttsx3. Nếu ffmpeg không có bộ lọc subtitles, chỉ xuất được <code>.srt</code>.</p></li>
           <li style="padding-left:0;"><b>Sửa vùng không đúng ý</b><p>Flow không có mask thật nên chỉ làm theo prompt. Tô vùng nhỏ và sát đối tượng, viết prompt cụ thể, thử lại với số ảnh 2–4. Pixel ngoài vùng tô luôn giữ nguyên nhờ bước ghép.</p></li>
           <li style="padding-left:0;"><b>Lưu ý</b><p>Tự động hóa Flow chưa được thử trên Flow thật và có thể vi phạm điều khoản của Flow. Dùng có cân nhắc.</p></li>
