@@ -857,6 +857,8 @@
       <button class="sub-btn active" data-tab="tab-studio">Phối ảnh (Multi-Ref)</button>
       <button class="sub-btn" data-tab="tab-strict">Sửa vùng</button>
       <button class="sub-btn" data-tab="tab-asset">Game Asset</button>
+      <button class="sub-btn" data-tab="tab-room">BG Room</button>
+      <button class="sub-btn" data-tab="tab-camera">Camera Image</button>
     </div>
     <!-- TAB 1: MULTI-REFERENCE + PROMPT COMPILER + GENERATE -->
     <section id="tab-studio" class="tab-panel active">
@@ -938,7 +940,7 @@
             <div class="field-row">
               <div>
                 <label class="field-label" for="style">Phong cách nghệ thuật (Art Direction)</label>
-                <input id="style" type="text" placeholder="VD: cinematic keyframe, cel-shaded anime..." />
+                <input id="style" type="text" value="anime style, clean cel shading, highly details, soft thin brown outline  Negate black outlines" placeholder="VD: cinematic keyframe, cel-shaded anime..." />
               </div>
               <div>
                 <label class="field-label" for="exact-text">Chữ cần in chính xác (cách nhau dấu |)</label>
@@ -1277,6 +1279,163 @@
 
             <div id="asset-gallery" class="gallery checkerboard" style="min-height:360px; padding:12px; border-radius:8px; border:1px solid var(--border);">
               <p class="card-sub" style="align-self:center; margin:auto;">Chưa có asset nào được tạo. Nhập prompt và bấm Generate ở bên trái.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB: BG ROOM (phòng chibi isometric -> illust BG 2D) -->
+    <section id="tab-room" class="tab-panel">
+      <div class="studio-grid">
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">BG Room: từ phòng chibi isometric ra illust BG 2D</h2>
+                <p class="card-sub">Nạp một ảnh phòng chibi dạng isometric. Mỗi góc nhìn được chọn tạo ra một ảnh nền 2D, nhìn từ vị trí nhân vật đứng giữa phòng.</p>
+              </div>
+            </div>
+
+            <label class="field-label">1. Ảnh phòng isometric (1 ảnh; ảnh lớn được tự thu nhỏ)</label>
+            <input id="room-input" type="file" accept="image/*" hidden />
+            <div id="room-drop" style="cursor:pointer; min-height:180px; display:flex; align-items:center; justify-content:center; padding:10px; border:1px dashed #2e3e5c; border-radius:8px; background:var(--bg-input); margin-bottom:12px;">
+              <span id="room-drop-hint" class="card-sub">Bấm để chọn hoặc kéo thả ảnh phòng vào đây</span>
+              <img id="room-preview" alt="Ảnh phòng isometric" hidden style="max-width:100%; max-height:320px; border-radius:6px;" />
+            </div>
+            <p id="room-source-info" class="card-sub" style="margin:-6px 0 12px;">Chưa có ảnh nào được chọn.</p>
+
+            <label class="field-label">2. Góc nhìn từ giữa phòng (mỗi mục một ảnh)</label>
+            <div id="room-views" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:6px 14px; margin-bottom:12px;"></div>
+
+            <label class="field-label" for="room-objects">3. Nhìn vào vật thể cụ thể (tùy chọn, cách nhau dấu phẩy; mỗi vật một ảnh)</label>
+            <input id="room-objects" type="text" placeholder="VD: giường, bàn học, kệ sách, cửa sổ" />
+
+            <label class="field-label" for="room-style" style="margin-top:12px;">4. Phong cách nghệ thuật</label>
+            <input id="room-style" type="text" value="anime style, clean cel shading, highly details, soft thin brown outline  Negate black outlines" />
+
+            <label class="field-label" for="room-notes" style="margin-top:12px;">5. Ghi chú thêm (tùy chọn)</label>
+            <textarea id="room-notes" rows="2" placeholder="VD: buổi chiều, nắng vàng chiếu qua cửa sổ, không khí ấm áp"></textarea>
+
+            <div class="field-row" style="margin-top:12px;">
+              <div>
+                <label class="field-label" for="room-model">Model</label>
+                <select id="room-model"></select>
+              </div>
+              <div>
+                <label class="field-label" for="room-size">Kích thước ảnh xuất</label>
+                <select id="room-size">
+                  <option value="1920x1080" selected>1920 x 1080 (Full HD ngang)</option>
+                  <option value="1080x1920">1080 x 1920 (Full HD dọc)</option>
+                  <option value="3840x2160">3840 x 2160 (4K ngang)</option>
+                  <option value="0x0">Giữ nguyên theo Flow (ngang)</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="display:flex; gap:12px; align-items:center; margin-top:14px; flex-wrap:wrap;">
+              <button id="room-generate" class="primary">Generate BG Room</button>
+              <span id="room-count" class="card-sub"></span>
+            </div>
+            <p id="room-status" class="card-sub" style="margin-top:8px;"></p>
+            <p class="card-sub" style="margin-top:6px;">Ảnh isometric chỉ lộ hai bức tường phía sau. Mục "Phía đối diện" là phần AI tự suy diễn nên có thể không khớp ý bạn. Tùy chọn xóa watermark dùng chung với tab Phối ảnh.</p>
+          </div>
+        </div>
+
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">Kết quả illust BG</h2>
+                <p class="card-sub">Mỗi ảnh ghi rõ góc nhìn. Bấm ảnh để xem cỡ đầy đủ.</p>
+              </div>
+              <button id="room-download-zip" class="sm" hidden>Tải trọn bộ ZIP</button>
+            </div>
+            <div id="room-gallery" class="gallery" style="grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); min-height:360px;">
+              <p class="card-sub" style="margin:auto;">Chưa có ảnh nào. Nạp ảnh phòng và bấm Generate BG Room.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB: CAMERA IMAGE (đổi góc máy của một ảnh illust) -->
+    <section id="tab-camera" class="tab-panel">
+      <div class="studio-grid">
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">Camera Image: đổi góc máy của ảnh illust</h2>
+                <p class="card-sub">Nạp một ảnh illust, chọn các góc máy. Mỗi góc máy tạo ra một ảnh vẽ lại cùng cảnh, cùng nhân vật, cùng nét vẽ.</p>
+              </div>
+            </div>
+
+            <label class="field-label">1. Ảnh illust nguồn (1 ảnh; ảnh lớn được tự thu nhỏ)</label>
+            <input id="cam-input" type="file" accept="image/*" hidden />
+            <div id="cam-drop" style="cursor:pointer; min-height:180px; display:flex; align-items:center; justify-content:center; padding:10px; border:1px dashed #2e3e5c; border-radius:8px; background:var(--bg-input); margin-bottom:12px;">
+              <span id="cam-drop-hint" class="card-sub">Bấm để chọn hoặc kéo thả ảnh illust vào đây</span>
+              <img id="cam-preview" alt="Ảnh illust nguồn" hidden style="max-width:100%; max-height:320px; border-radius:6px;" />
+            </div>
+            <p id="cam-source-info" class="card-sub" style="margin:-6px 0 12px;">Chưa có ảnh nào được chọn.</p>
+
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <label class="field-label" style="margin:0;">2. Góc máy mới (mỗi mục được tick là một ảnh)</label>
+              <button id="cam-clear" class="sm">Bỏ chọn hết</button>
+            </div>
+            <div id="cam-options" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:6px 14px; margin:6px 0 12px;"></div>
+
+            <label class="field-label" for="cam-custom">3. Góc máy tự nhập (tùy chọn; mỗi dòng là một ảnh)</label>
+            <textarea id="cam-custom" rows="2" placeholder="VD: góc thấp từ dưới lên, cận cảnh khuôn mặt"></textarea>
+
+            <label style="display:flex; align-items:center; gap:8px; margin:12px 0 0; font-size:12.5px; cursor:pointer;">
+              <input id="cam-keep-pose" type="checkbox" checked style="width:auto;" />
+              Giữ nguyên tư thế nhân vật (bỏ tick để cho phép chỉnh nhẹ tư thế cho hợp góc máy)
+            </label>
+
+            <label class="field-label" for="cam-style" style="margin-top:12px;">4. Phong cách nghệ thuật</label>
+            <input id="cam-style" type="text" value="anime style, clean cel shading, highly details, soft thin brown outline  Negate black outlines" />
+
+            <label class="field-label" for="cam-notes" style="margin-top:12px;">5. Ghi chú thêm (tùy chọn)</label>
+            <textarea id="cam-notes" rows="2" placeholder="VD: giữ nguyên ánh đèn vàng phía sau, nền mờ nhẹ"></textarea>
+
+            <div class="field-row" style="margin-top:12px;">
+              <div>
+                <label class="field-label" for="cam-model">Model</label>
+                <select id="cam-model"></select>
+              </div>
+              <div>
+                <label class="field-label" for="cam-size">Kích thước ảnh xuất</label>
+                <select id="cam-size">
+                  <option value="auto" selected>Theo tỉ lệ ảnh nguồn (cỡ gốc của Flow)</option>
+                  <option value="1920x1080">1920 x 1080 (Full HD ngang)</option>
+                  <option value="1080x1920">1080 x 1920 (Full HD dọc)</option>
+                  <option value="1080x1080">1080 x 1080 (Vuông)</option>
+                  <option value="3840x2160">3840 x 2160 (4K ngang)</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="display:flex; gap:12px; align-items:center; margin-top:14px; flex-wrap:wrap;">
+              <button id="cam-generate" class="primary">Generate góc máy mới</button>
+              <span id="cam-count" class="card-sub"></span>
+            </div>
+            <p id="cam-status" class="card-sub" style="margin-top:8px;"></p>
+            <p class="card-sub" style="margin-top:6px;">AI vẽ lại cả cảnh nên chi tiết nhỏ có thể khác ảnh nguồn; phần bị khuất trong ảnh nguồn (lưng nhân vật, phía sau máy) là AI tự suy diễn. Tùy chọn xóa watermark dùng chung với tab Phối ảnh.</p>
+          </div>
+        </div>
+
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">Kết quả theo góc máy</h2>
+                <p class="card-sub">Mỗi ảnh ghi rõ góc máy. Bấm ảnh để xem cỡ đầy đủ.</p>
+              </div>
+              <button id="cam-download-zip" class="sm" hidden>Tải trọn bộ ZIP</button>
+            </div>
+            <div id="cam-gallery" class="gallery" style="grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); min-height:360px;">
+              <p class="card-sub" style="margin:auto;">Chưa có ảnh nào. Nạp ảnh illust, chọn góc máy và bấm Generate.</p>
             </div>
           </div>
         </div>

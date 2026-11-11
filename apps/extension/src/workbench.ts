@@ -1,4 +1,6 @@
 import { initAssetTab } from './asset-tab';
+import { initRoomTab } from './room-tab';
+import { initCameraTab } from './camera-tab';
 import { initAnimTab } from './anim-tab';
 import { initVideoTab } from './video-tab';
 import type {
@@ -115,7 +117,7 @@ const constraints: TraitConstraint[] = [];
 let lastDoc: PromptDocument | null = null;
 
 // ---- Điều hướng Tab ----
-const IMAGE_TABS = ['tab-studio', 'tab-strict', 'tab-asset'];
+const IMAGE_TABS = ['tab-studio', 'tab-strict', 'tab-asset', 'tab-room', 'tab-camera'];
 const IMAGE_SUB_KEY = 'frs.imageSub';
 
 function activateTab(target: string): void {
@@ -1355,6 +1357,16 @@ function syncEditModels(): void {
   // Flow từ chối sửa ảnh (BASE_IMAGE) với NARWHAL (nano-banana-2.1); lần đầu mặc định dùng nano-banana-pro.
   else if ([...dst.options].some((o) => o.value === 'nano-banana-pro')) dst.value = 'nano-banana-pro';
 
+  for (const id of ['room-model', 'cam-model']) {
+    const roomModel = document.getElementById(id) as HTMLSelectElement | null;
+    if (!roomModel) continue;
+    const prevR = roomModel.value;
+    roomModel.replaceChildren(...validOpts.map((o) => new Option(o.text, o.value)));
+    if ([...roomModel.options].some((o) => o.value === prevR)) roomModel.value = prevR;
+    // Flow hiện từ chối nano-banana-2.1 ([5]); mặc định dùng nano-banana-pro để khỏi mất một lượt thử.
+    else if ([...roomModel.options].some((o) => o.value === 'nano-banana-pro')) roomModel.value = 'nano-banana-pro';
+  }
+
   const assetModel = document.getElementById('asset-model') as HTMLSelectElement | null;
   if (assetModel) {
     const prevA = assetModel.value;
@@ -1608,6 +1620,28 @@ async function initBridge(): Promise<void> {
     sendToAnimTab: async (file) => {
       await animController.setCharacterFile(file);
     },
+  });
+
+  initRoomTab({
+    bridgeFetch,
+    waitJob,
+    log,
+    switchTab,
+    getBridgeUrl: () => API_URL,
+    getRemoveWatermark: () => $<HTMLInputElement>('remove-watermark').checked,
+    addAsReference: async (file) => { await addReferenceFiles([file]); },
+    sendToStrictTab: async (bytes, label) => { await loadBytesIntoStrictBase(bytes, label); },
+  });
+
+  initCameraTab({
+    bridgeFetch,
+    waitJob,
+    log,
+    switchTab,
+    getBridgeUrl: () => API_URL,
+    getRemoveWatermark: () => $<HTMLInputElement>('remove-watermark').checked,
+    addAsReference: async (file) => { await addReferenceFiles([file]); },
+    sendToStrictTab: async (bytes, label) => { await loadBytesIntoStrictBase(bytes, label); },
   });
 
   for (const j of bridgeJobs) if (!FINAL_STATES.has(j.state)) startPolling(j.id);
