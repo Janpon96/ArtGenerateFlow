@@ -3,6 +3,7 @@ import { initRoomTab } from './room-tab';
 import { initCameraTab } from './camera-tab';
 import { initAnimTab } from './anim-tab';
 import { initVideoTab } from './video-tab';
+import { mountAllCreditBars } from './credits';
 import type {
   Asset, PromptDocument, ReferenceBinding, ReferenceRole, TraitConstraint,
 } from '@frs/domain';
@@ -1828,6 +1829,7 @@ async function initBridge(): Promise<void> {
     getImageResultBytes: () => lastResultBytes,
   });
   void watchBridge(() => void videoController.reloadCaps());
+  mountAllCreditBars();
 
   initAssetTab({
     bridgeFetch,

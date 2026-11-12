@@ -1075,6 +1075,110 @@
       margin-top: 10px;
       border-top: 1px solid var(--border-subtle);
     }
+    /* Token / Credit Highlight Strip */
+    .credit-strip {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      margin: 12px 0 10px;
+      background: linear-gradient(135deg, rgba(21, 29, 46, 0.95), rgba(15, 23, 42, 0.9));
+      border: 1px solid rgba(99, 102, 241, 0.28);
+      border-radius: var(--radius-sm);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+    .credit-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12.5px;
+      background: rgba(10, 14, 23, 0.65);
+      border: 1px solid var(--border);
+    }
+    .credit-label {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .credit-val {
+      font-weight: 700;
+      font-feature-settings: "tnum";
+      font-variant-numeric: tabular-nums;
+    }
+    /* Chi phí lần này (Highlight cam vàng/glow) */
+    .credit-cost-badge {
+      border-color: rgba(245, 158, 11, 0.4);
+      background: rgba(245, 158, 11, 0.1);
+    }
+    .credit-cost-badge .credit-label {
+      color: #fbbf24;
+    }
+    .credit-cost-badge .credit-val {
+      color: #fef08a;
+      font-size: 13.5px;
+      text-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
+    }
+    /* Số dư hiện có (Highlight xanh tím/neon) */
+    .credit-balance-badge {
+      border-color: rgba(99, 102, 241, 0.45);
+      background: rgba(99, 102, 241, 0.1);
+    }
+    .credit-balance-badge .credit-label {
+      color: #a5b4fc;
+    }
+    .credit-input-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .credit-input-wrap input {
+      width: 72px;
+      padding: 2px 7px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #e0e7ff;
+      background: #090d16;
+      border: 1px solid rgba(99, 102, 241, 0.5);
+      border-radius: 5px;
+      text-align: right;
+      font-feature-settings: "tnum";
+    }
+    .credit-input-wrap input:focus {
+      border-color: #818cf8;
+      box-shadow: 0 0 8px rgba(99, 102, 241, 0.5);
+    }
+    .credit-unit {
+      font-size: 11px;
+      color: #818cf8;
+      font-weight: 600;
+    }
+    /* Dự kiến còn lại */
+    .credit-after-badge {
+      border-color: rgba(148, 163, 184, 0.25);
+    }
+    .credit-after-badge.sufficient {
+      border-color: rgba(16, 185, 129, 0.4);
+      background: rgba(16, 185, 129, 0.1);
+    }
+    .credit-after-badge.sufficient .credit-val {
+      color: #6ee7b7;
+    }
+    .credit-after-badge.insufficient {
+      border-color: rgba(239, 68, 68, 0.55);
+      background: rgba(239, 68, 68, 0.15);
+      animation: pulseAlert 1.5s infinite;
+    }
+    .credit-after-badge.insufficient .credit-val {
+      color: #fca5a5;
+      font-weight: 800;
+    }
+    @keyframes pulseAlert {
+      0%, 100% { box-shadow: 0 0 0 rgba(239, 68, 68, 0); }
+      50% { box-shadow: 0 0 10px rgba(239, 68, 68, 0.4); }
+    }
     .inline-checks {
       display: flex;
       align-items: center;
