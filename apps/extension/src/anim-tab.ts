@@ -2,6 +2,8 @@
  * anim-tab.ts: Xử lý tương tác Tab Animation Loop (Frame-by-frame & Video extraction).
  */
 
+import { openLightbox, showToast } from './ui-helpers';
+
 export interface BridgeJobResult {
   id: string;
   state: string;
@@ -18,6 +20,13 @@ export interface AnimTabContext {
   getBridgeUrl: () => string;
   getStrictLastResultBytes: () => Uint8Array | null;
 }
+
+const ANIM_PROMPT_IDEAS: Array<{ label: string; prompt: string }> = [
+  { label: '💨 Idle Thở nhẹ', prompt: 'subtle idle breathing animation, gentle chest rise and fall, slight hair and cape sway, seamless loop' },
+  { label: '🚶 Đi bộ (Walk)', prompt: 'smooth side-view walk cycle animation, balanced arm swing and leg stride, consistent character proportions, seamless loop' },
+  { label: '✨ Lơ lửng phép', prompt: 'magical floating idle loop, gentle vertical bobbing motion, glowing aura particles around hands, seamless loop' },
+  { label: '⚔️ Thủ thế chiến đấu', prompt: 'combat ready stance loop, rhythmic knee bounce, weapon held steady with subtle energy shimmer, seamless loop' },
+];
 
 export function initAnimTab(ctx: AnimTabContext): { setCharacterFile: (file: File) => Promise<void> } {
   const $ = <T extends HTMLElement>(id: string) => {
@@ -44,20 +53,32 @@ export function initAnimTab(ctx: AnimTabContext): { setCharacterFile: (file: Fil
       const sp = document.createElement('span');
       sp.className = 'card-sub';
       sp.style.fontSize = '12px';
-      sp.textContent = 'Chưa chọn ảnh nhân vật.';
+      sp.textContent = 'Chưa chọn ảnh nhân vật (có thể kéo thả ảnh vào khung này).';
       box.append(sp);
       return;
     }
 
+    const ref = charRef;
     const img = document.createElement('img');
-    img.src = charRef.dataUrl;
-    img.style.cssText = 'width:48px; height:48px; object-fit:contain; border-radius:4px; border:1px solid #475569;';
+    img.src = ref.dataUrl;
+    img.style.cssText = 'width:52px; height:52px; object-fit:contain; border-radius:6px; border:1px solid var(--border); background:#070a10; cursor:zoom-in;';
+    img.addEventListener('click', () => {
+      openLightbox({ src: ref.dataUrl, title: ref.name, subtitle: 'Nhân vật gốc Animation' });
+    });
 
     const info = document.createElement('div');
-    info.style.cssText = 'font-size:12px; display:flex; flex-direction:column;';
-    info.innerHTML = `<strong>${charRef.name}</strong><span class="card-sub">${charRef.mime}</span>`;
+    info.style.cssText = 'font-size:12px; display:flex; flex-direction:column; min-width:0; flex:1;';
+    const nameEl = document.createElement('strong');
+    nameEl.style.cssText = 'overflow:hidden; text-overflow:ellipsis; white-space:nowrap;';
+    nameEl.textContent = ref.name;
+    const mimeEl = document.createElement('span');
+    mimeEl.className = 'card-sub';
+    mimeEl.style.margin = '0';
+    mimeEl.textContent = ref.mime;
+    info.append(nameEl, mimeEl);
 
     const clearBtn = document.createElement('button');
+    clearBtn.type = 'button';
     clearBtn.className = 'sm danger';
     clearBtn.textContent = 'Bỏ chọn';
     clearBtn.addEventListener('click', () => {
@@ -69,10 +90,17 @@ export function initAnimTab(ctx: AnimTabContext): { setCharacterFile: (file: Fil
   }
 
   async function setCharacterFile(file: File): Promise<void> {
+    if (!file.type.startsWith('image/')) {
+      showToast('Vui lòng chọn tệp hình ảnh hợp lệ.', 'warn');
+      return;
+    }
     const buf = await file.arrayBuffer();
     const bytes = new Uint8Array(buf);
     let binary = '';
-    for (let j = 0; j < bytes.length; j++) binary += String.fromCharCode(bytes[j]!);
+    const chunk = 0x8000;
+    for (let j = 0; j < bytes.length; j += chunk) {
+      binary += String.fromCharCode(...bytes.subarray(j, j + chunk));
+    }
     const b64 = btoa(binary);
     charRef = {
       name: file.name,
@@ -86,19 +114,60 @@ export function initAnimTab(ctx: AnimTabContext): { setCharacterFile: (file: Fil
   $('anim-ref-input').addEventListener('change', async () => {
     const input = $<HTMLInputElement>('anim-ref-input');
     const f = input.files?.[0];
-    if (f) await setCharacterFile(f);
+    if (f) {
+      await setCharacterFile(f);
+      showToast(`Đã nạp nhân vật: ${f.name}`, 'ok', 2000);
+    }
     input.value = '';
   });
 
-  // Lấy ảnh từ Tab 2 (kết quả vừa sửa)
+  const charDropZone = document.getElementById('anim-char-drop') ?? $('anim-ref-preview');
+  charDropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    charDropZone.classList.add('dragover');
+  });
+  charDropZone.addEventListener('dragleave', () => charDropZone.classList.remove('dragover'));
+  charDropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    charDropZone.classList.remove('dragover');
+    const f = e.dataTransfer?.files?.[0];
+    if (f) void setCharacterFile(f).then(() => showToast(`Đã nạp nhân vật: ${f.name}`, 'ok', 2000));
+  });
+
+  // Gợi ý prompt chuyển động nhanh
+  const ideasHost = document.getElementById('anim-quick-ideas');
+  if (ideasHost) {
+    for (const item of ANIM_PROMPT_IDEAS) {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'preset-chip';
+      chip.textContent = item.label;
+      chip.title = item.prompt;
+      chip.addEventListener('click', () => {
+        $<HTMLTextAreaElement>('anim-prompt').value = item.prompt;
+        $<HTMLTextAreaElement>('anim-prompt').focus();
+      });
+      ideasHost.append(chip);
+    }
+  }
+
+  // Pixel-art crisp mode toggle
+  const pixelCheck = document.getElementById('anim-pixelated') as HTMLInputElement | null;
+  pixelCheck?.addEventListener('change', () => {
+    canvas.style.imageRendering = pixelCheck.checked ? 'pixelated' : 'auto';
+    drawFrame(currentFrameIdx);
+  });
+
+  // Lấy ảnh từ Tab Sửa vùng (kết quả vừa sửa)
   $('anim-use-strict-result').addEventListener('click', async () => {
     const bytes = ctx.getStrictLastResultBytes();
     if (!bytes) {
-      alert('Tab 2 (Sửa vùng Strict) chưa có ảnh kết quả nào.');
+      showToast('Tab Sửa vùng chưa có ảnh kết quả nào để lấy.', 'warn');
       return;
     }
     const file = new File([bytes as BlobPart], `strict_result_${Date.now()}.png`, { type: 'image/png' });
     await setCharacterFile(file);
+    showToast('Đã nạp ảnh kết quả từ tab Sửa vùng!', 'ok');
   });
 
   function setStatus(text: string): void {
@@ -114,10 +183,11 @@ export function initAnimTab(ctx: AnimTabContext): { setCharacterFile: (file: Fil
 
     canvas.width = loadedFrames[0]!.naturalWidth || 256;
     canvas.height = loadedFrames[0]!.naturalHeight || 256;
+    previewCtx.imageSmoothingEnabled = !(pixelCheck?.checked ?? false);
 
     previewCtx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Onion Skin: Vẽ frame trước mờ 30%
+    // Onion Skin: Vẽ frame trước mờ 35%
     const onionChecked = $<HTMLInputElement>('anim-onion').checked;
     if (onionChecked && n > 1) {
       const prevIdx = (idx - 1 + n) % n;
@@ -132,10 +202,8 @@ export function initAnimTab(ctx: AnimTabContext): { setCharacterFile: (file: Fil
     $('anim-curr-frame').textContent = String(idx + 1);
     $<HTMLInputElement>('anim-scrub').value = String(idx);
 
-    // Highlight filmstrip
     document.querySelectorAll('.film-thumb').forEach((el, i) => {
-      if (i === idx) el.classList.add('active');
-      else el.classList.remove('active');
+      el.classList.toggle('active', i === idx);
     });
   }
 
@@ -162,19 +230,18 @@ export function initAnimTab(ctx: AnimTabContext): { setCharacterFile: (file: Fil
 
   $('anim-play-toggle').addEventListener('click', () => {
     isPlaying = !isPlaying;
-    $('anim-play-toggle').textContent = isPlaying ? 'Tạm dừng (Pause)' : 'Tiếp tục phát (Play)';
+    $('anim-play-toggle').textContent = isPlaying ? '⏸ Tạm dừng' : '▶ Phát tiếp';
   });
 
   $<HTMLInputElement>('anim-scrub').addEventListener('input', () => {
     isPlaying = false;
-    $('anim-play-toggle').textContent = 'Tiếp tục phát (Play)';
+    $('anim-play-toggle').textContent = '▶ Phát tiếp';
     const idx = Number($<HTMLInputElement>('anim-scrub').value);
     selectedIdx = idx;
     drawFrame(idx);
     updateEditButtons();
   });
 
-  // Ảnh gốc từ server (theo chỉ số server) và thứ tự hiển thị hiện tại (chỉ số server).
   let serverImgs: HTMLImageElement[] = [];
   let order: number[] = [];
   let dirty = false;
@@ -187,7 +254,6 @@ export function initAnimTab(ctx: AnimTabContext): { setCharacterFile: (file: Fil
     $<HTMLButtonElement>('anim-frame-right').disabled = selectedIdx >= order.length - 1;
   }
 
-  // So sánh frame cuối với frame đầu (kiểm tra loop)
   function renderCompare(): void {
     const first = $<HTMLImageElement>('anim-cmp-first');
     const last = $<HTMLImageElement>('anim-cmp-last');
@@ -221,7 +287,7 @@ export function initAnimTab(ctx: AnimTabContext): { setCharacterFile: (file: Fil
       thumb.append(tImg, fNum);
       thumb.addEventListener('click', () => {
         isPlaying = false;
-        $('anim-play-toggle').textContent = 'Tiếp tục phát (Play)';
+        $('anim-play-toggle').textContent = '▶ Phát tiếp';
         selectedIdx = pos;
         drawFrame(pos);
         updateEditButtons();
@@ -233,9 +299,8 @@ export function initAnimTab(ctx: AnimTabContext): { setCharacterFile: (file: Fil
     if (loadedFrames.length > 0) drawFrame(Math.min(currentFrameIdx, loadedFrames.length - 1));
   }
 
-  // Tải danh sách frame vào player
   async function loadFramesIntoPlayer(frameUrls: string[], metrics?: Record<string, unknown>): Promise<void> {
-    const bust = Date.now(); // tránh cache ảnh cũ khi server ghi đè cùng URL
+    const bust = Date.now();
     serverImgs = [];
     for (const url of frameUrls) {
       const img = new Image();
@@ -261,7 +326,6 @@ export function initAnimTab(ctx: AnimTabContext): { setCharacterFile: (file: Fil
       badge.style.borderColor = metrics.seamless ? '#10b981' : '#f59e0b';
     }
 
-    // Enable download buttons
     $<HTMLButtonElement>('anim-dl-sheet').disabled = false;
     $<HTMLButtonElement>('anim-dl-json').disabled = false;
     $<HTMLButtonElement>('anim-dl-gif').disabled = false;
@@ -269,11 +333,10 @@ export function initAnimTab(ctx: AnimTabContext): { setCharacterFile: (file: Fil
     $<HTMLButtonElement>('anim-dl-zip').disabled = false;
 
     isPlaying = true;
-    $('anim-play-toggle').textContent = 'Tạm dừng (Pause)';
+    $('anim-play-toggle').textContent = '⏸ Tạm dừng';
     startAnimationLoop();
   }
 
-  // Setup download click handlers
   $('anim-dl-sheet').onclick = () => {
     if (currentAnimJobId) window.open(`${ctx.getBridgeUrl()}/animations/${currentAnimJobId}/sheet`, '_blank');
   };
@@ -290,7 +353,6 @@ export function initAnimTab(ctx: AnimTabContext): { setCharacterFile: (file: Fil
     if (currentAnimJobId) window.open(`${ctx.getBridgeUrl()}/animations/${currentAnimJobId}/zip`, '_blank');
   };
 
-  // Chỉnh sửa chuỗi frame: xóa / dời trái / dời phải / áp dụng lên server
   function markDirty(): void {
     dirty = true;
     renderStrip();
@@ -342,9 +404,11 @@ export function initAnimTab(ctx: AnimTabContext): { setCharacterFile: (file: Fil
       const updated = (await res.json()) as BridgeJobResult;
       await loadFramesIntoPlayer((updated.frames || []).map((f) => f.url), updated.metrics);
       setStatus('Đã cập nhật chuỗi frame. Các file tải về đã được đóng gói lại.');
+      showToast('Đã đóng gói lại chuỗi frame!', 'ok');
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       setStatus(msg);
+      showToast(msg, 'error');
       ctx.log('error', msg);
     } finally {
       updateEditButtons();
@@ -358,6 +422,8 @@ export function initAnimTab(ctx: AnimTabContext): { setCharacterFile: (file: Fil
       const prompt = $<HTMLTextAreaElement>('anim-prompt').value.trim();
       if (!prompt) {
         setStatus('Hãy nhập mô tả chuyển động animation.');
+        showToast('Hãy nhập mô tả chuyển động cho Animation.', 'warn');
+        $<HTMLTextAreaElement>('anim-prompt').focus();
         return;
       }
       const mode = $<HTMLSelectElement>('anim-mode').value;
@@ -403,18 +469,15 @@ export function initAnimTab(ctx: AnimTabContext): { setCharacterFile: (file: Fil
       }
 
       setStatus(`Hoàn tất Animation: ${job.frames.length} frame!`);
+      showToast(`Hoàn tất Animation (${job.frames.length} frames)!`, 'ok');
       const urls = job.frames.map((f) => f.url);
       await loadFramesIntoPlayer(urls, job.metrics);
 
-      // Nếu chạy mode video thì hiện hộp Reframe
-      if (mode === 'video') {
-        $('anim-reframe-box').hidden = false;
-      } else {
-        $('anim-reframe-box').hidden = true;
-      }
+      $('anim-reframe-box').hidden = mode !== 'video';
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       setStatus(msg);
+      showToast(msg, 'error');
       ctx.log('error', msg);
     } finally {
       btn.disabled = false;
@@ -446,9 +509,11 @@ export function initAnimTab(ctx: AnimTabContext): { setCharacterFile: (file: Fil
       const urls = (updated.frames || []).map((f) => f.url);
       await loadFramesIntoPlayer(urls, updated.metrics);
       setStatus('Đã cập nhật frame mới thành công!');
+      showToast('Đã cắt lại frame thành công (0 token)!', 'ok');
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       setStatus(msg);
+      showToast(msg, 'error');
       ctx.log('error', msg);
     } finally {
       btn.disabled = false;

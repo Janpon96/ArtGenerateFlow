@@ -3,15 +3,15 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Flow Reference Studio — Workbench</title>
+  <title>Flow Reference Studio — Creative Workbench</title>
   <style>
     :root {
-      --bg: #070a10;
-      --bg-elev: #0f1522;
-      --bg-card: #151d2e;
-      --bg-card-hover: #1b253b;
-      --bg-input: #0a0e17;
-      --border: #1f2b42;
+      --bg: #060910;
+      --bg-elev: #0e1422;
+      --bg-card: #141d30;
+      --bg-card-hover: #1b2740;
+      --bg-input: #080c15;
+      --border: #202d47;
       --border-subtle: rgba(255, 255, 255, 0.06);
       --border-focus: #6366f1;
       --text: #f1f5f9;
@@ -20,34 +20,47 @@
       --accent: #6366f1;
       --accent-hover: #4f46e5;
       --accent-soft: rgba(99, 102, 241, 0.15);
-      --accent-glow: rgba(99, 102, 241, 0.28);
+      --accent-glow: rgba(99, 102, 241, 0.3);
       --ok: #10b981;
       --ok-soft: rgba(16, 185, 129, 0.14);
       --warn: #f59e0b;
       --warn-soft: rgba(245, 158, 11, 0.14);
       --danger: #ef4444;
       --danger-soft: rgba(239, 68, 68, 0.14);
-      --radius: 12px;
+      --radius: 13px;
       --radius-sm: 8px;
-      --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.25);
-      --shadow-card: 0 8px 24px -4px rgba(0, 0, 0, 0.4), inset 0 1px 0 0 rgba(255, 255, 255, 0.04);
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.28);
+      --shadow-card: 0 10px 28px -6px rgba(0, 0, 0, 0.45), inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
     }
     * { box-sizing: border-box; }
     ::-webkit-scrollbar { width: 8px; height: 8px; }
     ::-webkit-scrollbar-track { background: var(--bg); }
-    ::-webkit-scrollbar-thumb { background: #26334d; border-radius: 999px; }
-    ::-webkit-scrollbar-thumb:hover { background: #364769; }
+    ::-webkit-scrollbar-thumb { background: #263450; border-radius: 999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #384d75; }
 
     body {
       margin: 0;
       font: 13.5px/1.55 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background:
-        radial-gradient(1100px 420px at 15% -10%, rgba(99, 102, 241, 0.11), transparent 70%),
-        radial-gradient(900px 380px at 85% -15%, rgba(236, 72, 153, 0.07), transparent 70%),
+        radial-gradient(1200px 440px at 12% -10%, rgba(99, 102, 241, 0.13), transparent 70%),
+        radial-gradient(960px 400px at 88% -12%, rgba(236, 72, 153, 0.08), transparent 70%),
         var(--bg);
       color: var(--text);
       min-height: 100vh;
       -webkit-font-smoothing: antialiased;
+    }
+    body.modal-open { overflow: hidden; }
+
+    kbd {
+      display: inline-block;
+      padding: 1px 6px;
+      font: 10.5px/1.4 'JetBrains Mono', ui-monospace, Consolas, monospace;
+      color: #cbd5e1;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid #334466;
+      border-bottom-width: 2px;
+      border-radius: 5px;
+      vertical-align: middle;
     }
 
     /* Topbar */
@@ -55,65 +68,52 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 16px;
-      padding: 10px 24px;
-      background: rgba(11, 16, 27, 0.85);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
+      gap: 14px;
+      padding: 9px 22px;
+      background: rgba(10, 15, 26, 0.88);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
       border-bottom: 1px solid var(--border);
       position: sticky;
       top: 0;
-      z-index: 30;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+      z-index: 40;
+      box-shadow: 0 4px 22px rgba(0, 0, 0, 0.38);
     }
     .brand {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 11px;
+      min-width: 0;
     }
     .brand-logo {
       width: 36px;
       height: 36px;
       border-radius: 10px;
-      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 52%, #ec4899 100%);
       display: grid;
       place-items: center;
       font-weight: 800;
       font-size: 13px;
       color: #fff;
       letter-spacing: -0.5px;
-      box-shadow: 0 2px 10px rgba(99, 102, 241, 0.4);
+      box-shadow: 0 3px 12px rgba(99, 102, 241, 0.45);
+      flex-shrink: 0;
     }
     .brand h1 {
-      font-size: 15px;
+      font-size: 14.5px;
       margin: 0;
       font-weight: 700;
       letter-spacing: -0.2px;
+      white-space: nowrap;
     }
     .brand p {
       margin: 1px 0 0;
-      font-size: 11.5px;
+      font-size: 11px;
       color: var(--text-muted);
+      white-space: nowrap;
     }
-    .mode-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 11.5px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      background: rgba(16, 185, 129, 0.12);
-      color: #6ee7b7;
-      border: 1px solid rgba(16, 185, 129, 0.3);
-      font-weight: 600;
-    }
-    .mode-pill::before {
-      content: "";
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: #10b981;
-      box-shadow: 0 0 6px #10b981;
+    @media (max-width: 1280px) {
+      .brand p { display: none; }
     }
 
     /* Segmented Main Nav */
@@ -122,60 +122,168 @@
       gap: 4px;
       background: var(--bg-input);
       padding: 4px;
-      border-radius: 10px;
+      border-radius: 11px;
       border: 1px solid var(--border);
     }
     .tab-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
       background: transparent;
       color: var(--text-muted);
       border: 1px solid transparent;
-      padding: 6px 14px;
-      border-radius: 7px;
+      padding: 6px 13px;
+      border-radius: 8px;
       cursor: pointer;
       font-weight: 600;
       font-size: 12.5px;
-      transition: all 0.15s ease;
+      transition: all 0.16s ease;
+    }
+    .tab-btn svg {
+      width: 15px;
+      height: 15px;
+      opacity: 0.85;
+      flex-shrink: 0;
     }
     .tab-btn:hover {
       color: var(--text);
-      background: rgba(255, 255, 255, 0.04);
+      background: rgba(255, 255, 255, 0.05);
     }
     .tab-btn.active {
       color: #fff;
       background: linear-gradient(180deg, #6366f1, #4f46e5);
-      border-color: rgba(255, 255, 255, 0.15);
-      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35);
+      border-color: rgba(255, 255, 255, 0.16);
+      box-shadow: 0 2px 10px rgba(99, 102, 241, 0.4);
     }
+    .nav-count-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 20px;
+      height: 18px;
+      padding: 0 6px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      background: rgba(255, 255, 255, 0.12);
+      color: inherit;
+    }
+    .nav-live-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #fbbf24;
+      box-shadow: 0 0 8px #fbbf24;
+      animation: livePulse 1.2s infinite ease-in-out;
+    }
+    @keyframes livePulse {
+      0%, 100% { opacity: 0.45; transform: scale(0.9); }
+      50% { opacity: 1; transform: scale(1.18); }
+    }
+
     .top-actions {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    /* Global Topbar Token Wallet */
+    .wallet-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 6px 3px 10px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.16), rgba(245, 158, 11, 0.12));
+      border: 1px solid rgba(245, 158, 11, 0.45);
+      box-shadow: 0 2px 10px rgba(245, 158, 11, 0.12);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .wallet-pill.is-low {
+      border-color: rgba(245, 158, 11, 0.75);
+      box-shadow: 0 0 12px rgba(245, 158, 11, 0.25);
+    }
+    .wallet-pill.is-empty {
+      border-color: rgba(239, 68, 68, 0.75);
+      background: rgba(239, 68, 68, 0.15);
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.28);
+    }
+    .wallet-icon { font-size: 13px; line-height: 1; }
+    .wallet-label {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #fde68a;
+      white-space: nowrap;
+    }
+    .wallet-pill input {
+      width: 78px !important;
+      padding: 2px 6px !important;
+      border-radius: 6px !important;
+      font-size: 12.5px !important;
+      font-weight: 800 !important;
+      color: #fef08a !important;
+      background: rgba(7, 10, 18, 0.85) !important;
+      border: 1px solid rgba(245, 158, 11, 0.4) !important;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+    .wallet-pill input::placeholder {
+      color: #94a3b8;
+      font-weight: 500;
+      font-size: 11px;
+    }
+    .wallet-step-btn {
+      padding: 3px 7px !important;
+      font-size: 11px !important;
+      font-weight: 700 !important;
+      border-radius: 999px !important;
+      background: rgba(245, 158, 11, 0.2) !important;
+      border: 1px solid rgba(245, 158, 11, 0.42) !important;
+      color: #fef08a !important;
+    }
+    .wallet-step-btn:hover {
+      background: rgba(245, 158, 11, 0.34) !important;
     }
 
     /* Layout Container */
     main.container {
-      max-width: 1480px;
+      max-width: 1500px;
       margin: 0 auto;
-      padding: 18px 24px 210px;
+      padding: 16px 24px 96px;
+      transition: padding-bottom 0.2s ease;
+    }
+    body.console-expanded main.container {
+      padding-bottom: 220px;
     }
 
-    /* Sub-navigation Pill Bar */
-    .sub-nav {
+    /* Sub-navigation Bar */
+    .sub-nav-bar {
       display: none;
       align-items: center;
-      gap: 6px;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
       margin: 0 0 16px;
+    }
+    .sub-nav-bar.show { display: flex; }
+    .sub-nav {
+      display: inline-flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 5px;
       padding: 5px;
       background: var(--bg-elev);
       border: 1px solid var(--border);
-      border-radius: 10px;
-      width: fit-content;
+      border-radius: 11px;
       box-shadow: var(--shadow-sm);
     }
-    .sub-nav.show { display: inline-flex; }
     .sub-btn {
-      padding: 6px 15px;
-      border-radius: 7px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 8px;
       border: 1px solid transparent;
       background: transparent;
       color: var(--text-muted);
@@ -190,9 +298,19 @@
     }
     .sub-btn.active {
       background: var(--accent-soft);
-      color: #a5b4fc;
-      border-color: rgba(99, 102, 241, 0.45);
-      box-shadow: none;
+      color: #c7d2fe;
+      border-color: rgba(99, 102, 241, 0.5);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+    .shortcut-hint {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    @media (max-width: 980px) {
+      .shortcut-hint { display: none; }
     }
 
     .tab-panel { display: none; animation: fadeIn 0.16s ease-out; }
@@ -204,11 +322,17 @@
 
     .studio-grid {
       display: grid;
-      grid-template-columns: 1.15fr 1fr;
+      grid-template-columns: 1.12fr 1fr;
       gap: 20px;
       align-items: start;
     }
-    @media (max-width: 1100px) {
+    @media (min-width: 1121px) {
+      .studio-grid > .sticky-col {
+        position: sticky;
+        top: 72px;
+      }
+    }
+    @media (max-width: 1120px) {
       .studio-grid { grid-template-columns: 1fr; }
       header.topbar { flex-wrap: wrap; }
     }
@@ -233,11 +357,12 @@
     }
     .card-title {
       margin: 0;
-      font-size: 14.5px;
+      font-size: 15px;
       font-weight: 700;
-      letter-spacing: -0.15px;
+      letter-spacing: -0.2px;
       display: flex;
       align-items: center;
+      flex-wrap: wrap;
       gap: 8px;
       color: #f8fafc;
     }
@@ -250,28 +375,32 @@
 
     /* Badges */
     .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
       font-size: 11px;
-      padding: 2px 8px;
+      padding: 3px 9px;
       border-radius: 999px;
       background: var(--accent-soft);
       color: #a5b4fc;
       border: 1px solid rgba(99, 102, 241, 0.35);
       font-weight: 600;
+      white-space: nowrap;
     }
     .badge.ok {
       background: var(--ok-soft);
       color: #6ee7b7;
-      border-color: rgba(16, 185, 129, 0.35);
+      border-color: rgba(16, 185, 129, 0.38);
     }
     .badge.warn {
       background: var(--warn-soft);
       color: #fcd34d;
-      border-color: rgba(245, 158, 11, 0.35);
+      border-color: rgba(245, 158, 11, 0.42);
     }
     .badge.danger {
       background: var(--danger-soft);
       color: #fca5a5;
-      border-color: rgba(239, 68, 68, 0.35);
+      border-color: rgba(239, 68, 68, 0.42);
     }
 
     /* Buttons */
@@ -279,7 +408,7 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
+      gap: 7px;
       padding: 8px 14px;
       border-radius: var(--radius-sm);
       border: 1px solid var(--border);
@@ -293,7 +422,7 @@
       white-space: nowrap;
     }
     button:hover:not(:disabled), .btn:hover:not(:disabled) {
-      border-color: #36496e;
+      border-color: #3a4f78;
       background: var(--bg-card-hover);
       transform: translateY(-0.5px);
     }
@@ -301,36 +430,76 @@
       transform: translateY(0);
     }
     button:disabled, .btn:disabled {
-      opacity: 0.45;
+      opacity: 0.48;
       cursor: not-allowed;
     }
     button.primary, .btn.primary {
-      background: linear-gradient(180deg, #6366f1 0%, #4f46e5 100%);
-      border-color: rgba(255, 255, 255, 0.14);
+      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 65%, #4338ca 100%);
+      border-color: rgba(255, 255, 255, 0.18);
       color: #fff;
-      box-shadow: 0 2px 10px rgba(99, 102, 241, 0.3);
+      box-shadow: 0 3px 14px rgba(99, 102, 241, 0.34);
     }
     button.primary:hover:not(:disabled), .btn.primary:hover:not(:disabled) {
-      background: linear-gradient(180deg, #7174f7 0%, #4338ca 100%);
-      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.45);
+      background: linear-gradient(135deg, #7275f8 0%, #5850ec 65%, #4f46e5 100%);
+      box-shadow: 0 5px 18px rgba(99, 102, 241, 0.5);
     }
     button.sm, .btn.sm {
       padding: 5px 10px;
       font-size: 11.5px;
       border-radius: 6px;
     }
+    button.sm.active, .btn.sm.active {
+      background: var(--accent-soft);
+      border-color: rgba(99, 102, 241, 0.55);
+      color: #c7d2fe;
+    }
     button.danger {
       color: #fca5a5;
       border-color: rgba(239, 68, 68, 0.3);
-      background: rgba(239, 68, 68, 0.06);
+      background: rgba(239, 68, 68, 0.07);
     }
     button.danger:hover:not(:disabled) {
       background: var(--danger-soft);
-      border-color: rgba(239, 68, 68, 0.5);
+      border-color: rgba(239, 68, 68, 0.55);
+    }
+
+    /* Generate CTA Button & Live Cost Pill */
+    button.gen-cta {
+      padding: 9px 16px;
+      font-size: 13px;
+      font-weight: 700;
+      gap: 10px;
+    }
+    button.gen-cta:disabled::before {
+      content: "";
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: #fff;
+      animation: slot-spin 0.75s linear infinite;
+    }
+    .btn-cost-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11.5px;
+      font-weight: 800;
+      background: rgba(245, 158, 11, 0.22);
+      border: 1px solid rgba(253, 224, 71, 0.5);
+      color: #fef08a;
+      font-variant-numeric: tabular-nums;
+      box-shadow: 0 1px 6px rgba(0, 0, 0, 0.25);
+    }
+    .btn-cost-pill.is-insufficient {
+      background: rgba(239, 68, 68, 0.35);
+      border-color: rgba(252, 165, 165, 0.75);
+      color: #fee2e2;
     }
 
     /* Form Controls */
-    input[type="text"], input[type="number"], select, textarea {
+    input[type="text"], input[type="number"], input[type="search"], select, textarea {
       width: 100%;
       min-width: 0;
       padding: 8px 11px;
@@ -356,9 +525,7 @@
       padding: 5px 8px;
       transition: border-color 0.15s;
     }
-    input[type="file"]:hover {
-      border-color: #475f8c;
-    }
+    input[type="file"]:hover { border-color: #4b6596; }
     input[type="file"]::file-selector-button {
       background: var(--bg-card);
       color: var(--text);
@@ -401,9 +568,7 @@
       box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
       transition: transform 0.1s;
     }
-    input[type="range"]::-webkit-slider-thumb:hover {
-      transform: scale(1.12);
-    }
+    input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.14); }
     input:focus, select:focus, textarea:focus {
       outline: none;
       border-color: var(--border-focus);
@@ -417,6 +582,14 @@
       color: var(--text-secondary);
       margin-bottom: 5px;
     }
+    .field-label-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 5px;
+    }
+    .field-label-row .field-label { margin-bottom: 0; }
     .field-row {
       display: grid;
       grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -425,12 +598,51 @@
     }
     .field-row-3 {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 10px;
       margin-bottom: 12px;
     }
+    .field-row-4 {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    @media (max-width: 820px) {
+      .field-row-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
     @media (max-width: 680px) {
       .field-row, .field-row-3 { grid-template-columns: 1fr; }
+    }
+
+    /* Quick Preset & Idea Chips */
+    .preset-strip {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      margin: 6px 0 10px;
+    }
+    .preset-chip {
+      padding: 3px 9px;
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.14s ease;
+    }
+    .preset-chip:hover {
+      border-color: rgba(99, 102, 241, 0.55);
+      color: #e0e7ff;
+      background: var(--accent-soft);
+    }
+    .preset-chip.active {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      color: #c7d2fe;
     }
 
     /* Dropzone */
@@ -441,32 +653,30 @@
       justify-content: center;
       gap: 5px;
       width: 100%;
-      border: 1.5px dashed #334466;
+      border: 1.5px dashed #35486e;
       border-radius: var(--radius);
-      padding: 20px 16px;
+      padding: 18px 16px;
       text-align: center;
-      background: linear-gradient(180deg, rgba(15, 23, 42, 0.5), rgba(10, 14, 23, 0.7));
+      background: linear-gradient(180deg, rgba(16, 24, 44, 0.55), rgba(9, 13, 22, 0.75));
       cursor: pointer;
       transition: all 0.18s ease;
       margin: 2px 0 14px;
-      position: relative;
-      overflow: hidden;
     }
     .dropzone:hover, .dropzone.dragover {
       border-color: var(--accent);
       background: var(--accent-soft);
-      box-shadow: inset 0 0 20px rgba(99, 102, 241, 0.08);
+      box-shadow: inset 0 0 22px rgba(99, 102, 241, 0.1);
     }
     .dropzone-icon {
       width: 36px;
       height: 36px;
       border-radius: 10px;
-      background: rgba(99, 102, 241, 0.16);
-      border: 1px solid rgba(99, 102, 241, 0.38);
+      background: rgba(99, 102, 241, 0.18);
+      border: 1px solid rgba(99, 102, 241, 0.4);
       color: #a5b4fc;
       display: grid;
       place-items: center;
-      font-size: 18px;
+      font-size: 19px;
       font-weight: 700;
       margin-bottom: 2px;
     }
@@ -479,7 +689,7 @@
       display: block;
       font-size: 11.5px;
       color: var(--text-muted);
-      max-width: 520px;
+      max-width: 540px;
     }
 
     /* Reference cards */
@@ -491,22 +701,20 @@
     }
     .ref-card {
       display: grid;
-      grid-template-columns: 104px minmax(0, 1fr);
+      grid-template-columns: 102px minmax(0, 1fr);
       gap: 14px;
       padding: 12px;
-      border-radius: 10px;
+      border-radius: 11px;
       background: var(--bg-card);
       border: 1px solid var(--border);
       align-items: start;
-      transition: border-color 0.15s;
+      transition: border-color 0.15s, box-shadow 0.15s;
     }
-    .ref-card:hover {
-      border-color: #2f4060;
-    }
-    .ref-card.inactive { opacity: 0.5; }
+    .ref-card:hover { border-color: #34486e; }
+    .ref-card.inactive { opacity: 0.48; }
     .ref-card.is-base {
       border-color: #10b981;
-      box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.3);
+      box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.32);
     }
     .ref-thumb-wrap {
       display: flex;
@@ -514,13 +722,16 @@
       gap: 6px;
     }
     .ref-thumb {
-      width: 104px;
-      height: 104px;
+      width: 102px;
+      height: 102px;
       object-fit: cover;
-      border-radius: 7px;
+      border-radius: 8px;
       background: #070a10;
       border: 1px solid var(--border);
+      cursor: zoom-in;
+      transition: transform 0.15s ease;
     }
+    .ref-thumb:hover { transform: scale(1.02); }
     .ref-meta {
       font-size: 10.5px;
       color: var(--text-muted);
@@ -531,16 +742,41 @@
       align-items: center;
       justify-content: space-between;
       gap: 8px;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
       flex-wrap: wrap;
+    }
+    .handle-pill-group {
+      display: inline-flex;
+      align-items: center;
+      background: var(--bg-input);
+      border: 1px solid rgba(99, 102, 241, 0.4);
+      border-radius: 7px;
+      padding-left: 8px;
+      color: #a5b4fc;
+      font-weight: 700;
+      font-size: 12.5px;
+    }
+    .handle-pill-group input {
+      border: none !important;
+      background: transparent !important;
+      padding: 4px 7px 4px 2px !important;
+      width: 96px !important;
+      font-weight: 700;
+      color: #e0e7ff !important;
+      box-shadow: none !important;
     }
     .mention-chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 8px; }
     .mention-chips[hidden] { display: none; }
+    .mention-chip {
+      background: rgba(99, 102, 241, 0.14);
+      border-color: rgba(99, 102, 241, 0.42);
+      color: #c7d2fe;
+    }
     .role-chips {
       display: flex;
       flex-wrap: wrap;
       gap: 5px;
-      margin: 8px 0;
+      margin: 7px 0;
     }
     .role-chip {
       font-size: 11px;
@@ -554,7 +790,7 @@
       transition: all 0.12s;
     }
     .role-chip:hover {
-      border-color: #3b4c6b;
+      border-color: #3f557d;
       color: var(--text);
     }
     .role-chip.selected {
@@ -562,6 +798,39 @@
       border-color: var(--accent);
       color: #fff;
       font-weight: 600;
+    }
+
+    /* Mini Ref Thumbnails (Asset / Video) */
+    .mini-ref-thumb {
+      position: relative;
+      width: 54px;
+      height: 54px;
+      border-radius: 7px;
+      overflow: hidden;
+      border: 1px solid #3c4f73;
+      background: #070a10;
+      flex-shrink: 0;
+    }
+    .mini-ref-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      cursor: zoom-in;
+      display: block;
+    }
+    .mini-ref-del {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      width: 18px;
+      height: 18px;
+      padding: 0 !important;
+      border-radius: 4px !important;
+      background: rgba(7, 10, 16, 0.85) !important;
+      border: 1px solid rgba(239, 68, 68, 0.5) !important;
+      color: #fca5a5 !important;
+      font-size: 12px !important;
+      line-height: 1;
     }
 
     /* Constraints list */
@@ -590,7 +859,7 @@
       font-size: 12px;
       line-height: 1.55;
       color: #e2e8f0;
-      max-height: 320px;
+      max-height: 300px;
       overflow: auto;
       margin: 8px 0;
     }
@@ -619,50 +888,98 @@
       color: #fecaca;
     }
 
-    /* Strict Canvas & Toolbars */
+    /* Strict Canvas & Segmented Toolbars */
     .canvas-toolbar {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       gap: 8px;
-      padding: 9px 12px;
+      padding: 8px 11px;
       background: var(--bg-card);
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
       margin-bottom: 10px;
     }
+    .seg-group {
+      display: inline-flex;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 2px;
+      gap: 2px;
+    }
+    .seg-btn {
+      padding: 4px 10px;
+      font-size: 11.5px;
+      font-weight: 600;
+      border: none;
+      border-radius: 5px;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+    .seg-btn:hover { color: var(--text); background: rgba(255, 255, 255, 0.04); }
+    .seg-btn.active {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 1px 6px rgba(99, 102, 241, 0.35);
+    }
+    .seg-btn.active[data-val="allow"] { background: #e11d48; }
+    .seg-btn.active[data-val="protect"] { background: #059669; }
+
     .canvas-stage {
+      position: relative;
       background: repeating-conic-gradient(#101726 0% 25%, #0a0f1a 0% 50%) 50% / 20px 20px;
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
       padding: 12px;
       display: grid;
       place-items: center;
-      min-height: 320px;
+      min-height: 310px;
       overflow: auto;
       box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.45);
+      transition: border-color 0.15s;
     }
+    .canvas-stage.dragover {
+      border-color: var(--accent);
+      box-shadow: inset 0 0 24px rgba(99, 102, 241, 0.2);
+    }
+    .canvas-empty-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      pointer-events: none;
+      text-align: center;
+      padding: 16px;
+      color: var(--text-muted);
+    }
+    .canvas-empty-overlay strong { color: var(--text-secondary); font-size: 13px; }
     canvas#view, canvas#resultPreview {
       max-width: 100%;
       max-height: 520px;
       border: 1px solid #334155;
-      border-radius: 4px;
+      border-radius: 5px;
       cursor: crosshair;
       display: block;
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
     }
+    #brush-cursor {
+      position: fixed;
+      pointer-events: none;
+      border: 1.5px solid rgba(255, 255, 255, 0.9);
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.65);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 60;
+      display: none;
+    }
 
     /* Galleries & Jobs */
-    .progress { height: 6px; background: #1e293b; border-radius: 999px; overflow: hidden; margin: 8px 0; }
-    .progress > i { display: block; height: 100%; background: linear-gradient(90deg, #6366f1, #8b5cf6); transition: width .3s; }
     .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(156px, 1fr)); gap: 12px; margin-top: 10px; }
-    .gallery figure { margin: 0; border: 1px solid var(--border); border-radius: 9px; padding: 8px; background: var(--bg-card); min-width: 0; transition: border-color 0.15s; }
-    .gallery figure:hover { border-color: #384b6e; }
-    .gallery img { width: 100%; height: 136px; object-fit: contain; background: #090d16; border-radius: 6px; cursor: zoom-in; }
-    .gallery figcaption { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 7px; }
-    .timeline { font-size: 12px; margin: 6px 0; padding-left: 18px; color: var(--text-muted); }
-
-    /* Job Queue & Grid Library */
     .jobs-toolbar {
       display: flex;
       align-items: center;
@@ -694,14 +1011,17 @@
       font-size: 12px;
       color: var(--text);
     }
-    .jobs-stat-pill b {
-      color: #a5b4fc;
-      font-weight: 700;
-    }
+    .jobs-stat-pill b { color: #a5b4fc; font-weight: 700; }
     .jobs-stat-pill.active-pill {
       border-color: rgba(99, 102, 241, 0.5);
       background: rgba(99, 102, 241, 0.14);
       color: #c7d2fe;
+    }
+    .jobs-filter-controls {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
     }
     .jobs-actions {
       display: flex;
@@ -750,9 +1070,9 @@
       min-width: 0;
     }
     .job-slot-card:hover {
-      border-color: #3b4f75;
-      transform: translateY(-1px);
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+      border-color: #3e547d;
+      transform: translateY(-1.5px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.38);
     }
     .job-slot-card.is-generating {
       border-color: rgba(99, 102, 241, 0.45);
@@ -765,10 +1085,10 @@
     .job-slot-thumb {
       position: relative;
       width: 100%;
-      height: 186px;
+      height: 188px;
       background: #070b12;
       display: flex;
-       flex-direction: column;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       overflow: hidden;
@@ -782,16 +1102,18 @@
       display: block;
       transition: transform 0.2s ease;
     }
-    .job-slot-thumb img:hover {
-      transform: scale(1.02);
-    }
+    .job-slot-thumb img:hover { transform: scale(1.03); }
     .job-slot-badge {
       position: absolute;
       top: 8px;
       left: 8px;
+      max-width: calc(100% - 88px);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
       padding: 2px 8px;
       border-radius: 6px;
-      background: rgba(7, 10, 16, 0.82);
+      background: rgba(7, 10, 16, 0.84);
       backdrop-filter: blur(6px);
       border: 1px solid rgba(148, 163, 184, 0.22);
       color: #e2e8f0;
@@ -810,12 +1132,12 @@
       z-index: 2;
     }
     .job-slot-status-tag.done {
-      background: rgba(16, 185, 129, 0.2);
+      background: rgba(16, 185, 129, 0.22);
       border: 1px solid rgba(16, 185, 129, 0.45);
       color: #6ee7b7;
     }
     .job-slot-status-tag.running {
-      background: rgba(99, 102, 241, 0.22);
+      background: rgba(99, 102, 241, 0.24);
       border: 1px solid rgba(99, 102, 241, 0.5);
       color: #c7d2fe;
     }
@@ -915,9 +1237,7 @@
       border-color: rgba(99, 102, 241, 0.45);
       box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.12);
     }
-    .job-card.is-error {
-      border-color: rgba(239, 68, 68, 0.4);
-    }
+    .job-card.is-error { border-color: rgba(239, 68, 68, 0.4); }
     .job-card-head {
       display: flex;
       align-items: center;
@@ -943,10 +1263,7 @@
       border: 1px solid var(--border);
       color: #a5b4fc;
     }
-    .job-meta-text {
-      font-size: 12px;
-      color: var(--text-muted);
-    }
+    .job-meta-text { font-size: 12px; color: var(--text-muted); }
     .job-prompt-text {
       font-size: 12.5px;
       color: var(--text-secondary);
@@ -980,16 +1297,7 @@
     }
     .job-card li { margin-bottom: 3px; }
 
-    /* Compact Panels & Collapsible Sections across Image / Animation / Video */
-    .field-row-4 {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-    @media (max-width: 820px) {
-      .field-row-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    }
+    /* Collapsible Details Panels */
     details.panel-details {
       background: var(--bg-card);
       border: 1px solid var(--border);
@@ -998,9 +1306,7 @@
       overflow: hidden;
       transition: border-color 0.15s ease;
     }
-    details.panel-details[open] {
-      border-color: #2f4166;
-    }
+    details.panel-details[open] { border-color: #32466e; }
     details.panel-details > summary {
       list-style: none;
       display: flex;
@@ -1022,32 +1328,31 @@
       color: var(--text-muted);
       transition: transform 0.15s ease;
     }
-    details.panel-details[open] > summary::after {
-      transform: rotate(180deg);
-    }
+    details.panel-details[open] > summary::after { transform: rotate(180deg); }
     details.panel-details > .panel-details-body {
       padding: 12px 14px;
       border-top: 1px solid var(--border-subtle);
     }
 
+    /* Compact Drop & Selectable Check Chips */
     .compact-drop {
       cursor: pointer;
-      min-height: 116px;
+      min-height: 118px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 4px;
-      padding: 10px 14px;
-      border: 1.5px dashed #2e3e5c;
-      border-radius: 9px;
+      gap: 5px;
+      padding: 12px 14px;
+      border: 1.5px dashed #324466;
+      border-radius: 10px;
       background: var(--bg-input);
       margin-bottom: 8px;
       transition: border-color 0.16s, background 0.16s;
     }
-    .compact-drop:hover {
-      border-color: var(--accent);
-      background: var(--accent-soft);
+    .compact-drop:hover, .compact-drop.dragover, .dragover {
+      border-color: var(--accent) !important;
+      background: var(--accent-soft) !important;
     }
     .compact-drop img {
       max-width: 100%;
@@ -1057,14 +1362,50 @@
     }
 
     .check-scroll-box {
-      max-height: 210px;
+      max-height: 230px;
       overflow-y: auto;
-      padding: 10px 12px;
+      padding: 10px;
       background: var(--bg-input);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      margin: 6px 0 10px;
+      border-radius: 9px;
+      margin: 6px 0 12px;
     }
+    .check-group-title {
+      grid-column: 1 / -1;
+      font-size: 11px;
+      font-weight: 700;
+      color: #a5b4fc;
+      margin: 6px 0 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .check-group-title:first-child { margin-top: 0; }
+    .check-chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      font-size: 12px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.13s ease;
+      user-select: none;
+    }
+    .check-chip:hover {
+      border-color: #3e547d;
+      color: var(--text);
+    }
+    .check-chip.checked {
+      background: rgba(99, 102, 241, 0.16);
+      border-color: rgba(99, 102, 241, 0.6);
+      color: #e0e7ff;
+      font-weight: 600;
+    }
+    .check-chip input { width: 14px; height: 14px; margin: 0; flex-shrink: 0; }
+
     .action-bar {
       display: flex;
       align-items: center;
@@ -1072,31 +1413,33 @@
       flex-wrap: wrap;
       gap: 10px;
       padding-top: 10px;
-      margin-top: 10px;
+      margin-top: 8px;
       border-top: 1px solid var(--border-subtle);
     }
-    /* Token / Credit Highlight Strip */
+
+    /* Token / Credit Pre-Flight Highlight Strip */
     .credit-strip {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 10px;
-      padding: 10px 14px;
-      margin: 12px 0 10px;
-      background: linear-gradient(135deg, rgba(21, 29, 46, 0.95), rgba(15, 23, 42, 0.9));
-      border: 1px solid rgba(99, 102, 241, 0.28);
-      border-radius: var(--radius-sm);
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      gap: 9px;
+      padding: 10px 12px;
+      margin: 14px 0 8px;
+      background: linear-gradient(135deg, rgba(20, 29, 48, 0.96), rgba(12, 18, 32, 0.94));
+      border: 1px solid rgba(99, 102, 241, 0.34);
+      border-radius: 10px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.06);
     }
     .credit-item {
       display: inline-flex;
       align-items: center;
       gap: 7px;
-      padding: 4px 10px;
-      border-radius: 6px;
+      padding: 5px 11px;
+      border-radius: 7px;
       font-size: 12.5px;
-      background: rgba(10, 14, 23, 0.65);
+      background: rgba(8, 12, 21, 0.72);
       border: 1px solid var(--border);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
     }
     .credit-label {
       font-size: 11.5px;
@@ -1104,71 +1447,87 @@
       color: var(--text-muted);
     }
     .credit-val {
-      font-weight: 700;
+      font-weight: 800;
       font-feature-settings: "tnum";
       font-variant-numeric: tabular-nums;
     }
-    /* Chi phí lần này (Highlight cam vàng/glow) */
+    .credit-sub {
+      font-size: 11px;
+      color: rgba(253, 224, 71, 0.75);
+      font-weight: 500;
+    }
+    /* 1. Chi phí lượt này */
     .credit-cost-badge {
-      border-color: rgba(245, 158, 11, 0.4);
-      background: rgba(245, 158, 11, 0.1);
+      border-color: rgba(245, 158, 11, 0.48);
+      background: rgba(245, 158, 11, 0.12);
     }
-    .credit-cost-badge .credit-label {
-      color: #fbbf24;
-    }
+    .credit-cost-badge .credit-label { color: #fbbf24; }
     .credit-cost-badge .credit-val {
       color: #fef08a;
-      font-size: 13.5px;
-      text-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
+      font-size: 14px;
+      text-shadow: 0 0 12px rgba(245, 158, 11, 0.45);
     }
-    /* Số dư hiện có (Highlight xanh tím/neon) */
+    .credit-cost-badge.cost-bump {
+      animation: costBump 0.36s ease-out;
+    }
+    @keyframes costBump {
+      0% { transform: scale(1); }
+      45% { transform: scale(1.06); box-shadow: 0 0 14px rgba(245, 158, 11, 0.5); }
+      100% { transform: scale(1); }
+    }
+    /* 2. Số dư hiện có */
     .credit-balance-badge {
-      border-color: rgba(99, 102, 241, 0.45);
-      background: rgba(99, 102, 241, 0.1);
+      border-color: rgba(99, 102, 241, 0.48);
+      background: rgba(99, 102, 241, 0.11);
     }
-    .credit-balance-badge .credit-label {
-      color: #a5b4fc;
-    }
+    .credit-balance-badge .credit-label { color: #a5b4fc; }
     .credit-input-wrap {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
+      gap: 5px;
     }
     .credit-input-wrap input {
-      width: 72px;
+      width: 76px;
       padding: 2px 7px;
-      font-size: 13px;
-      font-weight: 700;
+      font-size: 13.5px;
+      font-weight: 800;
       color: #e0e7ff;
-      background: #090d16;
-      border: 1px solid rgba(99, 102, 241, 0.5);
+      background: #070a12;
+      border: 1px solid rgba(99, 102, 241, 0.55);
       border-radius: 5px;
       text-align: right;
-      font-feature-settings: "tnum";
+      font-variant-numeric: tabular-nums;
     }
     .credit-input-wrap input:focus {
       border-color: #818cf8;
-      box-shadow: 0 0 8px rgba(99, 102, 241, 0.5);
+      box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
     }
     .credit-unit {
       font-size: 11px;
-      color: #818cf8;
+      color: #a5b4fc;
       font-weight: 600;
     }
-    /* Dự kiến còn lại */
+    /* 3. Dự kiến còn lại */
     .credit-after-badge {
       border-color: rgba(148, 163, 184, 0.25);
+      margin-left: auto;
+    }
+    @media (max-width: 680px) {
+      .credit-after-badge { margin-left: 0; }
     }
     .credit-after-badge.sufficient {
-      border-color: rgba(16, 185, 129, 0.4);
-      background: rgba(16, 185, 129, 0.1);
+      border-color: rgba(16, 185, 129, 0.45);
+      background: rgba(16, 185, 129, 0.12);
     }
-    .credit-after-badge.sufficient .credit-val {
-      color: #6ee7b7;
+    .credit-after-badge.sufficient .credit-val { color: #6ee7b7; }
+    .credit-after-badge.low-balance {
+      border-color: rgba(245, 158, 11, 0.5);
+      background: rgba(245, 158, 11, 0.14);
     }
+    .credit-after-badge.low-balance .credit-val { color: #fcd34d; }
     .credit-after-badge.insufficient {
-      border-color: rgba(239, 68, 68, 0.55);
-      background: rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.65);
+      background: rgba(239, 68, 68, 0.18);
       animation: pulseAlert 1.5s infinite;
     }
     .credit-after-badge.insufficient .credit-val {
@@ -1177,8 +1536,9 @@
     }
     @keyframes pulseAlert {
       0%, 100% { box-shadow: 0 0 0 rgba(239, 68, 68, 0); }
-      50% { box-shadow: 0 0 10px rgba(239, 68, 68, 0.4); }
+      50% { box-shadow: 0 0 12px rgba(239, 68, 68, 0.45); }
     }
+
     .inline-checks {
       display: flex;
       align-items: center;
@@ -1195,10 +1555,10 @@
       color: var(--text-secondary);
     }
     .video-stage {
-      min-height: 260px;
+      min-height: 270px;
       background: #060911;
       border: 1px solid var(--border);
-      border-radius: 9px;
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1231,11 +1591,40 @@
     }
 
     /* Guide Section */
+    .guide-toc {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+      padding: 10px 14px;
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      border-radius: 11px;
+    }
+    .guide-toc a {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-decoration: none;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      transition: all 0.14s;
+    }
+    .guide-toc a:hover {
+      color: #fff;
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
     .guide-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(430px, 1fr));
       gap: 18px;
       align-items: start;
+    }
+    @media (max-width: 520px) {
+      .guide-grid { grid-template-columns: 1fr; }
     }
     .guide-steps { counter-reset: step; list-style: none; padding: 0; margin: 0; }
     .guide-steps > li { counter-increment: step; position: relative; padding: 3px 0 13px 40px; }
@@ -1302,35 +1691,166 @@
       color: #e2e8f0;
     }
 
-    /* Console Dock */
+    /* Toast Stack */
+    #toast-stack {
+      position: fixed;
+      right: 20px;
+      bottom: 52px;
+      z-index: 90;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-width: 380px;
+      pointer-events: none;
+    }
+    .toast-item {
+      pointer-events: auto;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 13px;
+      border-radius: 10px;
+      background: rgba(15, 22, 38, 0.96);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 12.5px;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5);
+      animation: toastIn 0.2s ease-out;
+      transition: opacity 0.18s ease, transform 0.18s ease;
+    }
+    .toast-item.toast-leaving {
+      opacity: 0;
+      transform: translateX(18px);
+    }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .toast-icon {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 12px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+    .toast-ok { border-color: rgba(16, 185, 129, 0.45); }
+    .toast-ok .toast-icon { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; }
+    .toast-warn { border-color: rgba(245, 158, 11, 0.45); }
+    .toast-warn .toast-icon { background: rgba(245, 158, 11, 0.2); color: #fcd34d; }
+    .toast-error { border-color: rgba(239, 68, 68, 0.5); }
+    .toast-error .toast-icon { background: rgba(239, 68, 68, 0.22); color: #fca5a5; }
+    .toast-info { border-color: rgba(99, 102, 241, 0.45); }
+    .toast-info .toast-icon { background: rgba(99, 102, 241, 0.22); color: #a5b4fc; }
+    .toast-text { flex: 1; min-width: 0; line-height: 1.4; }
+    .toast-close {
+      padding: 0 5px !important;
+      background: transparent !important;
+      border: none !important;
+      color: var(--text-muted) !important;
+      font-size: 16px !important;
+    }
+    .toast-close:hover { color: #fff !important; }
+
+    /* Lightbox Modal */
+    .lightbox-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: rgba(4, 7, 13, 0.86);
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 22px;
+      animation: fadeIn 0.14s ease-out;
+    }
+    .lightbox-backdrop[hidden] { display: none !important; }
+    .lightbox-dialog {
+      width: min(1180px, 96vw);
+      max-height: 92vh;
+      background: var(--bg-elev);
+      border: 1px solid #2d3e5e;
+      border-radius: 14px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+    }
+    .lightbox-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 12px 16px;
+      background: rgba(15, 22, 36, 0.95);
+      border-bottom: 1px solid var(--border);
+    }
+    .lightbox-titles {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    .lightbox-titles strong { font-size: 13.5px; color: #f8fafc; }
+    .lightbox-tools { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .lightbox-stage {
+      flex: 1;
+      min-height: 320px;
+      max-height: calc(92vh - 64px);
+      overflow: auto;
+      display: grid;
+      place-items: center;
+      padding: 16px;
+      background-color: #05080f;
+    }
+    .lightbox-stage img {
+      max-width: 100%;
+      max-height: calc(92vh - 100px);
+      object-fit: contain;
+      border-radius: 6px;
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55);
+    }
+    .lightbox-stage.zoom-actual img {
+      max-width: none;
+      max-height: none;
+      image-rendering: pixelated;
+    }
+
+    /* Console Dock (Compact Status Bar by default, Resizable Drawer when expanded) */
     #console-dock {
       position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
-      background: rgba(10, 14, 23, 0.96);
-      backdrop-filter: blur(12px);
+      background: rgba(9, 13, 22, 0.96);
+      backdrop-filter: blur(14px);
       color: #d6deeb;
       border-top: 1px solid var(--border);
       display: flex; flex-direction: column;
-      height: 168px; min-height: 36px;
+      height: 176px; min-height: 36px;
       font: 12px/1.5 'JetBrains Mono', ui-monospace, Consolas, monospace;
       box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.45);
     }
     #console-dock.collapsed { height: 36px !important; }
     #console-dock.collapsed #console-body { display: none; }
+    #console-dock.collapsed #console-resize { display: none; }
     #console-resize {
       height: 4px;
       cursor: ns-resize;
-      background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.35), transparent);
+      background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.4), transparent);
     }
     #console-bar {
       display: flex; align-items: center; gap: 8px; padding: 4px 16px;
-      background: rgba(21, 29, 46, 0.9); flex-wrap: wrap; min-height: 32px;
+      background: rgba(18, 26, 42, 0.92); flex-wrap: nowrap; min-height: 32px;
       border-bottom: 1px solid var(--border-subtle);
     }
     #console-bar strong {
-      font-size: 11.5px;
+      font-size: 11px;
       text-transform: uppercase;
       letter-spacing: 0.6px;
       color: #a5b4fc;
+      cursor: pointer;
     }
     #console-count {
       font-size: 11px;
@@ -1339,13 +1859,21 @@
       background: rgba(99, 102, 241, 0.18);
       color: #c7d2fe;
     }
+    #console-latest {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 11.5px;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
     #console-bar button, #console-bar select {
-      font-size: 11px; padding: 3px 9px; border-radius: 5px; width: auto;
+      font-size: 11px; padding: 2px 8px; border-radius: 5px; width: auto;
       background: #1a2438; color: #d6deeb; border: 1px solid #2b3954; cursor: pointer;
     }
-    #console-bar button:hover, #console-bar select:hover {
-      background: #24314d;
-    }
+    #console-bar button:hover, #console-bar select:hover { background: #24314d; }
     #console-body { flex: 1; overflow-y: auto; padding: 8px 16px; min-height: 0; }
     .log-line { white-space: pre-wrap; word-break: break-word; padding: 1.5px 0; }
     .log-line .t { color: #64748b; }
@@ -1358,38 +1886,65 @@
   </style>
 </head>
 <body>
+  <div id="brush-cursor"></div>
+
   <header class="topbar">
     <div class="brand">
       <div class="brand-logo">FRS</div>
       <div>
         <h1>Flow Reference Studio</h1>
-        <p>Multi-Reference Prompt Compiler &amp; Strict Pixel-Verified Editor</p>
+        <p>Multi-Reference Compiler &amp; Pixel-Verified Creative Suite</p>
       </div>
     </div>
 
     <nav class="nav-tabs" role="tablist">
-      <button class="tab-btn active" data-tab="tab-studio" data-group="image" id="top-image">1. Image</button>
-      <button class="tab-btn" data-tab="tab-anim">2. Animation</button>
-      <button class="tab-btn" data-tab="tab-video">3. Video</button>
-      <button class="tab-btn" data-tab="tab-jobs">4. Hàng đợi Job (<span id="job-count">0</span>)</button>
-      <button class="tab-btn" data-tab="tab-guide">5. Hướng dẫn</button>
+      <button class="tab-btn active" data-tab="tab-studio" data-group="image" id="top-image" title="Các công cụ tạo &amp; chỉnh sửa hình ảnh (Alt+1)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+        <span>Image</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-anim" title="Tạo Animation Loop &amp; Spritesheet (Alt+2)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3l14 9-14 9V3z"/></svg>
+        <span>Animation</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-video" title="Tạo Video Omni Flash, TTS &amp; Phụ đề (Alt+3)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="15" height="14" rx="2"/><path d="m17 10 5-3v10l-5-3"/></svg>
+        <span>Video</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-jobs" title="Thư viện ảnh &amp; Tiến trình Job (Alt+4)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+        <span>Thư viện Job</span>
+        <span id="job-live-dot" class="nav-live-dot" hidden></span>
+        <span class="nav-count-pill" id="job-count">0</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-guide" title="Hướng dẫn cài đặt &amp; sử dụng (Alt+5)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <span>Hướng dẫn</span>
+      </button>
     </nav>
 
     <div class="top-actions">
-      <span id="bridge-status" class="badge" title="Đang kiểm tra bridge server...">Bridge: đang kiểm tra</span>
-      <span class="mode-pill">Chế độ Assisted • Local-First</span>
-      <button id="backup" class="sm">Xuất Backup JSON</button>
+      <div id="topbar-wallet"></div>
+      <span id="bridge-status" class="badge" title="Đang kiểm tra bridge server...">Bridge: kiểm tra...</span>
+      <input id="import-backup-file" type="file" accept="application/json,.json" hidden />
+      <button id="import-backup-btn" class="sm" type="button" title="Khôi phục dữ liệu từ file JSON backup (chỉ vào DB trống)">Nhập JSON</button>
+      <button id="backup" class="sm" type="button" title="Xuất toàn bộ ảnh tham chiếu và cấu hình ra JSON">Xuất Backup</button>
     </div>
   </header>
 
   <main class="container">
-    <div id="image-subnav" class="sub-nav show" role="tablist">
-      <button class="sub-btn active" data-tab="tab-studio">Phối ảnh (Multi-Ref)</button>
-      <button class="sub-btn" data-tab="tab-strict">Sửa vùng</button>
-      <button class="sub-btn" data-tab="tab-asset">Game Asset</button>
-      <button class="sub-btn" data-tab="tab-room">BG Room</button>
-      <button class="sub-btn" data-tab="tab-camera">Camera Image</button>
+    <div id="image-subnav" class="sub-nav-bar show" role="tablist">
+      <div class="sub-nav">
+        <button class="sub-btn active" data-tab="tab-studio">🎨 Phối ảnh (Multi-Ref)</button>
+        <button class="sub-btn" data-tab="tab-strict">🖌️ Sửa vùng (Inpaint)</button>
+        <button class="sub-btn" data-tab="tab-asset">🎮 Game Asset</button>
+        <button class="sub-btn" data-tab="tab-room">🏠 BG Room</button>
+        <button class="sub-btn" data-tab="tab-camera">📷 Camera Angle</button>
+      </div>
+      <div class="shortcut-hint">
+        <span>Mẹo nhanh: <kbd>Ctrl</kbd> + <kbd>Enter</kbd> để Generate • <kbd>Ctrl</kbd> + <kbd>V</kbd> dán ảnh từ Clipboard</span>
+      </div>
     </div>
+
     <!-- TAB 1: MULTI-REFERENCE + PROMPT COMPILER + GENERATE -->
     <section id="tab-studio" class="tab-panel active">
       <div class="studio-grid">
@@ -1399,38 +1954,38 @@
             <div class="card-header">
               <div>
                 <h2 class="card-title">Bộ ảnh Tham chiếu &amp; Ảnh gốc <span id="ref-count-badge" class="badge">0 / 24</span></h2>
-                <p class="card-sub">Tải lên nhiều ảnh để lấy khuôn mặt, trang phục, dáng đứng, bố cục, màu sắc hoặc đặt làm ảnh gốc cần chỉnh sửa.</p>
+                <p class="card-sub">Kết hợp khuôn mặt, trang phục, dáng đứng, bố cục, bảng màu từ nhiều ảnh hoặc chọn 1 ảnh làm Ảnh gốc (Base).</p>
               </div>
-              <button id="clear-refs" class="sm danger">Xóa tất cả</button>
+              <button id="clear-refs" class="sm danger" type="button">Xóa tất cả</button>
             </div>
 
             <label class="dropzone" id="ref-dropzone">
               <input id="ref-input" type="file" accept="image/png,image/jpeg,image/webp" multiple hidden />
               <div class="dropzone-icon">+</div>
-              <strong>Bấm chọn hoặc kéo thả nhiều ảnh vào đây</strong>
-              <span>Hỗ trợ PNG, JPEG, WebP • Tối đa 24 ảnh, 20 MiB/ảnh, 24 MP • Tự động kiểm tra byte &amp; chống trùng lặp</span>
+              <strong>Bấm chọn, kéo thả hoặc nhấn Ctrl+V để dán ảnh</strong>
+              <span>PNG, JPEG, WebP • Tối đa 24 ảnh (20 MiB/ảnh, 24 MP) • Tự động kiểm tra byte &amp; lọc trùng SHA-256</span>
             </label>
 
             <div id="ref-status"></div>
             <div id="ref-list" class="ref-list"></div>
-            <!-- Ràng buộc thuộc tính chi tiết (Thu gọn) -->
+
             <details class="panel-details" style="margin-top:14px;">
               <summary>
-                <span>Ràng buộc Thuộc tính (Keep / Change / Avoid)</span>
-                <span class="card-sub" style="margin:0; font-weight:400;">Tùy chọn khóa chi tiết chủ thể</span>
+                <span>🔒 Ràng buộc Thuộc tính (Keep / Change / Avoid)</span>
+                <span class="card-sub" style="margin:0; font-weight:400;">Khóa chi tiết chủ thể</span>
               </summary>
               <div class="panel-details-body">
                 <div class="field-row-3">
                   <div>
-                    <label class="field-label">Chủ thể (Subject)</label>
+                    <label class="field-label" for="c-subject">Chủ thể (Subject)</label>
                     <input id="c-subject" type="text" placeholder="VD: main_hero" />
                   </div>
                   <div>
-                    <label class="field-label">Thuộc tính (Attribute)</label>
+                    <label class="field-label" for="c-attr">Thuộc tính (Attribute)</label>
                     <input id="c-attr" type="text" placeholder="VD: mắt, áo khoác, tóc" />
                   </div>
                   <div>
-                    <label class="field-label">Thao tác</label>
+                    <label class="field-label" for="c-op">Thao tác</label>
                     <select id="c-op">
                       <option value="preserve">Giữ nguyên (Preserve)</option>
                       <option value="change_to">Đổi thành (Change to)</option>
@@ -1440,7 +1995,7 @@
                 </div>
                 <div style="display:flex; gap:8px;">
                   <input id="c-val" type="text" placeholder="Giá trị chi tiết (VD: áo giáp bạc có vết xước, không đội mũ)" />
-                  <button id="add-constraint">+ Thêm</button>
+                  <button id="add-constraint" type="button">+ Thêm</button>
                 </div>
                 <div id="constraint-list"></div>
               </div>
@@ -1449,32 +2004,41 @@
         </div>
 
         <!-- Cột phải: Brief, Prompt Compiler & Tạo Job -->
-        <div>
+        <div class="sticky-col">
           <div class="card">
             <div class="card-header">
               <div>
                 <h2 class="card-title">Kịch bản &amp; Biên dịch Prompt</h2>
-                <p class="card-sub">Tự động ánh xạ thứ tự ảnh tham chiếu (Image 1, Image 2...) sang câu lệnh chuẩn xác.</p>
+                <p class="card-sub">Ánh xạ tự động <code>@định_danh</code> sang đúng thứ tự <code>Image 1, Image 2...</code> trên Flow.</p>
               </div>
-              <button id="load-sample" class="sm">Nạp mẫu thử</button>
+              <button id="load-sample" class="sm" type="button">✨ Nạp mẫu thử</button>
             </div>
 
             <div style="margin-bottom:10px;">
               <label class="field-label" for="brief">Mô tả cảnh &amp; nội dung cần tạo / chỉnh sửa *</label>
               <div id="mention-chips" class="mention-chips" hidden></div>
-              <textarea id="brief" rows="3" placeholder="VD: vẽ lại @hinh1 dựa vào nhân vật @hinh2, bám sát pose của @hinh3"></textarea>
-              <p class="card-sub" style="margin-top:4px;">Dùng <b>@định_danh</b> để chỉ đúng ảnh. Prompt xuất ra tự đổi thành "Image N".</p>
+              <textarea id="brief" rows="3" placeholder="VD: vẽ lại @hinh1 dựa vào nhân vật @hinh2, bám sát pose của @hinh3..."></textarea>
+              <p class="card-sub" style="margin-top:4px;">Bấm vào chip <b>@hinh...</b> ở trên để chèn nhanh định danh ảnh vào vị trí con trỏ.</p>
             </div>
 
-            <div class="field-row">
+            <div class="field-row" style="margin-bottom:6px;">
               <div>
                 <label class="field-label" for="style">Phong cách nghệ thuật (Art Direction)</label>
                 <input id="style" type="text" value="anime style, clean cel shading, highly details, soft thin brown outline  Negate black outlines" placeholder="VD: cinematic keyframe, cel-shaded anime..." />
               </div>
               <div>
-                <label class="field-label" for="exact-text">Chữ cần in chính xác (cách nhau dấu |)</label>
+                <label class="field-label" for="exact-text">Chữ cần in chính xác (ngăn cách bởi |)</label>
                 <input id="exact-text" type="text" placeholder="VD: CAFE SAIGON | OPEN 24H" />
               </div>
+            </div>
+
+            <div class="preset-strip" id="studio-style-presets">
+              <span class="card-sub" style="margin:0; font-size:11px;">Style nhanh:</span>
+              <button type="button" class="preset-chip" data-style="anime style, clean cel shading, highly details, soft thin brown outline  Negate black outlines">Anime Cel-Shade</button>
+              <button type="button" class="preset-chip" data-style="cinematic concept art, dramatic volumetric lighting, painterly brushwork, ultra detailed">Cinematic Concept</button>
+              <button type="button" class="preset-chip" data-style="2D game illustration, vibrant fantasy colors, crisp lineart, rich shading">Game Illust 2D</button>
+              <button type="button" class="preset-chip" data-style="16-bit pixel art, crisp dithering, retro game aesthetic, clean sprite palette">Pixel Art</button>
+              <button type="button" class="preset-chip" data-style="photorealistic 35mm film photography, natural skin texture, shallow depth of field">Photorealistic</button>
             </div>
 
             <div class="field-row-4">
@@ -1510,7 +2074,14 @@
                 </select>
               </div>
               <div>
-                <label class="field-label" for="out-count">Số lượng ảnh</label>
+                <div class="field-label-row">
+                  <label class="field-label" for="out-count">Số lượng ảnh</label>
+                  <span style="display:inline-flex; gap:3px;" id="quick-count-pills">
+                    <button type="button" class="preset-chip active" data-count="1" style="padding:1px 6px;">1</button>
+                    <button type="button" class="preset-chip" data-count="2" style="padding:1px 6px;">2</button>
+                    <button type="button" class="preset-chip" data-count="4" style="padding:1px 6px;">4</button>
+                  </span>
+                </div>
                 <input id="out-count" type="number" min="1" max="8" step="1" value="1" title="Số ảnh tạo trong một lần bấm (1-8)." />
               </div>
             </div>
@@ -1529,15 +2100,15 @@
                 <input id="remove-watermark" type="checkbox" checked />
                 Xóa watermark góc phải dưới
               </label>
-              <span class="card-sub" style="margin:0;">Tự động upscale 2K/4K trên Flow khi xuất cỡ lớn</span>
+              <span class="card-sub" style="margin:0;">Tự upscale 2K/4K khi xuất cỡ lớn</span>
             </div>
 
             <div class="action-bar">
               <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                <button id="compile">Biên dịch Prompt</button>
-                <button id="copy-prompt">Sao chép</button>
+                <button id="compile" type="button">Biên dịch Prompt</button>
+                <button id="copy-prompt" type="button">📋 Sao chép</button>
               </div>
-              <button id="newjob" class="primary">Tạo Job Generate / Edit</button>
+              <button id="newjob" class="primary" type="button">Tạo Job Generate</button>
             </div>
             <p id="jobmsg" class="card-sub" style="margin-top:6px;"></p>
 
@@ -1551,10 +2122,10 @@
             <details class="panel-details" style="margin-top:10px;" open>
               <summary>
                 <span>Prompt đã biên dịch</span>
-                <span class="card-sub" style="margin:0; font-weight:400;">Xem câu lệnh gửi tới Flow</span>
+                <span class="card-sub" style="margin:0; font-weight:400;">Xem câu lệnh thực tế gửi tới Flow</span>
               </summary>
               <div class="panel-details-body" style="padding:8px 10px;">
-                <pre id="compiled" class="codebox" style="margin:0; max-height:200px;">Bấm "Biên dịch Prompt" sau khi thêm ảnh tham chiếu và nhập mô tả...</pre>
+                <pre id="compiled" class="codebox" style="margin:0; max-height:190px;">Bấm "Biên dịch Prompt" sau khi thêm ảnh tham chiếu và nhập mô tả...</pre>
               </div>
             </details>
           </div>
@@ -1570,52 +2141,64 @@
             <div class="card-header">
               <div>
                 <h2 class="card-title">Vẽ Mask &amp; Khoanh vùng Chỉnh sửa</h2>
-                <p class="card-sub">Mọi pixel nằm ngoài vùng cho phép sửa (hoặc trong vùng Bảo vệ) được giữ nguyên tuyệt đối từng byte RGBA.</p>
+                <p class="card-sub">Mọi pixel ngoài vùng tô đỏ (hoặc nằm trong vùng Bảo vệ xanh lá) được bảo toàn tuyệt đối 100% từng byte RGBA.</p>
               </div>
+              <span class="card-sub" style="margin:0;"><kbd>[</kbd> <kbd>]</kbd> cỡ cọ • <kbd>Ctrl+Z</kbd> hoàn tác</span>
             </div>
 
             <div class="field-row">
               <div>
-                <label class="field-label">1. Ảnh gốc (PNG, JPG, WebP)</label>
+                <label class="field-label" for="base">1. Ảnh gốc (PNG, JPG, WebP hoặc Ctrl+V)</label>
                 <input id="base" type="file" accept="image/png,image/jpeg,image/webp" />
               </div>
               <div>
-                <label class="field-label">Hoặc lấy nhanh từ Reference</label>
+                <label class="field-label" for="pick-ref-as-base">Hoặc lấy nhanh từ Reference</label>
                 <div style="display:flex; gap:6px; align-items:center;">
                   <select id="pick-ref-as-base" style="flex:1;">
                     <option value="">-- Chọn ảnh từ Reference --</option>
                   </select>
-                  <button id="use-ref-base" class="sm">Nạp</button>
+                  <button id="use-ref-base" class="sm" type="button">Nạp</button>
                 </div>
               </div>
             </div>
 
+            <!-- Thanh công cụ trực quan 1 chạm (đồng bộ với select ẩn bên dưới) -->
             <div class="canvas-toolbar">
-              <label style="font-size:12px; display:flex; align-items:center; gap:5px;">
-                Công cụ:
-                <select id="mask-shape" style="width:auto; padding:5px 8px;">
-                  <option value="brush">Cọ tô (Brush)</option>
-                  <option value="rect">Hình chữ nhật (Rect)</option>
-                  <option value="lasso">Khoanh tự do (Lasso)</option>
-                </select>
-              </label>
-              <label style="font-size:12px; display:flex; align-items:center; gap:5px;">
-                Lớp vẽ:
-                <select id="mask-target" style="width:auto; padding:5px 8px;">
-                  <option value="allow">Cho phép sửa (Đỏ)</option>
-                  <option value="protect">Bảo vệ tuyệt đối (Xanh lá)</option>
-                </select>
-              </label>
-              <label style="font-size:12px; display:flex; align-items:center; gap:5px;">
-                Chế độ:
-                <select id="mask-mode" style="width:auto; padding:5px 8px;">
-                  <option value="add">Cộng (+)</option>
-                  <option value="subtract">Trừ (-)</option>
-                </select>
-              </label>
-              <button id="mask-undo" class="sm">Hoàn tác</button>
-              <button id="mask-redo" class="sm">Làm lại</button>
-              <button id="mask-clear" class="sm danger">Xóa Mask</button>
+              <select id="mask-shape" hidden>
+                <option value="brush" selected>Cọ tô (Brush)</option>
+                <option value="rect">Hình chữ nhật (Rect)</option>
+                <option value="lasso">Khoanh tự do (Lasso)</option>
+              </select>
+              <select id="mask-target" hidden>
+                <option value="allow" selected>Cho phép sửa (Đỏ)</option>
+                <option value="protect">Bảo vệ tuyệt đối (Xanh lá)</option>
+              </select>
+              <select id="mask-mode" hidden>
+                <option value="add" selected>Cộng (+)</option>
+                <option value="subtract">Trừ (-)</option>
+              </select>
+
+              <div class="seg-group" data-sync="mask-shape" title="Chọn công cụ vẽ vùng">
+                <button type="button" class="seg-btn active" data-val="brush">🖌️ Cọ tô</button>
+                <button type="button" class="seg-btn" data-val="rect">▭ Khung</button>
+                <button type="button" class="seg-btn" data-val="lasso">➰ Lasso</button>
+              </div>
+
+              <div class="seg-group" data-sync="mask-target" title="Chọn lớp vùng sửa hoặc vùng khóa bảo vệ">
+                <button type="button" class="seg-btn active" data-val="allow">🔴 Cho sửa</button>
+                <button type="button" class="seg-btn" data-val="protect">🟢 Bảo vệ</button>
+              </div>
+
+              <div class="seg-group" data-sync="mask-mode" title="Chế độ cộng thêm hoặc tẩy bớt nét vẽ">
+                <button type="button" class="seg-btn active" data-val="add">➕ Vẽ</button>
+                <button type="button" class="seg-btn" data-val="subtract">➖ Tẩy</button>
+              </div>
+
+              <div style="display:flex; gap:5px; margin-left:auto;">
+                <button id="mask-undo" class="sm" type="button" title="Hoàn tác (Ctrl+Z)">↶ Hoàn tác</button>
+                <button id="mask-redo" class="sm" type="button" title="Làm lại (Ctrl+Y)">↷ Làm lại</button>
+                <button id="mask-clear" class="sm danger" type="button">Xóa Mask</button>
+              </div>
             </div>
 
             <div class="canvas-toolbar" style="justify-content:space-between; gap:16px;">
@@ -1629,40 +2212,44 @@
               </div>
             </div>
 
-            <div class="canvas-stage" style="min-height:280px;">
+            <div id="strict-stage" class="canvas-stage" style="min-height:290px;">
+              <div id="strict-empty-hint" class="canvas-empty-overlay">
+                <strong>Kéo thả ảnh gốc vào khung này hoặc bấm chọn tệp ở mục 1</strong>
+                <span style="font-size:12px;">Sau khi nạp ảnh, dùng chuột tô đỏ vùng muốn sửa hoặc xóa</span>
+              </div>
               <canvas id="view" width="640" height="400"></canvas>
             </div>
 
             <div style="margin-top:12px; padding:12px 14px; background:var(--bg-card); border:1px solid var(--border); border-radius:10px;">
               <div class="field-row-3" style="margin-bottom:8px;">
                 <div>
-                  <label class="field-label">Chế độ</label>
+                  <label class="field-label" for="edit-mode">Chế độ</label>
                   <select id="edit-mode">
                     <option value="edit">Sửa vùng theo prompt</option>
-                    <option value="remove">Xóa vùng (tự lấp nền)</option>
+                    <option value="remove">Xóa vật thể (tự lấp nền)</option>
                   </select>
                 </div>
                 <div>
-                  <label class="field-label">Model Flow</label>
+                  <label class="field-label" for="edit-model">Model Flow</label>
                   <select id="edit-model"></select>
                 </div>
                 <div>
-                  <label class="field-label">Số lượt</label>
+                  <label class="field-label" for="edit-count">Số lượt</label>
                   <select id="edit-count" title="Gửi nhiều ảnh cùng lúc dễ bị Google chặn (unusual activity). Hãy tạo từng ảnh một.">
                     <option value="1">1 ảnh mỗi lượt</option>
                   </select>
                 </div>
               </div>
 
-              <textarea id="edit-prompt" rows="2" placeholder="Mô tả cần sửa vùng đã tô (vd: đổi thành chiếc mũ đỏ). Với chế độ Xóa có thể để trống."></textarea>
+              <textarea id="edit-prompt" rows="2" placeholder="Mô tả chi tiết cần sửa ở vùng đã tô (VD: đổi thành chiếc mũ đỏ). Chế độ Xóa vật thể có thể để trống."></textarea>
 
               <details id="strict-ref-box" class="panel-details" style="margin:8px 0;">
                 <summary>
                   <span>Ảnh tham chiếu vùng sửa &amp; Cấu hình nâng cao</span>
-                  <span class="card-sub" style="margin:0; font-weight:400;">Tùy chọn (tối đa 4 ảnh, màu đánh dấu, ghép ngược)</span>
+                  <span class="card-sub" style="margin:0; font-weight:400;">Tối đa 4 ảnh, màu đánh dấu, ghép ngược</span>
                 </summary>
                 <div class="panel-details-body">
-                  <label class="field-label" style="margin:0 0 6px;">Ảnh tham chiếu cho vùng tô (Ảnh gốc là ảnh 1, các ảnh này là ảnh 2, 3...):</label>
+                  <label class="field-label" style="margin:0 0 6px;">Ảnh tham chiếu cho vùng tô (Ảnh gốc là Image 1, các ảnh này là Image 2, 3...):</label>
                   <input id="strict-ref-input" type="file" accept="image/*" multiple />
                   <div id="strict-ref-list" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;"></div>
                   <div class="inline-checks" style="margin-top:8px;">
@@ -1672,7 +2259,7 @@
                         <option value="red">Đỏ</option>
                       </select>
                     </label>
-                    <label><input id="strict-composite" type="checkbox" checked /> Ghép ngược ngoài vùng tô</label>
+                    <label><input id="strict-composite" type="checkbox" checked /> Ghép ngược bảo toàn pixel ngoài vùng tô</label>
                     <label>Mềm biên Flow: <strong id="strict-feather-val">6</strong> px
                       <input id="strict-feather" type="range" min="0" max="40" value="6" style="width:110px;" />
                     </label>
@@ -1681,7 +2268,7 @@
               </details>
 
               <div class="action-bar" style="margin-top:6px; padding-top:8px;">
-                <button id="edit-generate" class="primary">Generate (Sửa / Xóa vùng đã tô)</button>
+                <button id="edit-generate" class="primary" type="button">Generate Sửa / Xóa vùng</button>
                 <span id="edit-status" class="card-sub"></span>
               </div>
             </div>
@@ -1689,38 +2276,39 @@
             <details class="panel-details" style="margin-top:10px;">
               <summary>
                 <span>Ghép thủ công với Ảnh ứng viên có sẵn (Offline Strict Test)</span>
-                <span class="card-sub" style="margin:0; font-weight:400;">Dành cho kiểm thử không qua Flow</span>
+                <span class="card-sub" style="margin:0; font-weight:400;">Kiểm thử thuật toán không cần mạng</span>
               </summary>
               <div class="panel-details-body">
                 <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
                   <input id="cand" type="file" accept="image/png,image/jpeg,image/webp" style="flex:1; min-width:200px;" />
-                  <button id="make-demo-cand" class="sm">Tạo ảnh ứng viên Demo</button>
-                  <button id="run" class="sm primary">Chạy Ghép &amp; Kiểm định</button>
+                  <button id="make-demo-cand" class="sm" type="button">Tạo ảnh ứng viên Demo</button>
+                  <button id="run" class="sm primary" type="button">Chạy Ghép &amp; Kiểm định</button>
                 </div>
               </div>
             </details>
           </div>
         </div>
 
-        <div>
+        <div class="sticky-col">
           <div class="card">
             <div class="card-header">
               <div>
                 <h2 class="card-title">Kết quả Ghép &amp; Kiểm định Strict</h2>
                 <p class="card-sub">Giải mã lại từ đúng byte PNG xuất ra để đối chiếu 100% pixel ngoài vùng chọn.</p>
               </div>
+              <button id="compare-strict-orig" class="sm" type="button" hidden title="Nhấn giữ chuột để xem Ảnh gốc trước khi sửa">👁 Giữ xem Ảnh gốc</button>
             </div>
 
             <div id="report"></div>
 
-            <div class="canvas-stage" style="min-height:280px; margin:10px 0;">
+            <div class="canvas-stage" style="min-height:290px; margin:10px 0;">
               <canvas id="resultPreview" width="640" height="400"></canvas>
             </div>
 
             <div style="display:flex; gap:8px; flex-wrap:wrap;">
-              <a id="download" class="btn primary" hidden download="strict-result.png">Tải PNG Kết quả</a>
-              <button id="use-result-as-base" class="primary" hidden>Dùng làm Ảnh gốc sửa tiếp</button>
-              <button id="send-result-to-ref" hidden>Đưa vào Reference</button>
+              <a id="download" class="btn primary" hidden download="strict-result.png">⬇ Tải PNG Kết quả</a>
+              <button id="use-result-as-base" class="primary" type="button" hidden>Dùng làm Ảnh gốc sửa tiếp</button>
+              <button id="send-result-to-ref" type="button" hidden>+ Đưa vào Reference</button>
             </div>
           </div>
         </div>
@@ -1730,32 +2318,30 @@
     <!-- TAB 3: GAME ASSET GENERATOR -->
     <section id="tab-asset" class="tab-panel">
       <div class="studio-grid">
-        <!-- Cột trái: Cấu hình Asset & Prompt -->
         <div>
           <div class="card">
             <div class="card-header">
               <div>
                 <h2 class="card-title">Tạo Game Asset Đồng Bộ Style</h2>
-                <p class="card-sub">Tạo nhân vật, item, tilemap, UI đồng bộ phong cách và tự động tách nền trong suốt.</p>
+                <p class="card-sub">Tạo nhân vật, vật phẩm, tilemap, UI đồng bộ phong cách và tự động tách nền trong suốt.</p>
               </div>
             </div>
 
-            <!-- Style References -->
-            <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:6px;">
-              <label class="field-label" style="margin:0;">1. Ảnh tham chiếu phong cách (Style Refs):</label>
+            <div class="field-label-row">
+              <label class="field-label" for="asset-ref-input">1. Ảnh tham chiếu phong cách (Style Refs):</label>
               <div style="display:flex; gap:6px;">
-                <button id="asset-sync-refs" class="sm">Lấy từ Tab 1</button>
-                <button id="asset-clear-refs" class="sm danger">Xóa</button>
+                <button id="asset-sync-refs" class="sm" type="button">Lấy từ Tab Phối ảnh</button>
+                <button id="asset-clear-refs" class="sm danger" type="button">Xóa</button>
               </div>
             </div>
             <input id="asset-ref-input" type="file" multiple accept="image/*" style="margin-bottom:8px;" />
-            <div id="asset-refs-list" style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; min-height:44px; padding:6px 8px; border:1px dashed var(--border); border-radius:6px; background:var(--bg-input);">
-              <span class="card-sub" style="align-self:center; font-size:12px;">Chưa có ảnh ref style. Thêm ảnh để đồng bộ nét vẽ và bảng màu.</span>
+            <div id="asset-refs-list" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; min-height:58px; padding:8px 10px; border:1.5px dashed var(--border); border-radius:8px; background:var(--bg-input); transition:all 0.15s;">
+              <span class="card-sub" style="align-self:center; font-size:12px;">Kéo thả ảnh vào đây hoặc chọn tệp phía trên để đồng bộ nét vẽ &amp; bảng màu.</span>
             </div>
 
             <div class="field-row-3">
               <div>
-                <label class="field-label">2. Loại Asset</label>
+                <label class="field-label" for="asset-type">2. Loại Asset</label>
                 <select id="asset-type">
                   <option value="character">Nhân vật (Sprite)</option>
                   <option value="item" selected>Vật phẩm / Icon</option>
@@ -1766,7 +2352,7 @@
                 </select>
               </div>
               <div>
-                <label class="field-label">3. Preset Style</label>
+                <label class="field-label" for="asset-preset">3. Preset Style</label>
                 <select id="asset-preset">
                   <option value="none">Tự do theo ref</option>
                   <option value="pixel" selected>16-bit Pixel Art</option>
@@ -1777,14 +2363,14 @@
                 </select>
               </div>
               <div>
-                <label class="field-label">4. Model AI</label>
+                <label class="field-label" for="asset-model">4. Model AI</label>
                 <select id="asset-model"></select>
               </div>
             </div>
 
             <div class="field-row">
               <div>
-                <label class="field-label">5. Kích thước (px)</label>
+                <label class="field-label" for="asset-size">5. Kích thước (px)</label>
                 <select id="asset-size">
                   <option value="256x256">256 × 256 (Icon, Tile)</option>
                   <option value="512x512" selected>512 × 512 (Chuẩn HD)</option>
@@ -1793,23 +2379,23 @@
                 </select>
               </div>
               <div>
-                <label class="field-label">6. Số lượng ảnh / lần</label>
+                <label class="field-label" for="asset-count">6. Số lượng biến thể / lần</label>
                 <select id="asset-count">
-                  <option value="1">1 ảnh</option>
-                  <option value="2">2 ảnh</option>
-                  <option value="3">3 ảnh</option>
-                  <option value="4" selected>4 biến thể</option>
+                  <option value="1">1 ảnh (1 token)</option>
+                  <option value="2">2 biến thể (2 token)</option>
+                  <option value="3">3 biến thể (3 token)</option>
+                  <option value="4" selected>4 biến thể (4 token)</option>
                 </select>
               </div>
             </div>
 
             <div id="asset-custom-size-box" class="field-row" hidden>
               <div>
-                <label class="field-label">Rộng (px):</label>
+                <label class="field-label" for="asset-w">Rộng (px):</label>
                 <input id="asset-w" type="number" value="512" min="64" max="4096" />
               </div>
               <div>
-                <label class="field-label">Cao (px):</label>
+                <label class="field-label" for="asset-h">Cao (px):</label>
                 <input id="asset-h" type="number" value="512" min="64" max="4096" />
               </div>
             </div>
@@ -1817,40 +2403,40 @@
             <div class="inline-checks">
               <label for="asset-transparent">
                 <input id="asset-transparent" type="checkbox" checked />
-                Tách nền trong suốt tự động (Chroma-key xanh lá &amp; khử ám viền)
+                Tách nền trong suốt tự động (Chroma-key xanh lá &amp; khử ám viền despill)
               </label>
             </div>
 
-            <label class="field-label">7. Prompt mô tả chi tiết:</label>
+            <label class="field-label" for="asset-prompt">7. Prompt mô tả chi tiết:</label>
+            <div id="asset-quick-ideas" class="preset-strip" style="margin-top:2px;"></div>
             <textarea id="asset-prompt" rows="3" placeholder="Ví dụ: wooden treasure chest with iron bands and brass padlock, closed, isometric angle..."></textarea>
 
             <div class="action-bar">
-              <button id="asset-generate" class="primary">Generate Game Asset</button>
+              <button id="asset-generate" class="primary" type="button">Generate Game Asset</button>
               <span id="asset-status" class="card-sub"></span>
             </div>
           </div>
         </div>
 
-        <!-- Cột phải: Thư viện Asset kết quả -->
-        <div>
+        <div class="sticky-col">
           <div class="card">
             <div class="card-header">
               <div>
                 <h2 class="card-title">Bộ sưu tập Game Asset</h2>
-                <p class="card-sub">Xem trước trên nền ô cờ caro trong suốt. Tải lẻ PNG hoặc tải trọn bộ ZIP.</p>
+                <p class="card-sub">Bấm vào ảnh để phóng to &amp; soi nền trong suốt. Tải lẻ PNG hoặc trọn bộ ZIP.</p>
               </div>
-              <button id="asset-download-zip" class="sm" hidden>Tải trọn bộ ZIP</button>
+              <button id="asset-download-zip" class="sm primary" type="button" hidden>⬇ Tải trọn bộ ZIP</button>
             </div>
 
-            <div id="asset-gallery" class="gallery checkerboard" style="min-height:340px; padding:12px; border-radius:8px; border:1px solid var(--border);">
-              <p class="card-sub" style="align-self:center; margin:auto;">Chưa có asset nào được tạo. Nhập prompt và bấm Generate ở bên trái.</p>
+            <div id="asset-gallery" class="gallery checkerboard" style="min-height:340px; padding:12px; border-radius:10px; border:1px solid var(--border);">
+              <p class="card-sub" style="align-self:center; margin:auto; grid-column:1/-1; text-align:center;">Chưa có asset nào được tạo. Chọn gợi ý hoặc nhập prompt rồi bấm Generate ở bên trái.</p>
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- TAB: BG ROOM (phòng chibi isometric -> illust BG 2D) -->
+    <!-- TAB: BG ROOM -->
     <section id="tab-room" class="tab-panel">
       <div class="studio-grid">
         <div>
@@ -1862,23 +2448,30 @@
               </div>
             </div>
 
-            <div style="display:flex; justify-content:space-between; align-items:baseline; gap:8px;">
+            <div class="field-label-row">
               <label class="field-label">1. Ảnh phòng isometric nguồn</label>
               <span id="room-source-info" class="card-sub" style="margin:0;">Chưa chọn ảnh.</span>
             </div>
             <input id="room-input" type="file" accept="image/*" hidden />
             <div id="room-drop" class="compact-drop">
-              <span id="room-drop-hint" class="card-sub">Bấm chọn hoặc kéo thả ảnh phòng isometric vào đây</span>
+              <span id="room-drop-hint" class="card-sub">📥 Bấm chọn hoặc kéo thả ảnh phòng isometric vào đây</span>
               <img id="room-preview" alt="Ảnh phòng isometric" hidden />
             </div>
 
-            <label class="field-label" style="margin-top:8px;">2. Góc nhìn từ giữa phòng (mỗi mục một ảnh)</label>
-            <div id="room-views" class="check-scroll-box" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(190px, 1fr)); gap:6px 12px;"></div>
+            <div class="field-label-row" style="margin-top:8px;">
+              <label class="field-label">2. Góc nhìn từ giữa phòng (mỗi mục = 1 ảnh)</label>
+              <div style="display:flex; gap:5px;">
+                <button id="room-select-default" class="sm" type="button">Mặc định (3)</button>
+                <button id="room-select-all" class="sm" type="button">Chọn hết</button>
+                <button id="room-clear" class="sm" type="button">Bỏ chọn</button>
+              </div>
+            </div>
+            <div id="room-views" class="check-scroll-box" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(185px, 1fr)); gap:7px;"></div>
 
             <div class="field-row">
               <div>
-                <label class="field-label" for="room-objects">3. Vật thể cụ thể (cách nhau dấu phẩy)</label>
-                <input id="room-objects" type="text" placeholder="VD: giường, bàn học, cửa sổ" />
+                <label class="field-label" for="room-objects">3. Cận cảnh vật thể cụ thể (cách dấu phẩy)</label>
+                <input id="room-objects" type="text" placeholder="VD: giường ngủ, bàn học, cửa sổ" />
               </div>
               <div>
                 <label class="field-label" for="room-style">4. Phong cách nghệ thuật</label>
@@ -1901,65 +2494,68 @@
                 </select>
               </div>
               <div>
-                <label class="field-label" for="room-notes">5. Ghi chú bối cảnh</label>
+                <label class="field-label" for="room-notes">5. Ghi chú ánh sáng / bối cảnh</label>
                 <input id="room-notes" type="text" placeholder="VD: nắng chiều ấm áp..." />
               </div>
             </div>
 
             <div class="action-bar">
-              <div style="display:flex; gap:10px; align-items:center;">
-                <button id="room-generate" class="primary">Generate BG Room</button>
-                <span id="room-count" class="card-sub"></span>
+              <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <button id="room-generate" class="primary" type="button">Generate BG Room</button>
+                <span id="room-count" class="badge"></span>
               </div>
               <span id="room-status" class="card-sub"></span>
             </div>
           </div>
         </div>
 
-        <div>
+        <div class="sticky-col">
           <div class="card">
             <div class="card-header">
               <div>
                 <h2 class="card-title">Kết quả Illust BG</h2>
-                <p class="card-sub">Hiển thị tức thì các góc nhìn đang tạo. Bấm vào ảnh để xem kích thước gốc.</p>
+                <p class="card-sub">Hiển thị tức thì các góc nhìn đang tạo. Bấm vào ảnh để xem Lightbox phóng lớn.</p>
               </div>
-              <button id="room-download-zip" class="sm" hidden>Tải trọn bộ ZIP</button>
+              <button id="room-download-zip" class="sm primary" type="button" hidden>⬇ Tải trọn bộ ZIP</button>
             </div>
             <div id="room-gallery" class="gallery" style="grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); min-height:340px;">
-              <p class="card-sub" style="margin:auto;">Chưa có ảnh nào. Nạp ảnh phòng và bấm Generate BG Room.</p>
+              <p class="card-sub" style="margin:auto; grid-column:1/-1; text-align:center;">Chưa có ảnh nào. Nạp ảnh phòng isometric và bấm Generate BG Room.</p>
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- TAB: CAMERA IMAGE (đổi góc máy của một ảnh illust) -->
+    <!-- TAB: CAMERA IMAGE -->
     <section id="tab-camera" class="tab-panel">
       <div class="studio-grid">
         <div>
           <div class="card">
             <div class="card-header">
               <div>
-                <h2 class="card-title">Camera Image: Đổi góc máy Ảnh Illust</h2>
-                <p class="card-sub">Nạp một ảnh illust, chọn các góc máy để vẽ lại cùng cảnh và nhân vật từ góc độ mới.</p>
+                <h2 class="card-title">Camera Angle: Đổi góc máy Ảnh Illust</h2>
+                <p class="card-sub">Nạp một ảnh illust, chọn các góc quay để vẽ lại cùng cảnh và nhân vật từ góc độ mới.</p>
               </div>
             </div>
 
-            <div style="display:flex; justify-content:space-between; align-items:baseline; gap:8px;">
+            <div class="field-label-row">
               <label class="field-label">1. Ảnh illust nguồn</label>
               <span id="cam-source-info" class="card-sub" style="margin:0;">Chưa chọn ảnh.</span>
             </div>
             <input id="cam-input" type="file" accept="image/*" hidden />
             <div id="cam-drop" class="compact-drop">
-              <span id="cam-drop-hint" class="card-sub">Bấm chọn hoặc kéo thả ảnh illust vào đây</span>
+              <span id="cam-drop-hint" class="card-sub">📥 Bấm chọn hoặc kéo thả ảnh illust vào đây</span>
               <img id="cam-preview" alt="Ảnh illust nguồn" hidden />
             </div>
 
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
-              <label class="field-label" style="margin:0;">2. Chọn góc máy mới (mỗi mục là một ảnh)</label>
-              <button id="cam-clear" class="sm">Bỏ chọn hết</button>
+            <div class="field-label-row" style="margin-top:6px;">
+              <label class="field-label">2. Chọn góc máy mới (mỗi mục = 1 ảnh)</label>
+              <div style="display:flex; gap:5px;">
+                <button id="cam-select-popular" class="sm" type="button">Bộ cơ bản (4)</button>
+                <button id="cam-clear" class="sm" type="button">Bỏ chọn hết</button>
+              </div>
             </div>
-            <div id="cam-options" class="check-scroll-box" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(190px, 1fr)); gap:6px 12px;"></div>
+            <div id="cam-options" class="check-scroll-box" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(185px, 1fr)); gap:7px;"></div>
 
             <div class="field-row">
               <div>
@@ -1996,31 +2592,31 @@
             <div class="inline-checks">
               <label>
                 <input id="cam-keep-pose" type="checkbox" checked />
-                Giữ nguyên tư thế nhân vật (bỏ tick để cho phép điều chỉnh tư thế theo góc máy)
+                Giữ nguyên tư thế nhân vật (bỏ chọn nếu muốn nhân vật tự điều chỉnh theo góc máy)
               </label>
             </div>
 
             <div class="action-bar">
-              <div style="display:flex; gap:10px; align-items:center;">
-                <button id="cam-generate" class="primary">Generate Góc máy mới</button>
-                <span id="cam-count" class="card-sub"></span>
+              <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <button id="cam-generate" class="primary" type="button">Generate Góc máy mới</button>
+                <span id="cam-count" class="badge"></span>
               </div>
               <span id="cam-status" class="card-sub"></span>
             </div>
           </div>
         </div>
 
-        <div>
+        <div class="sticky-col">
           <div class="card">
             <div class="card-header">
               <div>
                 <h2 class="card-title">Kết quả theo Góc máy</h2>
-                <p class="card-sub">Hiển thị tức thì các góc máy đang tạo. Có thể dùng tiếp làm ảnh nguồn hoặc sửa vùng.</p>
+                <p class="card-sub">Bấm vào ảnh để xem lớn, hoặc dùng làm ảnh nguồn đổi tiếp góc quay khác.</p>
               </div>
-              <button id="cam-download-zip" class="sm" hidden>Tải trọn bộ ZIP</button>
+              <button id="cam-download-zip" class="sm primary" type="button" hidden>⬇ Tải trọn bộ ZIP</button>
             </div>
             <div id="cam-gallery" class="gallery" style="grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); min-height:340px;">
-              <p class="card-sub" style="margin:auto;">Chưa có ảnh nào. Nạp ảnh illust, chọn góc máy và bấm Generate.</p>
+              <p class="card-sub" style="margin:auto; grid-column:1/-1; text-align:center;">Chưa có ảnh nào. Nạp ảnh illust, chọn góc máy và bấm Generate.</p>
             </div>
           </div>
         </div>
@@ -2030,38 +2626,36 @@
     <!-- TAB 4: ANIMATION LOOP -->
     <section id="tab-anim" class="tab-panel">
       <div class="studio-grid">
-        <!-- Cột trái: Cấu hình Animation -->
         <div>
           <div class="card">
             <div class="card-header">
               <div>
-                <h2 class="card-title">Tạo Animation Loop (Frame-by-Frame)</h2>
-                <p class="card-sub">Tạo chuyển động mượt mà với frame đầu và frame cuối khớp nhau hoàn hảo (seamless loop).</p>
+                <h2 class="card-title">Tạo Animation Loop (Seamless Sprite)</h2>
+                <p class="card-sub">Tạo chuyển động lặp vô hạn mượt mà với frame đầu &amp; cuối khớp nhau hoàn hảo.</p>
               </div>
             </div>
 
-            <!-- Ảnh nhân vật / pose gốc -->
-            <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:6px;">
-              <label class="field-label" style="margin:0;">1. Ảnh nhân vật / Dáng gốc:</label>
-              <button id="anim-use-strict-result" class="sm">Lấy từ kết quả Sửa vùng</button>
+            <div class="field-label-row">
+              <label class="field-label" for="anim-ref-input">1. Ảnh nhân vật / Dáng gốc:</label>
+              <button id="anim-use-strict-result" class="sm" type="button">Lấy từ kết quả Sửa vùng</button>
             </div>
-            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:12px;">
-              <input id="anim-ref-input" type="file" accept="image/*" style="max-width:250px;" />
-              <div id="anim-ref-preview" style="display:flex; gap:8px; align-items:center; min-height:42px;">
-                <span class="card-sub" style="font-size:12px;">Chưa chọn ảnh nhân vật.</span>
+            <div id="anim-char-drop" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:12px; padding:9px 11px; border:1.5px dashed var(--border); border-radius:9px; background:var(--bg-input); transition:all 0.15s;">
+              <input id="anim-ref-input" type="file" accept="image/*" style="max-width:230px;" />
+              <div id="anim-ref-preview" style="display:flex; gap:8px; align-items:center; min-height:42px; flex:1; min-width:180px;">
+                <span class="card-sub" style="font-size:12px;">Chưa chọn ảnh nhân vật (có thể kéo thả ảnh vào khung này).</span>
               </div>
             </div>
 
             <div class="field-row">
               <div>
-                <label class="field-label">2. Phương thức sinh</label>
+                <label class="field-label" for="anim-mode">2. Phương thức sinh</label>
                 <select id="anim-mode">
-                  <option value="video" selected>Video Loop &amp; Cắt Frame (Mượt)</option>
-                  <option value="frames">Frame-by-Frame tuần tự</option>
+                  <option value="video" selected>Video Loop &amp; Cắt Frame (20 token cố định)</option>
+                  <option value="frames">Frame-by-Frame tuần tự (1 token / frame)</option>
                 </select>
               </div>
               <div>
-                <label class="field-label">3. Số frame chuyển động</label>
+                <label class="field-label" for="anim-frames">3. Số frame chuyển động</label>
                 <select id="anim-frames">
                   <option value="6">6 frames (pixel nhanh)</option>
                   <option value="8">8 frames (chuẩn retro)</option>
@@ -2074,11 +2668,11 @@
 
             <div class="field-row">
               <div>
-                <label class="field-label">4. Tốc độ phát (FPS)</label>
+                <label class="field-label" for="anim-fps">4. Tốc độ phát (FPS)</label>
                 <input id="anim-fps" type="number" value="12" min="1" max="30" />
               </div>
               <div>
-                <label class="field-label">5. Kích thước frame (px)</label>
+                <label class="field-label" for="anim-size">5. Kích thước frame (px)</label>
                 <select id="anim-size">
                   <option value="256x256">256 × 256 (Sprite chuẩn)</option>
                   <option value="512x512" selected>512 × 512 (HD Sprite)</option>
@@ -2097,61 +2691,59 @@
               </label>
             </div>
 
-            <!-- Prompt chuyển động -->
-            <label class="field-label">6. Prompt mô tả chuyển động:</label>
+            <label class="field-label" for="anim-prompt">6. Prompt mô tả chuyển động:</label>
+            <div id="anim-quick-ideas" class="preset-strip" style="margin-top:2px;"></div>
             <textarea id="anim-prompt" rows="3" placeholder="Ví dụ: idle breathing animation, slight body floating up and down, cape flutter, gentle motion loop..."></textarea>
 
             <div class="action-bar">
-              <button id="anim-generate" class="primary">Generate Animation Loop</button>
+              <button id="anim-generate" class="primary" type="button">Generate Animation Loop</button>
               <span id="anim-status" class="card-sub"></span>
             </div>
           </div>
         </div>
 
-        <!-- Cột phải: Trình chiếu & Công cụ Animation -->
-        <div>
+        <div class="sticky-col">
           <div class="card">
             <div class="card-header">
               <div>
                 <h2 class="card-title">Trình phát &amp; Kiểm định Loop</h2>
-                <p class="card-sub">Kiểm tra độ mượt, chỉnh thứ tự frame và xuất Spritesheet cho Game Engine.</p>
+                <p class="card-sub">Kiểm tra độ mượt, chỉnh thứ tự frame và xuất Spritesheet chuẩn Game Engine.</p>
               </div>
             </div>
 
-            <!-- Stage Canvas Preview -->
-            <div class="checkerboard" style="display:flex; justify-content:center; align-items:center; min-height:260px; border-radius:8px; border:1px solid var(--border); overflow:hidden; position:relative;">
-              <canvas id="anim-preview-canvas" width="256" height="256" style="max-height:240px; object-fit:contain;"></canvas>
-              <div id="anim-loop-score-badge" style="position:absolute; top:8px; right:8px; background:rgba(15,23,42,0.88); border:1px solid var(--border); padding:3px 9px; border-radius:6px; font-size:11px; display:none;">
+            <div class="checkerboard" style="display:flex; justify-content:center; align-items:center; min-height:265px; border-radius:10px; border:1px solid var(--border); overflow:hidden; position:relative;">
+              <canvas id="anim-preview-canvas" width="256" height="256" style="max-height:244px; object-fit:contain;"></canvas>
+              <div id="anim-loop-score-badge" style="position:absolute; top:8px; right:8px; background:rgba(15,23,42,0.9); border:1px solid var(--border); padding:3px 9px; border-radius:6px; font-size:11px; display:none;">
                 Loop Score: <strong id="anim-score-val">100%</strong>
               </div>
             </div>
 
-            <!-- Điều khiển Playback -->
             <div class="canvas-toolbar" style="margin:10px 0 8px;">
-              <button id="anim-play-toggle" class="sm">Tạm dừng (Pause)</button>
+              <button id="anim-play-toggle" class="sm" type="button">⏸ Tạm dừng</button>
               <label style="font-size:12px; display:flex; align-items:center; gap:4px;">
                 Frame: <strong id="anim-curr-frame">1</strong> / <span id="anim-total-frames">12</span>
               </label>
-              <input id="anim-scrub" type="range" min="0" max="11" value="0" style="flex:1; min-width:110px;" />
-              <label style="font-size:12px; display:flex; align-items:center; gap:5px; cursor:pointer;">
-                <input id="anim-onion" type="checkbox" style="width:auto;" /> Onion Skin
+              <input id="anim-scrub" type="range" min="0" max="11" value="0" style="flex:1; min-width:100px;" />
+              <label style="font-size:12px; display:flex; align-items:center; gap:5px; cursor:pointer;" title="Hiện bóng mờ của frame liền trước">
+                <input id="anim-onion" type="checkbox" style="width:auto;" /> Onion
+              </label>
+              <label style="font-size:12px; display:flex; align-items:center; gap:5px; cursor:pointer;" title="Giữ nét răng cưa sắc nét cho Pixel Art">
+                <input id="anim-pixelated" type="checkbox" style="width:auto;" /> Pixel sắc
               </label>
             </div>
 
-            <!-- Filmstrip Thumbnail Frames -->
             <div id="anim-filmstrip" class="filmstrip">
               <span class="card-sub" style="padding:10px; font-size:12px;">Chưa có frame nào. Bấm Generate Animation để bắt đầu.</span>
             </div>
 
-            <!-- Chỉnh sửa chuỗi frame + so sánh đầu/cuối -->
             <div id="anim-edit-box" style="margin:8px 0; padding:10px 12px; background:var(--bg-card); border-radius:8px; border:1px solid var(--border);" hidden>
               <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
-                <span style="font-size:12px; font-weight:600; margin-right:4px;">Chỉnh frame chọn:</span>
-                <button id="anim-frame-left" class="sm" disabled>◀ Dời trái</button>
-                <button id="anim-frame-right" class="sm" disabled>Dời phải ▶</button>
-                <button id="anim-frame-del" class="sm danger" disabled>Xóa</button>
-                <button id="anim-frame-reset" class="sm">Hoàn tác</button>
-                <button id="anim-frame-apply" class="primary sm" disabled>Áp dụng</button>
+                <span style="font-size:12px; font-weight:600; margin-right:4px;">Chỉnh frame:</span>
+                <button id="anim-frame-left" class="sm" type="button" disabled>◀ Dời trái</button>
+                <button id="anim-frame-right" class="sm" type="button" disabled>Dời phải ▶</button>
+                <button id="anim-frame-del" class="sm danger" type="button" disabled>Xóa</button>
+                <button id="anim-frame-reset" class="sm" type="button">Hoàn tác</button>
+                <button id="anim-frame-apply" class="primary sm" type="button" disabled>Áp dụng</button>
               </div>
               <div style="display:flex; gap:14px; align-items:center; margin-top:8px; flex-wrap:wrap;">
                 <div style="text-align:center; font-size:11px;">Frame đầu<br />
@@ -2162,24 +2754,22 @@
               </div>
             </div>
 
-            <!-- Reframe tool (Chọn lại frame từ video) -->
             <div id="anim-reframe-box" style="margin:8px 0; padding:8px 12px; background:var(--bg-card); border-radius:8px; border:1px solid var(--border);" hidden>
               <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
                 <span style="font-size:12px; font-weight:600;">Reframe video:</span>
                 <label style="font-size:11.5px; display:flex; align-items:center; gap:6px;">Dịch pha offset: <input id="reframe-offset" type="number" value="0" style="width:64px; padding:3px 6px;" /></label>
-                <button id="anim-reframe-btn" class="sm">Cắt lại Frame</button>
-                <span class="card-sub" style="font-size:11px; margin:0;">(Không tốn credit Flow)</span>
+                <button id="anim-reframe-btn" class="sm" type="button">Cắt lại Frame</button>
+                <span class="badge ok" style="font-size:10.5px;">Miễn phí 0 token</span>
               </div>
             </div>
 
-            <!-- Download Actions -->
             <div class="action-bar">
               <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                <button id="anim-dl-sheet" class="primary sm" disabled>Tải Spritesheet PNG</button>
-                <button id="anim-dl-json" class="sm" disabled>JSON Meta</button>
-                <button id="anim-dl-gif" class="sm" disabled>GIF Loop</button>
-                <button id="anim-dl-webp" class="sm" disabled>WebP</button>
-                <button id="anim-dl-zip" class="sm" disabled>Trọn bộ ZIP</button>
+                <button id="anim-dl-sheet" class="primary sm" type="button" disabled>⬇ Spritesheet PNG</button>
+                <button id="anim-dl-json" class="sm" type="button" disabled>JSON Meta</button>
+                <button id="anim-dl-gif" class="sm" type="button" disabled>GIF Loop</button>
+                <button id="anim-dl-webp" class="sm" type="button" disabled>WebP</button>
+                <button id="anim-dl-zip" class="sm" type="button" disabled>Trọn bộ ZIP</button>
               </div>
             </div>
           </div>
@@ -2195,7 +2785,7 @@
             <div class="card-header">
               <div>
                 <h2 class="card-title">Tạo Video (Omni Flash)</h2>
-                <p class="card-sub">Tạo video từ text, frame đầu/cuối hoặc ảnh tham chiếu; tích hợp phụ đề, giọng đọc và nhạc nền.</p>
+                <p class="card-sub">Tạo video từ text, frame đầu/cuối hoặc ảnh tham chiếu; tích hợp phụ đề .SRT, giọng đọc TTS và nhạc nền.</p>
               </div>
               <span id="vid-cost" class="badge"></span>
             </div>
@@ -2206,18 +2796,21 @@
                 <select id="vid-model"><option value="omni-flash" selected>Omni Flash</option></select>
               </div>
               <div>
-                <label class="field-label" for="vid-mode">Chế độ</label>
+                <label class="field-label" for="vid-mode">Chế độ đầu vào</label>
                 <select id="vid-mode"><option value="text" selected>Text → Video</option></select>
               </div>
             </div>
 
-            <label class="field-label" for="vid-prompt">Prompt mô tả chuyển động &amp; cảnh quay:</label>
-            <textarea id="vid-prompt" rows="3" maxlength="2000" placeholder="Mô tả chuyển động, góc máy, ánh sáng..."></textarea>
+            <div class="field-label-row">
+              <label class="field-label" for="vid-prompt">Prompt mô tả chuyển động &amp; cảnh quay:</label>
+              <span id="vid-prompt-count" class="card-sub" style="margin:0; font-size:11px;">0 / 2000</span>
+            </div>
+            <textarea id="vid-prompt" rows="3" maxlength="2000" placeholder="Mô tả chuyển động nhân vật, hướng di chuyển máy quay, ánh sáng, nhịp điệu..."></textarea>
 
-            <div id="vid-start-box" style="display:none; margin-top:10px; padding:10px; background:var(--bg-card); border:1px solid var(--border); border-radius:8px;">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                <label class="field-label" style="margin:0;">Frame đầu:</label>
-                <button id="vid-start-use" class="sm" type="button">Lấy từ kết quả Image</button>
+            <div id="vid-start-box" style="display:none; margin-top:10px; padding:10px 12px; background:var(--bg-card); border:1px solid var(--border); border-radius:8px;">
+              <div class="field-label-row">
+                <label class="field-label">Frame đầu:</label>
+                <button id="vid-start-use" class="sm" type="button">Lấy từ kết quả Sửa vùng</button>
               </div>
               <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
                 <input id="vid-start" type="file" accept="image/*" style="max-width:240px;" />
@@ -2225,10 +2818,10 @@
               </div>
             </div>
 
-            <div id="vid-end-box" style="display:none; margin-top:10px; padding:10px; background:var(--bg-card); border:1px solid var(--border); border-radius:8px;">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                <label class="field-label" style="margin:0;">Frame cuối:</label>
-                <button id="vid-end-use" class="sm" type="button">Lấy từ kết quả Image</button>
+            <div id="vid-end-box" style="display:none; margin-top:10px; padding:10px 12px; background:var(--bg-card); border:1px solid var(--border); border-radius:8px;">
+              <div class="field-label-row">
+                <label class="field-label">Frame cuối:</label>
+                <button id="vid-end-use" class="sm" type="button">Lấy từ kết quả Sửa vùng</button>
               </div>
               <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
                 <input id="vid-end" type="file" accept="image/*" style="max-width:240px;" />
@@ -2236,8 +2829,8 @@
               </div>
             </div>
 
-            <div id="vid-refs-box" style="display:none; margin-top:10px; padding:10px; background:var(--bg-card); border:1px solid var(--border); border-radius:8px;">
-              <label class="field-label">Ảnh tham chiếu (tối đa 7):</label>
+            <div id="vid-refs-box" style="display:none; margin-top:10px; padding:10px 12px; background:var(--bg-card); border:1px solid var(--border); border-radius:8px;">
+              <label class="field-label" for="vid-refs-input">Ảnh tham chiếu (tối đa 7):</label>
               <input id="vid-refs-input" type="file" accept="image/*" multiple style="margin-bottom:6px;" />
               <div id="vid-refs-list" style="display:flex; gap:8px; flex-wrap:wrap; min-height:42px;"></div>
             </div>
@@ -2261,11 +2854,11 @@
               </div>
             </div>
 
-            <!-- Phụ đề thu gọn -->
+            <!-- Phụ đề thu gọn (CSP-clean, dùng class summary-stop-prop) -->
             <details class="panel-details" style="margin-top:12px;">
               <summary>
-                <span>Phụ đề (Subtitles / .SRT)</span>
-                <label style="display:inline-flex; align-items:center; gap:6px; font-weight:500; cursor:pointer;" onclick="event.stopPropagation()">
+                <span>📝 Phụ đề (Subtitles / .SRT)</span>
+                <label class="summary-stop-prop" style="display:inline-flex; align-items:center; gap:6px; font-weight:500; cursor:pointer;">
                   <input id="vid-sub-enable" type="checkbox" /> Bật phụ đề
                 </label>
               </summary>
@@ -2300,14 +2893,14 @@
             <!-- Giọng đọc & Nhạc nền thu gọn -->
             <details class="panel-details">
               <summary>
-                <span>Giọng đọc AI (TTS) &amp; Nhạc nền</span>
-                <span style="display:inline-flex; gap:12px; font-weight:500;" onclick="event.stopPropagation()">
+                <span>🎙️ Giọng đọc AI (TTS) &amp; Nhạc nền</span>
+                <span class="summary-stop-prop" style="display:inline-flex; gap:12px; font-weight:500;">
                   <label style="display:inline-flex; align-items:center; gap:5px; cursor:pointer;"><input id="vid-voice-enable" type="checkbox" /> Giọng đọc</label>
                   <label style="display:inline-flex; align-items:center; gap:5px; cursor:pointer;"><input id="vid-music-enable" type="checkbox" /> Nhạc nền</label>
                 </span>
               </summary>
               <div class="panel-details-body">
-                <label class="field-label">Lời thoại giọng đọc:</label>
+                <label class="field-label" for="vid-voice-text">Lời thoại giọng đọc:</label>
                 <textarea id="vid-voice-text" rows="2" maxlength="2000" placeholder="Nhập lời đọc thuyết minh..." style="margin-bottom:8px;"></textarea>
                 <div class="field-row-4">
                   <div>
@@ -2328,12 +2921,12 @@
                   </div>
                 </div>
                 <div style="display:flex; gap:8px; align-items:center; margin:4px 0 12px;">
-                  <button id="vid-voice-preview" class="sm" type="button">Nghe thử giọng</button>
+                  <button id="vid-voice-preview" class="sm" type="button">🔊 Nghe thử giọng</button>
                   <audio id="vid-voice-audio" controls style="display:none; height:30px;"></audio>
                 </div>
 
                 <div style="border-top:1px solid var(--border-subtle); padding-top:10px;">
-                  <label class="field-label">Tệp nhạc nền &amp; Âm lượng:</label>
+                  <label class="field-label" for="vid-music-file">Tệp nhạc nền &amp; Âm lượng:</label>
                   <div class="field-row" style="align-items:center; margin-bottom:6px;">
                     <div>
                       <input id="vid-music-file" type="file" accept="audio/*" />
@@ -2363,7 +2956,7 @@
           </div>
         </div>
 
-        <div>
+        <div class="sticky-col">
           <div class="card">
             <div class="card-header">
               <div>
@@ -2377,7 +2970,7 @@
             </div>
             <div class="action-bar">
               <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                <button id="vid-download" class="primary sm" type="button" disabled>Tải Video</button>
+                <button id="vid-download" class="primary sm" type="button" disabled>⬇ Tải Video</button>
                 <button id="vid-download-srt" class="sm" type="button" disabled>Tải .SRT</button>
                 <button id="vid-download-raw" class="sm" type="button" disabled>Tải bản gốc (Raw)</button>
               </div>
@@ -2387,12 +2980,13 @@
       </div>
     </section>
 
+    <!-- TAB: HÀNG ĐỢI JOB & THƯ VIỆN -->
     <section id="tab-jobs" class="tab-panel">
       <div class="card">
         <div class="card-header">
           <div>
             <h2 class="card-title">Thư viện Ảnh &amp; Hàng đợi Job</h2>
-            <p class="card-sub">Hiển thị tức thì toàn bộ ô ảnh đang khởi tạo theo dạng Grid Library, theo dõi tiến độ từng ảnh và quản lý lịch sử.</p>
+            <p class="card-sub">Theo dõi trực quan từng ô hình đang sinh, lọc nhanh theo trạng thái / từ khóa và chuyển tiếp sang công cụ khác trong 1 chạm.</p>
           </div>
           <div class="jobs-actions">
             <div class="jobs-view-switch" role="group" aria-label="Chế độ xem">
@@ -2400,127 +2994,142 @@
               <button id="jobs-view-grouped" type="button" title="Nhóm các ô ảnh theo từng Job cùng nhật ký chi tiết">Theo từng Job</button>
             </div>
             <button id="clear-failed-jobs" class="sm" type="button" title="Chỉ xóa các job bị lỗi">Xóa job lỗi</button>
-            <button id="clear-all-jobs" class="sm danger" type="button" title="Xóa toàn bộ hình đã generate và lịch sử job">Xóa toàn bộ hình</button>
+            <button id="clear-all-jobs" class="sm danger" type="button" title="Xóa toàn bộ hình đã generate và lịch sử job">Xóa toàn bộ</button>
           </div>
         </div>
         <div id="jobs-toolbar" class="jobs-toolbar">
           <div id="jobs-stats" class="jobs-stats"></div>
+          <div class="jobs-filter-controls">
+            <div class="seg-group" id="jobs-state-filter">
+              <button type="button" class="seg-btn active" data-filter="all">Tất cả</button>
+              <button type="button" class="seg-btn" data-filter="running">Đang chạy</button>
+              <button type="button" class="seg-btn" data-filter="done">Hoàn tất</button>
+              <button type="button" class="seg-btn" data-filter="error">Lỗi</button>
+            </div>
+            <input id="jobs-search" type="search" placeholder="🔍 Lọc theo prompt hoặc #mã job..." style="width:230px; padding:5px 10px; font-size:12px;" />
+          </div>
         </div>
         <div id="jobs"></div>
       </div>
     </section>
 
-    <!-- TAB 4: HƯỚNG DẪN -->
+    <!-- TAB: HƯỚNG DẪN -->
     <section id="tab-guide" class="tab-panel">
+      <nav class="guide-toc" aria-label="Mục lục hướng dẫn">
+        <a href="#guide-shortcuts">⌨️ Phím tắt &amp; Token</a>
+        <a href="#guide-setup">A. Cài đặt</a>
+        <a href="#guide-multiref">B. Phối ảnh Multi-Ref</a>
+        <a href="#guide-strict">C. Sửa vùng Strict</a>
+        <a href="#guide-asset">D. Game Asset</a>
+        <a href="#guide-anim">E. Animation Loop</a>
+        <a href="#guide-video">F. Tạo Video</a>
+        <a href="#guide-trouble">G. Xử lý sự cố</a>
+      </nav>
+
       <div class="guide-grid">
-      <div class="card">
-        <div class="card-header"><div>
-          <h2 class="card-title">Phần A. Cài đặt (làm một lần)</h2>
-          <p class="card-sub">Cần để tiện ích điều khiển được Google Flow. Nếu chỉ mở bằng <code>run.bat</code>, bạn xem trước giao diện được nhưng không gửi được sang Flow.</p>
-        </div></div>
-        <ol class="guide-steps">
-          <li><b>Build tiện ích</b><p>Mở terminal trong thư mục dự án, chạy <code>pnpm build:extension</code>. Thư mục kết quả: <code>apps/extension/dist</code>.</p></li>
-          <li><b>Nạp vào Chrome</b><ul>
-            <li>Vào <code>chrome://extensions</code>, bật <b>Developer mode</b> (góc phải trên).</li>
-            <li>Bấm <b>Load unpacked</b>, chọn thư mục <code>apps/extension/dist</code>.</li>
-            <li>Sau mỗi lần build lại, bấm nút tải lại (⟳) trên thẻ tiện ích.</li></ul></li>
-          <li><b>Nạp extension FlowKit và mở Google Flow</b><p>Nạp extension trong <code>FlowAutoTool\upstream-flowkit\extension</code> vào Chrome (Load unpacked), mở <code>https://flow.google.com</code> và đăng nhập. Giữ tab này mở trong lúc tạo ảnh.</p></li>
-          <li><b>Chạy bridge và Workbench</b><p>Chạy <code>run.bat</code>. File này tự build, khởi động bridge server (cổng 8200), mở Workbench tại <code>http://127.0.0.1:5173/workbench.html</code> và tự chạy lại bridge nếu nó dừng. Giữ cửa sổ đó mở. Nhãn ở góc phải trên cho biết trạng thái: <b>Flow: sẵn sàng</b>, <b>FlowKit: chưa kết nối</b> hoặc <b>Bridge: tắt</b>. Log của bridge nằm ở <code>logs\bridge.log</code>.</p></li>
-        </ol>
-      </div>
+        <div class="card" id="guide-shortcuts">
+          <div class="card-header"><div>
+            <h2 class="card-title">⌨️ Phím tắt nhanh &amp; Quản lý Token</h2>
+            <p class="card-sub">Thao tác tốc độ cao dành cho họa sĩ và nhà phát triển game.</p>
+          </div></div>
+          <ul class="guide-steps" style="counter-reset:none;">
+            <li style="padding-left:0;"><b>Theo dõi Token trực quan</b><p>Nhập số token hiện có trên Google Flow vào <b>Ví Token</b> trên thanh Topbar (hoặc ở bất kỳ thanh <code>💎 Hiện có</code> nào). Hệ thống tự lưu, tính toán chi phí trước mỗi lần bấm và cảnh báo đỏ nhấp nháy nếu không đủ token.</p></li>
+            <li style="padding-left:0;"><b>Phím tắt toàn cục</b><p><kbd>Ctrl</kbd> + <kbd>Enter</kbd>: Chạy nút Generate của tab đang mở • <kbd>Alt</kbd> + <kbd>1..5</kbd>: Chuyển nhanh 5 mục chính • <kbd>Esc</kbd>: Đóng hộp xem ảnh Lightbox.</p></li>
+            <li style="padding-left:0;"><b>Dán ảnh siêu tốc (<kbd>Ctrl</kbd> + <kbd>V</kbd>)</b><p>Sao chép bất kỳ hình ảnh nào từ trình duyệt/ứng dụng vẽ rồi nhấn <kbd>Ctrl</kbd> + <kbd>V</kbd> ở tab <b>Phối ảnh</b> hoặc <b>Sửa vùng</b> để nạp ngay mà không cần lưu ra máy.</p></li>
+            <li style="padding-left:0;"><b>Phím tắt vẽ Mask (tab Sửa vùng)</b><p><kbd>[</kbd> / <kbd>]</kbd>: Thu nhỏ / Phóng to cỡ cọ • <kbd>Ctrl</kbd> + <kbd>Z</kbd> / <kbd>Ctrl</kbd> + <kbd>Y</kbd>: Hoàn tác / Làm lại nét vẽ mask.</p></li>
+          </ul>
+        </div>
 
-      <div class="card">
-        <div class="card-header"><div>
-          <h2 class="card-title">Phần B. Tạo ảnh từ nhiều ảnh tham chiếu</h2>
-        </div></div>
-        <ol class="guide-steps">
-          <li><b>Tải ảnh tham chiếu (Tab 1)</b><p>Kéo thả hoặc bấm vào khung "Bộ ảnh Tham chiếu". Hỗ trợ PNG, JPEG, WebP, tối đa 24 ảnh. Ảnh trùng byte sẽ bị bỏ qua.</p></li>
-          <li><b>Đặt định danh cho từng ảnh</b><p>Mỗi thẻ ảnh có một định danh dạng <code>@hinh1</code>, <code>@hinh2</code>... Bạn có thể đổi tên (ví dụ <code>@nhanvat</code>, <code>@pose</code>). Bấm vào chip <code>@...</code> phía trên ô mô tả để chèn nhanh.</p></li>
-          <li><b>Chọn vai trò ảnh</b><p>Đặt vai trò cho mỗi ảnh (khuôn mặt, trang phục, tư thế, bối cảnh, phong cách...) để prompt mô tả đúng cách dùng ảnh đó. Tắt ảnh nào chưa muốn dùng bằng công tắc trên thẻ.</p></li>
-          <li><b>Viết mô tả bằng @</b><p>Ví dụ: <code>vẽ lại @hinh1 dựa vào nhân vật @hinh2, bám sát pose của @hinh3</code>. Khi biên dịch, mỗi <code>@</code> được đổi thành "Image N" theo đúng thứ tự tải lên Flow.</p></li>
-          <li><b>Thêm ràng buộc (tùy chọn)</b><p>Trong "Ràng buộc Thuộc tính" chọn Giữ nguyên, Đổi thành hoặc Tránh cho từng chi tiết, rồi bấm <b>+ Thêm</b>.</p></li>
-          <li><b>Chọn model, kích thước, số ảnh</b><p>Model lấy từ bridge. Kích thước chọn 1920×1080 hoặc nhập tay rộng × cao; bridge chọn tỉ lệ Flow gần nhất (ngang, dọc hoặc vuông) rồi đổi ảnh về đúng kích thước đã chọn. Số ảnh được xếp hàng và chạy song song có giới hạn, không cần chờ ảnh trước xong.</p></li>
-          <li><b>Biên dịch và kiểm tra</b><p>Bấm <b>Biên dịch Prompt</b>. Đọc các cảnh báo: màu đỏ là lỗi chặn, phải sửa mới tạo được job. Kiểm tra "Thứ tự tải ảnh lên Flow".</p></li>
-          <li><b>Tạo Job</b><p>Bấm <b>Tạo Job Generate / Edit</b>. Workbench gửi job tới bridge, bridge tải ảnh tham chiếu lên Flow và tạo ảnh. Có thể bấm tạo nhiều job liên tiếp. Ảnh xong sẽ hiện ở thư viện Tab 3 để xem, tải về hoặc dùng làm tham chiếu.</p></li>
-          <li><b>Theo dõi tiến trình</b><p>Xem Console ở đáy trang. Lọc theo job hoặc mức lỗi. Bấm <b>Copy</b> để sao chép toàn bộ log khi cần báo lỗi. Trạng thái job nằm ở Tab 3.</p></li>
-        </ol>
-      </div>
+        <div class="card" id="guide-setup">
+          <div class="card-header"><div>
+            <h2 class="card-title">Phần A. Cài đặt (làm một lần)</h2>
+            <p class="card-sub">Cần để tiện ích điều khiển được Google Flow. Nếu chỉ mở bằng <code>run.bat</code>, bạn xem trước giao diện được nhưng không gửi được sang Flow.</p>
+          </div></div>
+          <ol class="guide-steps">
+            <li><b>Build tiện ích</b><p>Mở terminal trong thư mục dự án, chạy <code>pnpm build:extension</code>. Thư mục kết quả: <code>apps/extension/dist</code>.</p></li>
+            <li><b>Nạp vào Chrome</b><ul>
+              <li>Vào <code>chrome://extensions</code>, bật <b>Developer mode</b> (góc phải trên).</li>
+              <li>Bấm <b>Load unpacked</b>, chọn thư mục <code>apps/extension/dist</code>.</li>
+              <li>Sau mỗi lần build lại, bấm nút tải lại (⟳) trên thẻ tiện ích.</li></ul></li>
+            <li><b>Nạp extension FlowKit và mở Google Flow</b><p>Nạp extension trong <code>FlowAutoTool\upstream-flowkit\extension</code> vào Chrome (Load unpacked), mở <code>https://flow.google.com</code> và đăng nhập. Giữ tab này mở trong lúc tạo ảnh.</p></li>
+            <li><b>Chạy bridge và Workbench</b><p>Chạy <code>run.bat</code>. File này tự build, khởi động bridge server (cổng 8200), mở Workbench tại <code>http://127.0.0.1:5173/workbench.html</code> và tự chạy lại bridge nếu nó dừng. Nhãn ở góc phải trên cho biết trạng thái: <b>Flow: sẵn sàng</b>, <b>FlowKit: chưa kết nối</b> hoặc <b>Bridge: tắt</b>.</p></li>
+          </ol>
+        </div>
 
-      <div class="card">
-        <div class="card-header"><div>
-          <h2 class="card-title">Phần C. Sửa vùng ảnh (Image › Sửa vùng)</h2>
-        </div></div>
-        <ol class="guide-steps">
-          <li><b>Chọn ảnh gốc PNG</b><p>Tải file hoặc chọn từ danh sách Reference, rồi bấm "Dùng làm Ảnh gốc". Ảnh mới nạp có sẵn một vùng chữ nhật ở giữa, hãy bấm "Xóa Mask" nếu không cần.</p></li>
-          <li><b>Bôi vùng cần sửa</b><p>Chọn công cụ <b>Cọ</b> (chỉnh cỡ cọ bằng thanh trượt), hoặc chữ nhật / khoanh tự do. Lớp "vùng cho phép sửa" là vùng sẽ gửi đi. Chế độ "Trừ bớt" để xóa nét bôi thừa.</p></li>
-          <li><b>Nhập prompt và bấm Generate</b><p>Chọn "Sửa vùng" (cần prompt) hoặc "Xóa vùng" (prompt không bắt buộc), chọn model và số ảnh. Bridge gửi ảnh gốc cùng ảnh đánh dấu vùng tô tím cho Flow. Tiến độ hiện ngay dưới nút và ở Tab 3.</p></li>
-          <li><b>Xem và tải kết quả</b><p>Kết quả được ghép tự động: chỉ pixel trong vùng tô lấy từ ảnh Flow, pixel ngoài vùng giữ nguyên từng byte. Nếu có nhiều ảnh, bấm "Ảnh N" để ghép ảnh khác. Tải PNG kết quả hoặc đưa vào Reference để sửa tiếp.</p></li>
-          <li><b>Thay vùng đã tô bằng ảnh tham chiếu</b><p>Trong ô "Ảnh tham chiếu cho vùng sửa" tải tối đa 4 ảnh (mỗi ảnh tối đa 8 MB). Ví dụ: tô vùng mặt nhân vật, tải ảnh khuôn mặt mới, rồi viết prompt "thay mặt ở vùng đánh dấu bằng khuôn mặt trong ảnh tham chiếu". Bridge báo cho Flow biết ảnh 1 là ảnh gốc có vùng đánh dấu, các ảnh sau là tham chiếu. Chọn màu đánh dấu (tím hoặc đỏ) và độ mềm viền; mặc định có tham chiếu thì kết quả được ghép lại để pixel ngoài vùng tô giữ nguyên. Tính năng này chưa được thử trên Flow thật.</p></li>
-          <li><b>Lưu ý</b><p>Flow sửa theo prompt trên toàn ảnh, không có mask thật, nên chất lượng phụ thuộc cách Flow hiểu vùng đánh dấu. Mỗi lần Generate gửi một yêu cầu tới Google; nếu gặp "unusual activity" hãy nghỉ vài phút và giảm số ảnh.</p></li>
-        </ol>
-      </div>
+        <div class="card" id="guide-multiref">
+          <div class="card-header"><div>
+            <h2 class="card-title">Phần B. Tạo ảnh từ nhiều ảnh tham chiếu</h2>
+          </div></div>
+          <ol class="guide-steps">
+            <li><b>Tải ảnh tham chiếu</b><p>Kéo thả, bấm chọn hoặc nhấn <code>Ctrl+V</code> vào khung "Bộ ảnh Tham chiếu". Hỗ trợ PNG, JPEG, WebP, tối đa 24 ảnh.</p></li>
+            <li><b>Đặt định danh &amp; vai trò</b><p>Mỗi thẻ ảnh có định danh dạng <code>@hinh1</code>, <code>@hinh2</code>... Bấm vào chip <code>@...</code> phía trên ô mô tả để chèn nhanh. Chọn vai trò (khuôn mặt, trang phục, tư thế...) để khóa đúng đặc điểm.</p></li>
+            <li><b>Viết mô tả &amp; chọn Style nhanh</b><p>Ví dụ: <code>vẽ lại @hinh1 dựa vào nhân vật @hinh2, bám sát pose của @hinh3</code>. Khi biên dịch, mỗi <code>@</code> tự đổi thành "Image N" theo thứ tự tải lên Flow.</p></li>
+            <li><b>Kiểm tra Token &amp; Tạo Job</b><p>Xem thanh <b>⚡ Tốn lượt này</b> ngay trên nút Generate, rồi bấm <b>Tạo Job Generate</b> (hoặc <code>Ctrl+Enter</code>).</p></li>
+          </ol>
+        </div>
 
-            <div class="card">
-        <div class="card-header"><div>
-          <h2 class="card-title">Phần D. Tạo Game Asset Đồng Bộ Style (Image › Game Asset)</h2>
-        </div></div>
-        <ol class="guide-steps">
-          <li><b>Thêm ảnh tham chiếu phong cách (Style References)</b><p>Tải ảnh phong cách từ máy hoặc bấm "Lấy toàn bộ từ Tab 1". Các asset sinh ra sẽ bám sát đường nét, bảng màu và cách đổ bóng của ảnh tham chiếu.</p></li>
-          <li><b>Chọn loại Asset &amp; Preset Style</b><p>Loại asset gồm: Nhân vật, Item, Tilemap, UI, Bối cảnh hoặc Hiệu ứng FX. Preset style gồm: 16-bit Pixel Art, Chibi 2D, Isometric 30°, Hand-painted hoặc Flat Vector.</p></li>
-          <li><b>Kích thước &amp; Tách nền trong suốt</b><p>Chọn kích thước chuẩn (256, 512, 1024 hoặc tùy chỉnh). Tích chọn "Tách nền trong suốt" để hệ thống tự động loại bỏ phông nền xanh và khử ám màu viền (despill).</p></li>
-          <li><b>Tải về &amp; Chuyển tiếp</b><p>Xem trước asset trên nền ô cờ caro. Tải từng ảnh PNG hoặc bấm "Tải trọn bộ ZIP". Bạn có thể bấm "Sang Anim" để tạo animation ngay từ asset vừa sinh, hoặc "Sửa vùng" để tinh chỉnh chi tiết.</p></li>
-        </ol>
-      </div>
+        <div class="card" id="guide-strict">
+          <div class="card-header"><div>
+            <h2 class="card-title">Phần C. Sửa vùng ảnh (Image › Sửa vùng)</h2>
+          </div></div>
+          <ol class="guide-steps">
+            <li><b>Chọn ảnh gốc</b><p>Kéo thả vào khung vẽ, dán <code>Ctrl+V</code> hoặc lấy nhanh từ danh sách Reference.</p></li>
+            <li><b>Bôi vùng cần sửa</b><p>Dùng <b>🖌️ Cọ tô</b> (chỉnh cỡ bằng thanh trượt hoặc phím <code>[</code> <code>]</code>), chữ nhật hoặc Lasso. Lớp <b>🔴 Cho sửa</b> sẽ được AI vẽ lại; lớp <b>🟢 Bảo vệ</b> giữ nguyên tuyệt đối.</p></li>
+            <li><b>Đối chiếu kết quả</b><p>Sau khi ghép xong, nhấn giữ nút <b>👁 Giữ xem Ảnh gốc</b> để so sánh trước/sau trực tiếp trên khung kết quả.</p></li>
+          </ol>
+        </div>
 
-      <div class="card">
-        <div class="card-header"><div>
-          <h2 class="card-title">Phần E. Tạo Animation Loop Frame-by-Frame (tab Animation)</h2>
-        </div></div>
-        <ol class="guide-steps">
-          <li><b>Nạp ảnh nhân vật / dáng gốc</b><p>Tải ảnh nhân vật hoặc bấm "Lấy từ kết quả Tab 2" để dùng chính hình ảnh bạn vừa chỉnh sửa xong.</p></li>
-          <li><b>Chọn phương thức sinh Animation</b><p><b>Video Loop &amp; Cắt Frame (Khuyến nghị):</b> Flow tạo video 8s lặp vô hạn (start frame = end frame), sau đó ffmpeg cắt ra N frame đều nhau. Nhanh, mượt và tiết kiệm credit. <b>Frame-by-Frame:</b> Sinh tuần tự từng ảnh theo chu kỳ 360°.</p></li>
-          <li><b>Trình phát &amp; Kiểm định Loop</b><p>Xem preview lặp vô hạn theo FPS tùy chỉnh. Bật công tắc <b>Onion Skin</b> để xem bóng mờ frame trước nhằm kiểm tra độ mượt. Thanh Loop Score đánh giá mức độ khớp giữa frame cuối và frame đầu.</p></li>
-          <li><b>Reframe video &amp; Xuất cho Game Engine</b><p>Nếu dùng mode video, bạn có thể chỉnh "Dịch pha offset" rồi bấm "Cắt lại Frame" mà không tốn credit Flow. Xuất Spritesheet PNG kèm JSON metadata (chuẩn Unity, Godot, Phaser), file GIF loop, WebP hoặc trọn bộ ZIP.</p></li>
-        </ol>
-      </div>
+        <div class="card" id="guide-asset">
+          <div class="card-header"><div>
+            <h2 class="card-title">Phần D. Tạo Game Asset Đồng Bộ Style</h2>
+          </div></div>
+          <ol class="guide-steps">
+            <li><b>Đồng bộ Style</b><p>Kéo thả ảnh phong cách hoặc bấm "Lấy từ Tab Phối ảnh". Các asset sinh ra sẽ bám sát đường nét và bảng màu.</p></li>
+            <li><b>Chọn loại Asset &amp; Tách nền</b><p>Chọn loại asset để nhận gợi ý prompt mẫu. Tích chọn "Tách nền trong suốt" để tự động loại bỏ phông xanh và khử ám viền.</p></li>
+            <li><b>Xem Lightbox &amp; Chuyển tiếp</b><p>Bấm vào ảnh để soi độ nét pixel 1:1 trên nền ô cờ, tải ZIP hoặc bấm "Sang Anim" để làm chuyển động ngay.</p></li>
+          </ol>
+        </div>
 
-<div class="card">
-        <div class="card-header"><div>
-          <h2 class="card-title">Phần F. Tạo Video (tab Video)</h2>
-          <p class="card-sub">Dùng model Omni Flash. Chưa thử trên Flow thật, nên hãy tạo thử một video 4 giây trước.</p>
-        </div></div>
-        <ol class="guide-steps">
-          <li><b>Chọn chế độ</b><p><b>Text → Video</b> chỉ cần prompt. <b>Ảnh → Video</b> dùng một ảnh làm frame đầu. <b>Frame đầu + cuối</b> cho video đi từ ảnh này sang ảnh kia. <b>Ảnh tham chiếu</b> nhận tối đa 7 ảnh để giữ nhân vật hoặc phong cách. Có thể bấm "Lấy từ kết quả Image" để dùng ảnh vừa sửa.</p></li>
-          <li><b>Thời lượng, độ phân giải, tỉ lệ</b><p>Thời lượng 4, 6, 8 hoặc 10 giây; độ phân giải 360p hoặc 720p; tỉ lệ 16:9 hoặc 9:16. Dòng "Ước tính" cho biết số credit (4 giây khoảng 15, 10 giây khoảng 30). Nếu trên 20 credit, tiện ích sẽ hỏi xác nhận trước khi gửi.</p></li>
-          <li><b>Phụ đề</b><p>Mỗi dòng một câu. Không ghi giờ thì chia đều theo thời lượng; có giờ thì viết <code>0-2.5 Xin chào</code>. Có thể ghi thẳng vào video, xuất tệp <code>.srt</code> riêng, hoặc cả hai.</p></li>
-          <li><b>Giọng đọc và nhạc nền</b><p>Nhập lời đọc, chọn engine và giọng rồi bấm "Nghe thử". Engine edge cần internet; pyttsx3 chạy offline bằng giọng của Windows. Nhạc nền tải từ máy (tối đa 30 MB), có thể tự hạ âm lượng khi có giọng đọc.</p></li>
-          <li><b>Tạo và tải</b><p>Bấm "Tạo video", việc chờ Flow thường mất 1-3 phút. Video đã ghép phụ đề và âm thanh nằm ở nút "Tải video"; bản gốc từ Flow nằm ở "Tải bản gốc". Nếu bước ghép lỗi, bạn vẫn nhận được bản gốc kèm cảnh báo. Video đã gửi lên Flow thì không hủy được.</p></li>
-        </ol>
-      </div>
+        <div class="card" id="guide-anim">
+          <div class="card-header"><div>
+            <h2 class="card-title">Phần E. Tạo Animation Loop Seamless</h2>
+          </div></div>
+          <ol class="guide-steps">
+            <li><b>Chọn phương thức</b><p><b>Video Loop &amp; Cắt Frame (20 token):</b> Tạo video 8s lặp vô hạn rồi cắt N frame đều nhau, rất mượt. <b>Frame-by-Frame:</b> Sinh tuần tự từng ảnh (1 token/frame).</p></li>
+            <li><b>Kiểm định &amp; Xuất Game Engine</b><p>Bật <b>Onion</b> để soi bóng mờ frame trước, bật <b>Pixel sắc</b> cho Pixel Art, chỉnh lại offset bằng Reframe (miễn phí 0 token) và xuất Spritesheet PNG + JSON Meta.</p></li>
+          </ol>
+        </div>
 
-      <div class="card">
-        <div class="card-header"><div>
-          <h2 class="card-title">Phần G. Xử lý sự cố</h2>
-        </div></div>
-        <ul class="guide-steps" style="counter-reset:none;">
-          <li style="padding-left:0;"><b>"Không kết nối được bridge server (127.0.0.1:8200)"</b><p>Bridge chưa chạy. Chạy <code>run.bat</code> và giữ cửa sổ đó mở. Nếu thư mục FlowAutoTool không nằm cạnh thư mục dự án, đặt biến môi trường <code>FRS_BRIDGE_DIR</code> trỏ tới nó trước khi chạy.</p></li>
-          <li style="padding-left:0;"><b>"FlowKit extension chưa kết nối"</b><p>Nạp extension FlowKit vào Chrome và mở tab <code>https://flow.google.com</code> đã đăng nhập, rồi thử lại.</p></li>
-          <li style="padding-left:0;"><b>"Unusual activity" từ Google</b><p>Bridge tự dừng và chờ khoảng 300 giây trước khi gửi tiếp. Hãy giảm số ảnh mỗi lần và không chạy nhiều job cùng lúc. Bridge chỉ giảm tốc độ, không né kiểm tra của Google.</p></li>
-          <li style="padding-left:0;"><b>Cổng 8100, 8200 hoặc 9222 đang bận</b><p>Có chương trình khác đang giữ cổng (thường là YTF Studio hoặc FlowKit backend). <code>run.bat</code> in ra PID đang giữ cổng; đóng chương trình đó rồi chạy lại. Nếu chính bridge đang chạy sẵn, <code>run.bat</code> sẽ dùng lại.</p></li>
-          <li style="padding-left:0;"><b>Video báo lỗi phụ đề hoặc giọng đọc</b><p>Giờ phụ đề phải nằm trong thời lượng video và không chồng nhau. Engine edge cần mạng; nếu lỗi, đổi sang pyttsx3. Nếu ffmpeg không có bộ lọc subtitles, chỉ xuất được <code>.srt</code>.</p></li>
-          <li style="padding-left:0;"><b>Sửa vùng không đúng ý</b><p>Flow không có mask thật nên chỉ làm theo prompt. Tô vùng nhỏ và sát đối tượng, viết prompt cụ thể, thử lại với số ảnh 2–4. Pixel ngoài vùng tô luôn giữ nguyên nhờ bước ghép.</p></li>
-          <li style="padding-left:0;"><b>Lưu ý</b><p>Tự động hóa Flow chưa được thử trên Flow thật và có thể vi phạm điều khoản của Flow. Dùng có cân nhắc.</p></li>
-        </ul>
-      </div>
+        <div class="card" id="guide-video">
+          <div class="card-header"><div>
+            <h2 class="card-title">Phần F. Tạo Video (Omni Flash)</h2>
+          </div></div>
+          <ol class="guide-steps">
+            <li><b>Chế độ &amp; Thời lượng</b><p>Hỗ trợ Text → Video, Frame đầu, Frame đầu + cuối và Ảnh tham chiếu. Thời lượng 4–10 giây (tốn khoảng 15–30 token, có xác nhận nếu trên 20 token).</p></li>
+            <li><b>Phụ đề &amp; Thuyết minh AI</b><p>Khi tích bật Phụ đề hoặc Giọng đọc, bảng cấu hình tự mở để nhập lời thoại, nghe thử giọng và trộn nhạc nền tự hạ âm lượng.</p></li>
+          </ol>
+        </div>
+
+        <div class="card" id="guide-trouble">
+          <div class="card-header"><div>
+            <h2 class="card-title">Phần G. Xử lý sự cố thường gặp</h2>
+          </div></div>
+          <ul class="guide-steps" style="counter-reset:none;">
+            <li style="padding-left:0;"><b>"Bridge: tắt" (127.0.0.1:8200)</b><p>Chạy <code>run.bat</code> và giữ cửa sổ terminal mở.</p></li>
+            <li style="padding-left:0;"><b>"FlowKit: chưa kết nối"</b><p>Nạp extension FlowKit vào Chrome và mở sẵn một tab <code>https://flow.google.com</code> đã đăng nhập.</p></li>
+            <li style="padding-left:0;"><b>"Unusual activity" từ Google</b><p>Bridge tự nghỉ ~300 giây trước khi gửi tiếp. Giảm số ảnh mỗi lượt và tránh gửi dồn dập.</p></li>
+          </ul>
+        </div>
       </div>
     </section>
   </main>
 
-  <section id="console-dock" aria-label="Console theo dõi tiến trình">
+  <section id="console-dock" class="collapsed" aria-label="Console theo dõi tiến trình">
     <div id="console-resize" title="Kéo để đổi chiều cao"></div>
     <div id="console-bar">
-      <strong>Console</strong>
+      <strong id="console-title-toggle" title="Bấm để mở rộng / thu gọn Console">Console</strong>
       <span id="console-count">0</span>
+      <span id="console-latest" title="Bấm để xem chi tiết nhật ký">Sẵn sàng.</span>
       <select id="log-level" title="Lọc mức log">
         <option value="all">Tất cả</option>
         <option value="warn">Cảnh báo + Lỗi</option>
@@ -2529,7 +3138,7 @@
       <select id="log-job" title="Lọc theo job"><option value="">Mọi job</option></select>
       <button id="log-clear" type="button">Xóa</button>
       <button id="log-copy" type="button">Sao chép</button>
-      <button id="log-toggle" type="button">Thu gọn</button>
+      <button id="log-toggle" type="button">Mở rộng ▴</button>
     </div>
     <div id="console-body"></div>
   </section>

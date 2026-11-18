@@ -8,6 +8,7 @@ import {
   parseCues,
   type VideoCue,
 } from './video-helpers';
+import { openLightbox, showToast } from './ui-helpers';
 
 export interface VideoTabContext {
   bridgeFetch: (path: string, init?: RequestInit) => Promise<Response>;
@@ -116,7 +117,9 @@ export function initVideoTab(ctx: VideoTabContext): { reloadCaps: () => Promise<
 
   function refreshCost(): void {
     const c = estimateCredits(duration(), creditTable);
-    $('vid-cost').textContent = c > 0 ? `Ước tính: ${c} credit` : 'Ước tính: không rõ';
+    const el = $('vid-cost');
+    el.textContent = c > 0 ? `⚡ Ước tính: ${c} token` : 'Ước tính: không rõ';
+    el.className = c > 20 ? 'badge warn' : 'badge';
   }
 
   function refreshModeVisibility(): void {
@@ -139,11 +142,15 @@ export function initVideoTab(ctx: VideoTabContext): { reloadCaps: () => Promise<
     }
     const img = document.createElement('img');
     img.src = item.dataUrl;
-    img.style.cssText = 'width:56px;height:56px;object-fit:contain;border-radius:4px;border:1px solid #475569;';
+    img.style.cssText = 'width:56px;height:56px;object-fit:contain;border-radius:6px;border:1px solid var(--border);cursor:zoom-in;background:#070a10;';
+    img.addEventListener('click', () => {
+      openLightbox({ src: item.dataUrl, title: item.name, subtitle: 'Frame nguồn Video' });
+    });
     const name = document.createElement('span');
     name.style.fontSize = '12px';
     name.textContent = item.name;
     const clear = document.createElement('button');
+    clear.type = 'button';
     clear.className = 'sm danger';
     clear.textContent = 'Bỏ';
     clear.addEventListener('click', onClear);
@@ -175,14 +182,21 @@ export function initVideoTab(ctx: VideoTabContext): { reloadCaps: () => Promise<
     }
     refs.forEach((r, i) => {
       const wrap = document.createElement('div');
-      wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:2px;';
+      wrap.className = 'mini-ref-thumb';
       const img = document.createElement('img');
       img.src = r.dataUrl;
-      img.style.cssText = 'width:56px;height:56px;object-fit:contain;border-radius:4px;border:1px solid #475569;';
+      img.alt = r.name;
+      img.title = r.name;
+      img.addEventListener('click', () => {
+        openLightbox({ src: r.dataUrl, title: r.name, subtitle: 'Video Reference' });
+      });
       const b = document.createElement('button');
-      b.className = 'sm danger';
-      b.textContent = 'Bỏ';
-      b.addEventListener('click', () => {
+      b.type = 'button';
+      b.className = 'mini-ref-del';
+      b.textContent = '×';
+      b.title = 'Xóa ảnh này';
+      b.addEventListener('click', (e) => {
+        e.stopPropagation();
         refs.splice(i, 1);
         renderRefs();
       });
@@ -194,10 +208,12 @@ export function initVideoTab(ctx: VideoTabContext): { reloadCaps: () => Promise<
   async function pick(file: File): Promise<Picked | null> {
     if (!file.type.startsWith('image/')) {
       setStatus(`"${file.name}" không phải ảnh.`, 'warn');
+      showToast(`"${file.name}" không phải tệp ảnh.`, 'warn');
       return null;
     }
     if (file.size > MAX_FILE_BYTES) {
       setStatus(`"${file.name}" lớn hơn 8 MB.`, 'warn');
+      showToast(`"${file.name}" vượt quá giới hạn 8 MB.`, 'warn');
       return null;
     }
     const f = await fileToB64(file);
@@ -208,9 +224,11 @@ export function initVideoTab(ctx: VideoTabContext): { reloadCaps: () => Promise<
     const bytes = ctx.getImageResultBytes();
     if (!bytes) {
       setStatus('Tab Image (Sửa vùng) chưa có ảnh kết quả nào.', 'warn');
+      showToast('Tab Sửa vùng chưa có ảnh kết quả nào.', 'warn');
       return null;
     }
     const b64 = bytesToBase64(bytes);
+    showToast('Đã lấy ảnh kết quả từ tab Sửa vùng!', 'ok', 2200);
     return { name: `image_result_${Date.now()}.png`, mime: 'image/png', base64: b64, dataUrl: `data:image/png;base64,${b64}` };
   }
 
@@ -279,7 +297,7 @@ export function initVideoTab(ctx: VideoTabContext): { reloadCaps: () => Promise<
   function buildBody(): Record<string, unknown> {
     const mode = currentMode();
     const prompt = val('vid-prompt').trim();
-    if (!prompt) throw new Error('Hãy nhập prompt.');
+    if (!prompt) throw new Error('Hãy nhập prompt mô tả cảnh quay.');
     const dur = duration();
     const body: Record<string, unknown> = {
       model: 'omni-flash',
@@ -398,11 +416,13 @@ export function initVideoTab(ctx: VideoTabContext): { reloadCaps: () => Promise<
     try {
       body = buildBody();
     } catch (e) {
-      setStatus((e as Error).message, 'warn');
+      const msg = (e as Error).message;
+      setStatus(msg, 'warn');
+      showToast(msg, 'warn');
       return;
     }
     const credits = estimateCredits(duration(), creditTable);
-    if (needsCreditConfirm(credits) && !confirm(`Video này tốn khoảng ${credits} credit. Tiếp tục?`)) return;
+    if (needsCreditConfirm(credits) && !confirm(`Video này tốn khoảng ${credits} token. Tiếp tục?`)) return;
 
     setBusy(true);
     $<HTMLButtonElement>('vid-download').disabled = true;
@@ -429,18 +449,22 @@ export function initVideoTab(ctx: VideoTabContext): { reloadCaps: () => Promise<
       if (job.state === 'done') {
         showResult(job);
         const extra: string[] = [];
-        if (job.raw_info) extra.push(`${job.raw_info.width}x${job.raw_info.height}, ${job.raw_info.duration.toFixed(1)}s`);
+        if (job.raw_info) extra.push(`${job.raw_info.width}×${job.raw_info.height}, ${job.raw_info.duration.toFixed(1)}s`);
         if (job.warnings?.length) extra.push(`Cảnh báo: ${job.warnings.join('; ')}`);
         setStatus(`Hoàn tất. ${extra.join(' · ')}`, job.warnings?.length ? 'warn' : 'info');
+        showToast('Video đã tạo xong! Xem trước ở khung bên phải.', 'ok');
       } else if (job.state === 'cancelled') {
         setStatus('Đã hủy.', 'warn');
       } else {
         setStatus(`Lỗi: ${job.error ?? 'không rõ'}`, 'error');
+        showToast(`Video lỗi: ${job.error ?? 'không rõ'}`, 'error');
         ctx.log('error', `Video lỗi: ${job.error ?? 'không rõ'}`, job.id);
       }
     } catch (e) {
-      setStatus((e as Error).message, 'error');
-      ctx.log('error', (e as Error).message);
+      const msg = (e as Error).message;
+      setStatus(msg, 'error');
+      showToast(msg, 'error');
+      ctx.log('error', msg);
     } finally {
       setBusy(false);
     }
@@ -470,6 +494,7 @@ export function initVideoTab(ctx: VideoTabContext): { reloadCaps: () => Promise<
     const text = val('vid-voice-text').trim().slice(0, 300);
     if (!text) {
       setStatus('Hãy nhập văn bản giọng đọc để nghe thử.', 'warn');
+      showToast('Hãy nhập văn bản giọng đọc trước khi nghe thử.', 'warn');
       return;
     }
     setStatus('Đang tạo giọng nghe thử...');
@@ -496,10 +521,42 @@ export function initVideoTab(ctx: VideoTabContext): { reloadCaps: () => Promise<
       setStatus('Sẵn sàng.');
     } catch (e) {
       setStatus(`Nghe thử thất bại: ${(e as Error).message}`, 'error');
+      showToast(`Nghe thử thất bại: ${(e as Error).message}`, 'error');
     }
   }
 
-  // ---- Wiring ----
+  // ---- Wiring (CSP-clean, không dùng inline onclick) ----
+  document.querySelectorAll('.summary-stop-prop').forEach((el) => {
+    el.addEventListener('click', (ev) => ev.stopPropagation());
+  });
+
+  // Tự mở details tương ứng khi người dùng bật checkbox Phụ đề / Giọng đọc / Nhạc nền
+  $('vid-sub-enable').addEventListener('change', (ev) => {
+    const chk = ev.currentTarget as HTMLInputElement;
+    if (chk.checked) {
+      const det = chk.closest('details');
+      if (det) det.open = true;
+    }
+  });
+  const openAudioDetails = (ev: Event): void => {
+    const chk = ev.currentTarget as HTMLInputElement;
+    if (chk.checked) {
+      const det = chk.closest('details');
+      if (det) det.open = true;
+    }
+  };
+  $('vid-voice-enable').addEventListener('change', openAudioDetails);
+  $('vid-music-enable').addEventListener('change', openAudioDetails);
+
+  // Đếm ký tự prompt video
+  const promptInput = $<HTMLTextAreaElement>('vid-prompt');
+  const promptCounter = document.getElementById('vid-prompt-count');
+  const updatePromptCount = (): void => {
+    if (promptCounter) promptCounter.textContent = `${promptInput.value.length} / 2000`;
+  };
+  promptInput.addEventListener('input', updatePromptCount);
+  updatePromptCount();
+
   $('vid-mode').addEventListener('change', refreshModeVisibility);
   $('vid-duration').addEventListener('change', refreshCost);
   $('vid-voice-engine').addEventListener('change', refreshVoices);
@@ -532,6 +589,7 @@ export function initVideoTab(ctx: VideoTabContext): { reloadCaps: () => Promise<
     for (const f of Array.from(input.files ?? [])) {
       if (refs.length >= max) {
         setStatus(`Tối đa ${max} ảnh reference.`, 'warn');
+        showToast(`Tối đa ${max} ảnh reference cho Video.`, 'warn');
         break;
       }
       const p = await pick(f);
@@ -547,10 +605,12 @@ export function initVideoTab(ctx: VideoTabContext): { reloadCaps: () => Promise<
     if (!f) return;
     if (f.size > MAX_AUDIO_BYTES) {
       setStatus('Tệp nhạc lớn hơn 30 MB.', 'warn');
+      showToast('Tệp nhạc nền vượt quá 30 MB.', 'warn');
       return;
     }
     music = await fileToB64(f);
     $('vid-music-name').textContent = f.name;
+    showToast(`Đã nạp nhạc nền: ${f.name}`, 'ok', 2000);
   });
   $('vid-voice-preview').addEventListener('click', () => void previewVoice());
   $('vid-generate').addEventListener('click', () => void generate());

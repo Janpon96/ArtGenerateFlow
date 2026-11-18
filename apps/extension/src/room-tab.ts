@@ -4,6 +4,7 @@
  */
 import { readSourceImage } from './source-image';
 import { buildRoomPrompts, MAX_ROOM_VIEWS, parseObjects, ROOM_VIEW_PRESETS } from './room-prompts';
+import { openLightbox, showToast } from './ui-helpers';
 
 interface RoomImage { index: number; url: string; label?: string; order?: number }
 interface RoomJob { id: string; state: string; count?: number; labels?: string[]; steps?: Array<{ msg: string }>; images?: RoomImage[]; error?: string | null }
@@ -29,7 +30,6 @@ export function initRoomTab(ctx: RoomTabContext): void {
   let room: { name: string; mime: string; base64: string } | null = null;
 
   const setStatus = (text: string): void => { $('room-status').textContent = text; };
-  /** Dòng ngay dưới khung ảnh phòng: người dùng nhìn thấy kết quả của thao tác chọn ảnh tại chỗ. */
   const setSourceInfo = (text: string, isError = false): void => {
     const el = $('room-source-info');
     el.textContent = text;
@@ -41,16 +41,52 @@ export function initRoomTab(ctx: RoomTabContext): void {
   const DEFAULT_ON = new Set(['corner', 'left-wall', 'right-wall']);
   for (const view of ROOM_VIEW_PRESETS) {
     const label = document.createElement('label');
-    label.style.cssText = 'display:flex; align-items:center; gap:8px; font-size:12.5px; cursor:pointer;';
+    const isChecked = DEFAULT_ON.has(view.id);
+    label.className = `check-chip${isChecked ? ' checked' : ''}`;
     const box = document.createElement('input');
     box.type = 'checkbox';
     box.value = view.id;
-    box.checked = DEFAULT_ON.has(view.id);
-    box.style.width = 'auto';
-    box.addEventListener('change', updateCount);
-    label.append(box, document.createTextNode(view.label));
+    box.checked = isChecked;
+    box.addEventListener('change', () => {
+      label.classList.toggle('checked', box.checked);
+      updateCount();
+    });
+    const span = document.createElement('span');
+    span.textContent = view.label;
+    label.append(box, span);
     viewBox.append(label);
   }
+
+  function syncChipClasses(): void {
+    viewBox.querySelectorAll<HTMLLabelElement>('label.check-chip').forEach((lbl) => {
+      const inp = lbl.querySelector('input');
+      lbl.classList.toggle('checked', Boolean(inp?.checked));
+    });
+  }
+
+  document.getElementById('room-select-default')?.addEventListener('click', () => {
+    viewBox.querySelectorAll<HTMLInputElement>('input').forEach((b) => {
+      b.checked = DEFAULT_ON.has(b.value);
+    });
+    syncChipClasses();
+    updateCount();
+  });
+
+  document.getElementById('room-select-all')?.addEventListener('click', () => {
+    viewBox.querySelectorAll<HTMLInputElement>('input').forEach((b) => {
+      b.checked = true;
+    });
+    syncChipClasses();
+    updateCount();
+  });
+
+  document.getElementById('room-clear')?.addEventListener('click', () => {
+    viewBox.querySelectorAll<HTMLInputElement>('input').forEach((b) => {
+      b.checked = false;
+    });
+    syncChipClasses();
+    updateCount();
+  });
 
   function selectedViewIds(): string[] {
     return [...viewBox.querySelectorAll<HTMLInputElement>('input:checked')].map((b) => b.value);
@@ -61,7 +97,7 @@ export function initRoomTab(ctx: RoomTabContext): void {
       viewIds: selectedViewIds(),
       objects: parseObjects($<HTMLInputElement>('room-objects').value),
       artStyle: $<HTMLInputElement>('room-style').value,
-      notes: $<HTMLTextAreaElement>('room-notes').value,
+      notes: $<HTMLInputElement>('room-notes').value,
     });
   }
 
@@ -69,8 +105,8 @@ export function initRoomTab(ctx: RoomTabContext): void {
     const wanted = selectedViewIds().length + parseObjects($<HTMLInputElement>('room-objects').value).length;
     const n = Math.min(wanted, MAX_ROOM_VIEWS);
     $('room-count').textContent = wanted > MAX_ROOM_VIEWS
-      ? `Sẽ tạo ${n} ảnh (đã chọn ${wanted}, tối đa ${MAX_ROOM_VIEWS} ảnh mỗi lần; phần dư bị bỏ).`
-      : `Sẽ tạo ${n} ảnh.`;
+      ? `Sẽ tạo ${n} ảnh (đã chọn ${wanted}, tối đa ${MAX_ROOM_VIEWS} ảnh mỗi lần)`
+      : `Sẽ tạo ${n} ảnh`;
   }
   $('room-objects').addEventListener('input', updateCount);
   updateCount();
@@ -85,12 +121,14 @@ export function initRoomTab(ctx: RoomTabContext): void {
       preview.src = img.dataUrl;
       preview.hidden = false;
       $('room-drop-hint').hidden = true;
-      setSourceInfo(`Đã nạp ${img.summary}.`);
+      setSourceInfo(`Đã nạp ${img.summary} (bấm khung để đổi ảnh).`);
       setStatus('');
+      showToast(`Đã nạp ảnh phòng: ${file.name}`, 'ok', 2200);
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       setSourceInfo(msg, true);
       setStatus(msg);
+      showToast(msg, 'error');
     }
   }
 
@@ -102,9 +140,14 @@ export function initRoomTab(ctx: RoomTabContext): void {
   });
   const drop = $('room-drop');
   drop.addEventListener('click', () => $<HTMLInputElement>('room-input').click());
-  drop.addEventListener('dragover', (e) => { e.preventDefault(); });
+  drop.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    drop.classList.add('dragover');
+  });
+  drop.addEventListener('dragleave', () => drop.classList.remove('dragover'));
   drop.addEventListener('drop', (e) => {
     e.preventDefault();
+    drop.classList.remove('dragover');
     const file = e.dataTransfer?.files?.[0];
     if (file) void loadRoomFile(file);
   });
@@ -118,11 +161,23 @@ export function initRoomTab(ctx: RoomTabContext): void {
   $('room-generate').addEventListener('click', async () => {
     const btn = $<HTMLButtonElement>('room-generate');
     try {
-      if (!room) { setStatus('Hãy nạp ảnh phòng isometric trước.'); return; }
+      if (!room) {
+        setStatus('Hãy nạp ảnh phòng isometric trước.');
+        showToast('Hãy nạp ảnh phòng isometric trước.', 'warn');
+        return;
+      }
       const prompts = currentPrompts();
-      if (prompts.length === 0) { setStatus('Hãy chọn ít nhất một góc nhìn hoặc nhập một vật thể.'); return; }
+      if (prompts.length === 0) {
+        setStatus('Hãy chọn ít nhất một góc nhìn hoặc nhập một vật thể.');
+        showToast('Hãy chọn ít nhất 1 góc nhìn.', 'warn');
+        return;
+      }
       const model = $<HTMLSelectElement>('room-model').value;
-      if (!model) { setStatus('Chưa có model (bridge server chưa kết nối?).'); return; }
+      if (!model) {
+        setStatus('Chưa có model (bridge server chưa kết nối?).');
+        showToast('Chưa kết nối được Bridge Server.', 'error');
+        return;
+      }
       const size = readSize();
 
       btn.disabled = true;
@@ -146,16 +201,18 @@ export function initRoomTab(ctx: RoomTabContext): void {
       created.count ??= prompts.length;
       created.labels ??= prompts.map((p) => p.label);
       renderGallery(created, prompts.map((p) => p.label));
-      setStatus(`Job #${created.id.slice(0, 8)} đang chạy: ${prompts.length} ảnh, tạo lần lượt. Xem tiến độ ngay bên phải hoặc ở tab Hàng đợi Job.`);
+      setStatus(`Job #${created.id.slice(0, 8)} đang chạy (${prompts.length} góc nhìn)...`);
       const job = await ctx.waitJob(created.id, (liveJob) => renderGallery(liveJob, prompts.map((p) => p.label)));
       renderGallery(job, prompts.map((p) => p.label));
       if (!job.images?.length) throw new Error(job.error || 'Flow không trả ảnh nào.');
       setStatus(job.images.length < prompts.length
         ? `Xong ${job.images.length}/${prompts.length} ảnh. Một số góc nhìn bị lỗi, xem Console.`
         : `Hoàn tất ${job.images.length} ảnh nền.`);
+      showToast(`Hoàn tất ${job.images.length} ảnh BG Room!`, 'ok');
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       setStatus(msg);
+      showToast(msg, 'error');
       ctx.log('error', msg);
     } finally {
       btn.disabled = false;
@@ -194,13 +251,23 @@ export function initRoomTab(ctx: RoomTabContext): void {
       thumb.append(badge);
 
       if (im) {
+        const fullUrl = `${ctx.getBridgeUrl()}${im.url}`;
+        const dlUrl = `${fullUrl}?download=true`;
         const tag = document.createElement('span');
         tag.className = 'job-slot-status-tag done';
         tag.textContent = 'Hoàn tất';
         const img = document.createElement('img');
-        img.src = `${ctx.getBridgeUrl()}${im.url}`;
+        img.src = fullUrl;
         img.alt = label;
-        img.addEventListener('click', () => window.open(img.src, '_blank'));
+        img.addEventListener('click', () => {
+          openLightbox({
+            src: fullUrl,
+            title: `BG Room • ${label}`,
+            subtitle: `Góc ${slotOrder}/${totalSlots} • Job #${job.id.slice(0, 8)}`,
+            downloadUrl: dlUrl,
+            downloadName: `room_${job.id.slice(0, 8)}_${slotOrder}.png`,
+          });
+        });
         thumb.append(tag, img);
       } else if (!isFinal) {
         thumb.classList.add('shimmer');
@@ -247,15 +314,18 @@ export function initRoomTab(ctx: RoomTabContext): void {
         const guard = (fn: () => Promise<void>) => () => void fn().catch((e) => setStatus(e instanceof Error ? e.message : String(e)));
 
         const toRef = document.createElement('button');
+        toRef.type = 'button';
         toRef.textContent = 'Dùng làm ref';
         toRef.title = 'Đưa ảnh này vào bộ ảnh tham chiếu của tab Phối ảnh';
         toRef.addEventListener('click', guard(async () => {
           const blob = await fetchBlob();
           await ctx.addAsReference(new File([blob], `room_${job.id.slice(0, 8)}_${im.index + 1}.png`, { type: blob.type || 'image/png' }));
           ctx.switchTab('tab-studio');
+          showToast('Đã đưa ảnh vào bộ Reference!', 'ok');
         }));
 
         const toStrict = document.createElement('button');
+        toStrict.type = 'button';
         toStrict.textContent = 'Sửa vùng';
         toStrict.addEventListener('click', guard(async () => {
           const blob = await fetchBlob();

@@ -7,6 +7,7 @@ import {
   type CameraOption,
 } from './camera-prompts';
 import { readSourceImage } from './source-image';
+import { openLightbox, showToast } from './ui-helpers';
 
 interface CamImage { index: number; url: string; label?: string; order?: number }
 interface CamJob { id: string; state: string; count?: number; labels?: string[]; steps?: Array<{ msg: string }>; images?: CamImage[]; error?: string | null }
@@ -32,7 +33,6 @@ export function initCameraTab(ctx: CameraTabContext): void {
   let source: { name: string; mime: string; base64: string; width: number; height: number } | null = null;
 
   const setStatus = (text: string): void => { $('cam-status').textContent = text; };
-  /** Dòng ngay dưới khung ảnh nguồn: người dùng nhìn thấy kết quả của thao tác chọn ảnh tại chỗ. */
   const setSourceInfo = (text: string, isError = false): void => {
     const el = $('cam-source-info');
     el.textContent = text;
@@ -42,24 +42,37 @@ export function initCameraTab(ctx: CameraTabContext): void {
   // ---- Danh sách góc máy, chia nhóm ----
   const optionBox = $('cam-options');
   const DEFAULT_ON = new Set(['low']);
+  const POPULAR_SET = new Set(['low', 'high', 'close-up', 'wide']);
   for (const group of Object.keys(CAMERA_GROUPS) as CameraOption['group'][]) {
     const title = document.createElement('div');
+    title.className = 'check-group-title';
     title.textContent = CAMERA_GROUPS[group];
-    title.style.cssText = 'grid-column:1 / -1; font-size:11.5px; font-weight:700; color:var(--text-muted); margin-top:6px; text-transform:uppercase; letter-spacing:0.04em;';
     optionBox.append(title);
     for (const opt of CAMERA_OPTIONS.filter((o) => o.group === group)) {
+      const isChecked = DEFAULT_ON.has(opt.id);
       const label = document.createElement('label');
-      label.style.cssText = 'display:flex; align-items:center; gap:8px; font-size:12.5px; cursor:pointer;';
+      label.className = `check-chip${isChecked ? ' checked' : ''}`;
       label.title = opt.camera;
       const box = document.createElement('input');
       box.type = 'checkbox';
       box.value = opt.id;
-      box.checked = DEFAULT_ON.has(opt.id);
-      box.style.width = 'auto';
-      box.addEventListener('change', updateCount);
-      label.append(box, document.createTextNode(opt.label));
+      box.checked = isChecked;
+      box.addEventListener('change', () => {
+        label.classList.toggle('checked', box.checked);
+        updateCount();
+      });
+      const span = document.createElement('span');
+      span.textContent = opt.label;
+      label.append(box, span);
       optionBox.append(label);
     }
+  }
+
+  function syncChipClasses(): void {
+    optionBox.querySelectorAll<HTMLLabelElement>('label.check-chip').forEach((lbl) => {
+      const inp = lbl.querySelector('input');
+      lbl.classList.toggle('checked', Boolean(inp?.checked));
+    });
   }
 
   const selectedIds = (): string[] =>
@@ -70,12 +83,22 @@ export function initCameraTab(ctx: CameraTabContext): void {
     const wanted = selectedIds().length + customList().length;
     const n = Math.min(wanted, MAX_CAMERA_SHOTS);
     $('cam-count').textContent = wanted > MAX_CAMERA_SHOTS
-      ? `Sẽ tạo ${n} ảnh (đã chọn ${wanted}, tối đa ${MAX_CAMERA_SHOTS} ảnh mỗi lần; phần dư bị bỏ).`
-      : `Sẽ tạo ${n} ảnh.`;
+      ? `Sẽ tạo ${n} ảnh (đã chọn ${wanted}, tối đa ${MAX_CAMERA_SHOTS} ảnh mỗi lần)`
+      : `Sẽ tạo ${n} ảnh`;
   }
   $('cam-custom').addEventListener('input', updateCount);
+
+  document.getElementById('cam-select-popular')?.addEventListener('click', () => {
+    optionBox.querySelectorAll<HTMLInputElement>('input').forEach((b) => {
+      b.checked = POPULAR_SET.has(b.value);
+    });
+    syncChipClasses();
+    updateCount();
+  });
+
   $('cam-clear').addEventListener('click', () => {
     optionBox.querySelectorAll<HTMLInputElement>('input').forEach((b) => { b.checked = false; });
+    syncChipClasses();
     updateCount();
   });
   updateCount();
@@ -90,12 +113,14 @@ export function initCameraTab(ctx: CameraTabContext): void {
       preview.src = img.dataUrl;
       preview.hidden = false;
       $('cam-drop-hint').hidden = true;
-      setSourceInfo(`Đã nạp ${img.summary}. Ảnh mới sẽ theo tỉ lệ ${aspectForImage(img.width, img.height)}.`);
+      setSourceInfo(`Đã nạp ${img.summary} • Tỉ lệ ${aspectForImage(img.width, img.height)}`);
       setStatus('');
+      showToast(`Đã nạp ảnh nguồn: ${file.name}`, 'ok', 2200);
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       setSourceInfo(msg, true);
       setStatus(msg);
+      showToast(msg, 'error');
     }
   }
 
@@ -107,14 +132,18 @@ export function initCameraTab(ctx: CameraTabContext): void {
   });
   const drop = $('cam-drop');
   drop.addEventListener('click', () => $<HTMLInputElement>('cam-input').click());
-  drop.addEventListener('dragover', (e) => { e.preventDefault(); });
+  drop.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    drop.classList.add('dragover');
+  });
+  drop.addEventListener('dragleave', () => drop.classList.remove('dragover'));
   drop.addEventListener('drop', (e) => {
     e.preventDefault();
+    drop.classList.remove('dragover');
     const file = e.dataTransfer?.files?.[0];
     if (file) void loadSource(file);
   });
 
-  /** "auto" = giữ kích thước Flow trả về theo tỉ lệ ảnh nguồn; còn lại là kích thước xuất cố định. */
   function readOutput(src: { width: number; height: number }): { width: number; height: number; aspect_ratio: string } {
     const v = $<HTMLSelectElement>('cam-size').value;
     if (v === 'auto') return { width: 0, height: 0, aspect_ratio: aspectForImage(src.width, src.height) };
@@ -126,7 +155,11 @@ export function initCameraTab(ctx: CameraTabContext): void {
   $('cam-generate').addEventListener('click', async () => {
     const btn = $<HTMLButtonElement>('cam-generate');
     try {
-      if (!source) { setStatus('Hãy nạp ảnh illust trước.'); return; }
+      if (!source) {
+        setStatus('Hãy nạp ảnh illust trước.');
+        showToast('Hãy nạp ảnh illust nguồn trước.', 'warn');
+        return;
+      }
       const prompts = buildCameraPrompts({
         optionIds: selectedIds(),
         custom: customList(),
@@ -134,9 +167,17 @@ export function initCameraTab(ctx: CameraTabContext): void {
         notes: $<HTMLTextAreaElement>('cam-notes').value,
         keepPose: $<HTMLInputElement>('cam-keep-pose').checked,
       });
-      if (prompts.length === 0) { setStatus('Hãy chọn ít nhất một góc máy hoặc tự nhập một góc máy.'); return; }
+      if (prompts.length === 0) {
+        setStatus('Hãy chọn ít nhất một góc máy hoặc tự nhập một góc máy.');
+        showToast('Hãy chọn ít nhất 1 góc máy.', 'warn');
+        return;
+      }
       const model = $<HTMLSelectElement>('cam-model').value;
-      if (!model) { setStatus('Chưa có model (bridge server chưa kết nối?).'); return; }
+      if (!model) {
+        setStatus('Chưa có model (bridge server chưa kết nối?).');
+        showToast('Chưa kết nối được Bridge Server.', 'error');
+        return;
+      }
 
       btn.disabled = true;
       setStatus(`Đang gửi ${prompts.length} góc máy tới bridge...`);
@@ -158,16 +199,18 @@ export function initCameraTab(ctx: CameraTabContext): void {
       created.count ??= prompts.length;
       created.labels ??= prompts.map((p) => p.label);
       renderGallery(created, prompts.map((p) => p.label));
-      setStatus(`Job #${created.id.slice(0, 8)} đang chạy: ${prompts.length} ảnh, tạo lần lượt. Xem tiến độ ngay bên phải hoặc ở tab Hàng đợi Job.`);
+      setStatus(`Job #${created.id.slice(0, 8)} đang chạy (${prompts.length} góc máy)...`);
       const job = await ctx.waitJob(created.id, (liveJob) => renderGallery(liveJob, prompts.map((p) => p.label)));
       renderGallery(job, prompts.map((p) => p.label));
       if (!job.images?.length) throw new Error(job.error || 'Flow không trả ảnh nào.');
       setStatus(job.images.length < prompts.length
         ? `Xong ${job.images.length}/${prompts.length} ảnh. Một số góc máy bị lỗi, xem Console.`
         : `Hoàn tất ${job.images.length} ảnh.`);
+      showToast(`Hoàn tất ${job.images.length} góc máy!`, 'ok');
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       setStatus(msg);
+      showToast(msg, 'error');
       ctx.log('error', msg);
     } finally {
       btn.disabled = false;
@@ -206,13 +249,23 @@ export function initCameraTab(ctx: CameraTabContext): void {
       thumb.append(badge);
 
       if (im) {
+        const fullUrl = `${ctx.getBridgeUrl()}${im.url}`;
+        const dlUrl = `${fullUrl}?download=true`;
         const tag = document.createElement('span');
         tag.className = 'job-slot-status-tag done';
         tag.textContent = 'Hoàn tất';
         const img = document.createElement('img');
-        img.src = `${ctx.getBridgeUrl()}${im.url}`;
+        img.src = fullUrl;
         img.alt = label;
-        img.addEventListener('click', () => window.open(img.src, '_blank'));
+        img.addEventListener('click', () => {
+          openLightbox({
+            src: fullUrl,
+            title: `Camera • ${label}`,
+            subtitle: `Góc máy ${slotOrder}/${totalSlots} • Job #${job.id.slice(0, 8)}`,
+            downloadUrl: dlUrl,
+            downloadName: `camera_${job.id.slice(0, 8)}_${slotOrder}.png`,
+          });
+        });
         thumb.append(tag, img);
       } else if (!isFinal) {
         thumb.classList.add('shimmer');
@@ -259,6 +312,7 @@ export function initCameraTab(ctx: CameraTabContext): void {
         dl.href = `${ctx.getBridgeUrl()}${im.url}?download=true`;
 
         const again = document.createElement('button');
+        again.type = 'button';
         again.textContent = 'Làm ảnh nguồn';
         again.title = 'Dùng ảnh này làm ảnh nguồn để đổi góc máy tiếp';
         again.addEventListener('click', guard(async () => {
@@ -267,15 +321,18 @@ export function initCameraTab(ctx: CameraTabContext): void {
         }));
 
         const toRef = document.createElement('button');
+        toRef.type = 'button';
         toRef.textContent = 'Dùng làm ref';
         toRef.title = 'Đưa ảnh này vào bộ ảnh tham chiếu của tab Phối ảnh';
         toRef.addEventListener('click', guard(async () => {
           const blob = await fetchBlob();
           await ctx.addAsReference(new File([blob], `camera_${job.id.slice(0, 8)}_${im.index + 1}.png`, { type: blob.type || 'image/png' }));
           ctx.switchTab('tab-studio');
+          showToast('Đã đưa ảnh vào bộ Reference!', 'ok');
         }));
 
         const toStrict = document.createElement('button');
+        toStrict.type = 'button';
         toStrict.textContent = 'Sửa vùng';
         toStrict.addEventListener('click', guard(async () => {
           const blob = await fetchBlob();
